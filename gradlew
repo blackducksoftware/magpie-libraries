@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Bamboo hack
+if [ "$(ps -p "$$" -o comm=)" != "bash" ]; then
+	bash "$0" "$@"
+	exit "$?"
+fi
+
 ##############################################################################
 ##
 ##  Gradle start up script for UN*X
