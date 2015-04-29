@@ -25,7 +25,3 @@ eclipse {
 		defaultOutputDir = file('build/classes/main')
 	}
 }
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.3'
-}
