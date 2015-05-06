@@ -1,6 +1,6 @@
 package com.blackducksoftware.common.base;
-import org.testng.annotations.Test;
+import org.junit.Test;
 public class DummyTest {
-	@Test
-	public void testNothing() {}
+    @Test
+    public void testNothing() {}
 }

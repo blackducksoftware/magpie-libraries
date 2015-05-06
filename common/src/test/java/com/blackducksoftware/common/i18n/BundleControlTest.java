@@ -11,7 +11,8 @@
  */
 package com.blackducksoftware.common.i18n;
 
-import static org.testng.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assert_;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,15 +26,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Tests for the {@code BundleControl}.
@@ -47,25 +52,26 @@ import org.testng.annotations.Test;
  *
  * @author jgustie
  */
+@RunWith(Parameterized.class)
 public class BundleControlTest {
 
     /**
      * The default character set before this class starts running.
      */
-    private Charset defaultCharset;
+    private static Charset defaultCharset;
 
     /**
      * Captures the default character set so we can change it for testing.
      */
     @BeforeClass
-    public void captureDefaultCharse() {
+    public static void captureDefaultCharse() {
         defaultCharset = Charset.defaultCharset();
     }
 
     /**
      * Clears the default character set so the {@code file.encoding} property will be re-read.
      */
-    @BeforeMethod
+    @Before
     public void unsetDefaultCharset() throws ReflectiveOperationException {
         Field defaultCharset = Charset.class.getDeclaredField("defaultCharset");
         defaultCharset.setAccessible(true);
@@ -75,11 +81,14 @@ public class BundleControlTest {
     /**
      * Restores the default character set observed before any of the tests ran.
      */
-    @AfterMethod(alwaysRun = true)
+    @After
     public void restoreDefaultCharset() throws ReflectiveOperationException {
         System.setProperty("file.encoding", defaultCharset.name());
         unsetDefaultCharset();
-        assertEquals(Charset.defaultCharset(), defaultCharset, "unable to restore default charset");
+        assert_()
+        .withFailureMessage("unable to restore default charset")
+        .that(Charset.defaultCharset())
+        .isEqualTo(defaultCharset);
     }
 
     /**
@@ -95,36 +104,44 @@ public class BundleControlTest {
     /**
      * This is a very small subset of characters that are often encoded differently.
      */
-    @DataProvider
-    public Object[][] charsetData() {
-        return new Object[][] { { "COPYRIGHT_SIGN", "\u00a9" },
+    @Parameters
+    public static List<Object[]> charsetData() {
+        return Arrays.asList(new Object[][] {
+                { "COPYRIGHT_SIGN", "\u00a9" },
                 { "LEFT_DOUBLE_QUOTATION_MARK", "\u201c" },
                 { "DAGGER", "\u2020" },
                 { "CENT_SIGN", "\u00a2" },
-                { "TILDE", "\u007e" }, };
+                { "TILDE", "\u007e" }, });
     }
 
-    @Test(dataProvider = "charsetData")
-    public void testDefaultEncoding(String key, String value) {
-        assertEquals(getBundle(Charset.defaultCharset().name()).getString(key), value);
+    private String key, value;
+
+    public BundleControlTest(String key, String value) {
+        this.key = key;
+        this.value = value;
     }
 
-    @Test(dataProvider = "charsetData")
-    public void testUtf8Encoding(String key, String value) {
+    @Test
+    public void testDefaultEncoding() {
+        assertThat(getBundle(Charset.defaultCharset().name()).getString(key)).isEqualTo(value);
+    }
+
+    @Test
+    public void testUtf8Encoding() {
         System.setProperty("file.encoding", "UTF-8");
-        assertEquals(getBundle("UTF-8").getString(key), value);
+        assertThat(getBundle("UTF-8").getString(key)).isEqualTo(value);
     }
 
-    @Test(dataProvider = "charsetData")
-    public void testIso88591Encoding(String key, String value) {
+    @Test
+    public void testIso88591Encoding() {
         System.setProperty("file.encoding", "ISO-8859-1");
-        assertEquals(getBundle("ISO-8859-1").getString(key), value);
+        assertThat(getBundle("ISO-8859-1").getString(key)).isEqualTo(value);
     }
 
-    @Test(dataProvider = "charsetData")
-    public void testWindows1252Encoding(String key, String value) {
+    @Test
+    public void testWindows1252Encoding() {
         System.setProperty("file.encoding", "windows-1252");
-        assertEquals(getBundle("windows-1252").getString(key), value);
+        assertThat(getBundle("windows-1252").getString(key)).isEqualTo(value);
     }
 
     @Test
@@ -142,7 +159,7 @@ public class BundleControlTest {
 
             // Load the resource bundle, verify
             ResourceBundle bundle = ResourceBundle.getBundle("test", Locale.ROOT, loader, BundleControl.create());
-            assertEquals(bundle.getString("test"), "foo");
+            assertThat(bundle.getString("test")).isEqualTo("foo");
 
             // Overwrite the properties file with 'test=bar'
             properties.setProperty("test", "bar");
@@ -152,14 +169,14 @@ public class BundleControlTest {
 
             // Load the resource bundle, verify the value is cached
             bundle = ResourceBundle.getBundle("test", Locale.ROOT, loader, BundleControl.create());
-            assertEquals(bundle.getString("test"), "foo");
+            assertThat(bundle.getString("test")).isEqualTo("foo");
 
             // Explicitly clear the cache
             ResourceBundle.clearCache(loader);
 
             // Load the resource bundle, verify the value is reloaded
             bundle = ResourceBundle.getBundle("test", Locale.ROOT, loader, BundleControl.create());
-            assertEquals(bundle.getString("test"), "bar");
+            assertThat(bundle.getString("test")).isEqualTo("bar");
         } finally {
             // Wipe out our temporary directory
             Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
