@@ -1,25 +1,7 @@
-apply plugin: 'java'
-apply plugin: 'eclipse'
-
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-version = '0.1'
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile group: 'com.google.code.findbugs', name: 'jsr305', version: '1.3.9'
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'com.google.truth', name: 'truth', version: '0.26'
     testCompile group: 'com.google.guava', name: 'guava-testlib', version: '18.0'
-}
-
-eclipse {
-	classpath {
-		// Don't use 'bin' as an output directory
-		defaultOutputDir = file('build/classes/main')
-	}
 }
