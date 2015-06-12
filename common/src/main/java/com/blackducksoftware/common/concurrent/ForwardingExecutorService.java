@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Black Duck Software Inc.
  * http://www.blackducksoftware.com/
  * All rights reserved.
- *
+ * 
  * This software is the confidential and proprietary information of
  * Black Duck Software ("Confidential Information"). You shall not
  * disclose such Confidential Information and shall use it only in
@@ -11,11 +11,14 @@
  */
 package com.blackducksoftware.common.concurrent;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -27,6 +30,23 @@ import java.util.concurrent.TimeoutException;
  * @author jgustie
  */
 public abstract class ForwardingExecutorService extends com.google.common.util.concurrent.ForwardingExecutorService {
+
+    /**
+     * A simple wrapper of a single executor service.
+     */
+    public static abstract class SimpleForwardingExecutorService extends ForwardingExecutorService {
+
+        private final ExecutorService delegate;
+
+        protected SimpleForwardingExecutorService(ExecutorService delegate) {
+            this.delegate = checkNotNull(delegate);
+        }
+
+        @Override
+        protected final ExecutorService delegate() {
+            return delegate;
+        }
+    }
 
     protected ForwardingExecutorService() {}
 

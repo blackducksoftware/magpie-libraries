@@ -11,6 +11,8 @@
  */
 package com.blackducksoftware.common.concurrent;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -24,6 +26,23 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class ForwardingScheduledExecutorService extends ForwardingExecutorService implements
         ScheduledExecutorService {
+
+    /**
+     * A simple wrapper of a single scheduled executor service.
+     */
+    public static abstract class SimpleScheduledForwardingExecutorService extends ForwardingScheduledExecutorService {
+
+        private final ScheduledExecutorService delegate;
+
+        protected SimpleScheduledForwardingExecutorService(ScheduledExecutorService delegate) {
+            this.delegate = checkNotNull(delegate);
+        }
+
+        @Override
+        protected final ScheduledExecutorService delegate() {
+            return delegate;
+        }
+    }
 
     protected ForwardingScheduledExecutorService() {}
 
