@@ -4,7 +4,8 @@ subprojects {
 
 	sourceCompatibility = 1.7
 	targetCompatibility = 1.7
-	version = '0.1'
+	group = 'com.blackducksoftware.magpie.common'
+	version = '0.1-SNAPSHOT'
 
 	repositories {
 		maven{ url "http://artifactory.blackducksoftware.com:8081/artifactory/blackduck-staging-repos" }
@@ -14,6 +15,19 @@ subprojects {
 		classpath {
 			// Don't use 'bin' as an output directory
 			defaultOutputDir = file('build/classes/main')
+		}
+	}
+
+	uploadArchives {
+		repositories {
+			mavenDeployer {
+				repository(url: 'http://artifactory.blackducksoftware.com:8081/artifactory/magpie') {
+					authentication(userName: mavenUserName, password: mavenPassword)
+				}
+				snapshotRepository(url: 'http://artifactory.blackducksoftware.com:8081/artifactory/magpie') {
+					authentication(userName: mavenUserName, password: mavenPassword)
+				}
+			}
 		}
 	}
 }
