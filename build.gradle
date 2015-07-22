@@ -33,7 +33,7 @@ subprojects {
 				repository(url: 'http://artifactory.blackducksoftware.com:8081/artifactory/magpie') {
 					authentication(userName: mavenUserName, password: mavenPassword)
 				}
-				snapshotRepository(url: 'http://artifactory.blackducksoftware.com:8081/artifactory/magpie') {
+				snapshotRepository(url: 'http://artifactory.blackducksoftware.com:8081/artifactory/magpie-snapshot') {
 					authentication(userName: mavenUserName, password: mavenPassword)
 				}
 			}
