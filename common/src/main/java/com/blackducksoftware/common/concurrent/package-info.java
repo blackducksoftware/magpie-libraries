@@ -1,0 +1,4 @@
+@ParametersAreNonnullByDefault
+package com.blackducksoftware.common.concurrent;
+
+import javax.annotation.ParametersAreNonnullByDefault;

@@ -1,0 +1,42 @@
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'eclipse'
+	apply plugin: 'maven'
+
+	sourceCompatibility = 1.7
+	targetCompatibility = 1.7
+	group = 'com.blackducksoftware.magpie.common'
+
+	repositories {
+		maven{ url "http://artifactory.blackducksoftware.com:8081/artifactory/blackduck-staging-repos" }
+	}
+	
+	eclipse {
+		classpath {
+			// Don't use 'bin' as an output directory
+			defaultOutputDir = file('build/classes/main')
+		}
+	}
+
+    task sourcesJar(type:Jar){
+      from sourceSets.main.allSource
+      classifier = 'sources'
+    }
+
+    artifacts {
+      archives sourcesJar
+    }
+
+	uploadArchives {
+		repositories {
+			mavenDeployer {
+				repository(url: 'http://artifactory.blackducksoftware.com:8081/artifactory/magpie') {
+					authentication(userName: mavenUserName, password: mavenPassword)
+				}
+				snapshotRepository(url: 'http://artifactory.blackducksoftware.com:8081/artifactory/magpie-snapshot') {
+					authentication(userName: mavenUserName, password: mavenPassword)
+				}
+			}
+		}
+	}
+}
