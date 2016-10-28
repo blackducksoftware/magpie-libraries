@@ -1,42 +1,60 @@
-subprojects {
-	apply plugin: 'java'
-	apply plugin: 'eclipse'
-	apply plugin: 'maven'
+buildscript {
+	repositories { jcenter() }
+	dependencies { classpath 'com.netflix.nebula:nebula-dependency-recommender:3.6.3' }
+	dependencies { classpath 'com.netflix.nebula:nebula-publishing-plugin:4.9.1' }
+}
 
-	sourceCompatibility = 1.7
-	targetCompatibility = 1.7
-	group = 'com.blackducksoftware.magpie.common'
+allprojects {
+	apply plugin: 'eclipse'
+	apply plugin: 'nebula.dependency-recommender'
 
 	repositories {
-		maven{ url "http://artifactory.blackducksoftware.com:8081/artifactory/blackduck-staging-repos" }
+		jcenter()
 	}
-	
+
+	dependencyRecommendations {
+		propertiesFile file: file("$rootDir/dependencies.properties")
+	}
+
 	eclipse {
 		classpath {
-			// Don't use 'bin' as an output directory
-			defaultOutputDir = file('build/classes/main')
-		}
-	}
-
-    task sourcesJar(type:Jar){
-      from sourceSets.main.allSource
-      classifier = 'sources'
-    }
-
-    artifacts {
-      archives sourcesJar
-    }
-
-	uploadArchives {
-		repositories {
-			mavenDeployer {
-				repository(url: 'http://artifactory.blackducksoftware.com:8081/artifactory/magpie') {
-					authentication(userName: mavenUserName, password: mavenPassword)
-				}
-				snapshotRepository(url: 'http://artifactory.blackducksoftware.com:8081/artifactory/magpie-snapshot') {
-					authentication(userName: mavenUserName, password: mavenPassword)
-				}
-			}
+			defaultOutputDir = file('build-eclipse')
 		}
 	}
 }
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'nebula.source-jar'
+	apply plugin: 'nebula.maven-publish'
+
+	sourceCompatibility = 1.8
+	
+	dependencies {
+		testCompile 'junit:junit'
+		testCompile 'com.google.truth:truth'
+	}
+
+	jar {
+		manifest {
+			attributes('Implementation-Title': project.description,
+			           'Implementation-Version': project.version)
+		}
+	}
+	
+	publishing {
+	    publications {
+	        nebula(MavenPublication) {
+	            pom.withXml {
+	                configurations.compile.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
+	                    asNode().dependencies[0].dependency.find {
+	                        it.artifactId[0].text() == dep.moduleName && 
+	                        it.groupId[0].text() == dep.moduleGroup
+	                    }?.scope[0]?.value = 'compile'
+	                }
+	            }
+	        }
+	    }
+	}
+}
+

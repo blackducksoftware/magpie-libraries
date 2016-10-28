@@ -1,16 +1,54 @@
+# Magpie Libraries
 
-Magpie: Black Duck Core Libraries for Java
-==========================================
+Really useful stuff.
 
-Project home:
-  <https://confluence.blackducksoftware.com/display/MAGPIE/>
+## Requirements
 
-Report a defect or feature request:
-  <https://jira.blackducksoftware.com/browse/MAGPIE/>
+Magpie Libraries require Java 8 or later.
 
-IMPORTANT WARNINGS
-------------------
+## Dependency Information
 
-1. Deprecated APIs will be removed in the second major release after they are deprecated. Be sure to check release notes for deprecation notices.
+Gradle
+````
+compile 'com.blackducksoftware.magpie:magpie:x.y.z'
+````
 
-2. Serialized forms are provided as convenience to provide interoperability with other libraries and are subject to change. DO NOT persist them as they can and likely will change between releases.
+Maven
+````
+    <dependency>
+      <groupId>com.blackducksoftware.magpie</groupId>
+      <artifactId>magpie</artifactId>
+      <version>x.y.z</version>
+    </dependency>
+````
+
+## Documentation
+
+TODO
+
+## Build
+
+````
+$ git clone git@github.com:blackducksoftware/magpie-libraries.git
+$ cd magpie-libraries/
+$ ./gradlew build
+````
+
+## License
+
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.

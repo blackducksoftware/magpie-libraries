@@ -1,0 +1,6 @@
+dependencies {
+    compile 'com.google.guava:guava'
+    compile 'com.google.code.findbugs:jsr305'
+    testCompile 'org.mockito:mockito-core'
+    testCompile 'com.google.guava:guava-testlib'
+}
