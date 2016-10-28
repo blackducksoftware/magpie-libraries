@@ -53,7 +53,7 @@ public class BundleControlEncodingTest {
      * Captures the default character set so we can change it for testing.
      */
     @BeforeClass
-    public static void captureDefaultCharse() {
+    public static void captureDefaultCharset() {
         defaultCharset = Charset.defaultCharset();
     }
 
@@ -98,8 +98,7 @@ public class BundleControlEncodingTest {
     public void restoreDefaultCharset() throws ReflectiveOperationException {
         System.setProperty("file.encoding", defaultCharset.name());
         unsetDefaultCharset();
-        assert_()
-                .withFailureMessage("unable to restore default charset")
+        assert_().withFailureMessage("unable to restore default charset")
                 .that(Charset.defaultCharset())
                 .isEqualTo(defaultCharset);
     }
