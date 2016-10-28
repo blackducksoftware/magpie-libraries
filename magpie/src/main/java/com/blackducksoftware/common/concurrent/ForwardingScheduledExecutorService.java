@@ -48,7 +48,8 @@ public abstract class ForwardingScheduledExecutorService extends ForwardingExecu
         }
     }
 
-    protected ForwardingScheduledExecutorService() {}
+    protected ForwardingScheduledExecutorService() {
+    }
 
     @Override
     protected abstract ScheduledExecutorService delegate();

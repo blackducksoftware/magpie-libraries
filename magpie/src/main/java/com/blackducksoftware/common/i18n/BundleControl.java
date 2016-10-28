@@ -35,7 +35,8 @@ import java.util.ResourceBundle;
  */
 public class BundleControl extends ResourceBundle.Control {
 
-    protected BundleControl() {}
+    protected BundleControl() {
+    }
 
     /**
      * Creates a new resource bundle control.

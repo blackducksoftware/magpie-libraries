@@ -41,7 +41,8 @@ public class ForwardingExecutorServiceTest {
         Callable<Void> callableTask = mock(Callable.class);
         Runnable runnableTask = mock(Runnable.class);
         Collection<Callable<Void>> callableTasks = ImmutableList.of(callableTask);
-        ExecutorService forwardingExecutorService = new SimpleForwardingExecutorService(mockedExecutorService) {};
+        ExecutorService forwardingExecutorService = new SimpleForwardingExecutorService(mockedExecutorService) {
+        };
 
         // Call every method we know
         forwardingExecutorService.shutdown();

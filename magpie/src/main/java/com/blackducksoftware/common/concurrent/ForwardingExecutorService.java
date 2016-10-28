@@ -52,7 +52,8 @@ public abstract class ForwardingExecutorService extends com.google.common.util.c
         }
     }
 
-    protected ForwardingExecutorService() {}
+    protected ForwardingExecutorService() {
+    }
 
     /**
      * Returns an alternate task to be executed in place of the originally submitted task.
