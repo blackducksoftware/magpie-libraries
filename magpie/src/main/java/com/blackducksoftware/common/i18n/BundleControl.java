@@ -15,16 +15,15 @@
  */
 package com.blackducksoftware.common.i18n;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.nio.charset.Charset.defaultCharset;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
@@ -53,8 +52,8 @@ public class BundleControl extends ResourceBundle.Control {
         return new BundleControl() {
             @Override
             public long getTimeToLive(String baseName, Locale locale) {
-                checkNotNull(baseName);
-                checkNotNull(locale);
+                Objects.requireNonNull(baseName);
+                Objects.requireNonNull(locale);
                 return TTL_DONT_CACHE;
             }
         };
@@ -72,7 +71,7 @@ public class BundleControl extends ResourceBundle.Control {
                 connection.setUseCaches(!reload);
 
                 // It is extremely unlikely that the connection will have any type of encoding
-                String encoding = firstNonNull(connection.getContentEncoding(), defaultCharset().name());
+                String encoding = Optional.ofNullable(connection.getContentEncoding()).orElse(Charset.defaultCharset().name());
                 try (Reader reader = new InputStreamReader(connection.getInputStream(), encoding)) {
                     result = new PropertyResourceBundle(reader);
                 }

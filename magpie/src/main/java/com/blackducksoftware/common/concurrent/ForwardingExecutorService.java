@@ -15,11 +15,10 @@
  */
 package com.blackducksoftware.common.concurrent;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +32,7 @@ import java.util.concurrent.TimeoutException;
  *
  * @author jgustie
  */
-public abstract class ForwardingExecutorService extends com.google.common.util.concurrent.ForwardingExecutorService {
+public abstract class ForwardingExecutorService implements ExecutorService {
 
     /**
      * A simple wrapper of a single executor service.
@@ -43,7 +42,7 @@ public abstract class ForwardingExecutorService extends com.google.common.util.c
         private final ExecutorService delegate;
 
         protected SimpleForwardingExecutorService(ExecutorService delegate) {
-            this.delegate = checkNotNull(delegate);
+            this.delegate = Objects.requireNonNull(delegate);
         }
 
         @Override
@@ -54,6 +53,11 @@ public abstract class ForwardingExecutorService extends com.google.common.util.c
 
     protected ForwardingExecutorService() {
     }
+
+    /**
+     * Returns the backing delegate executor that is being wrapped.
+     */
+    protected abstract ExecutorService delegate();
 
     /**
      * Returns an alternate task to be executed in place of the originally submitted task.
@@ -82,43 +86,68 @@ public abstract class ForwardingExecutorService extends com.google.common.util.c
 
     @Override
     public void execute(Runnable command) {
-        super.execute(wrap(command));
+        delegate().execute(wrap(command));
     }
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        return super.submit(wrap(task));
+        return delegate().submit(wrap(task));
     }
 
     @Override
     public Future<?> submit(Runnable task) {
-        return super.submit(task);
+        return delegate().submit(task);
     }
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        return super.submit(wrap(task), result);
+        return delegate().submit(wrap(task), result);
     }
 
     @Override
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
-        return super.invokeAll(wrapAll(tasks));
+        return delegate().invokeAll(wrapAll(tasks));
     }
 
     @Override
-    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
-            throws InterruptedException {
-        return super.invokeAll(wrapAll(tasks), timeout, unit);
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+        return delegate().invokeAll(wrapAll(tasks), timeout, unit);
     }
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
-        return super.invokeAny(wrapAll(tasks));
+        return delegate().invokeAny(wrapAll(tasks));
     }
 
     @Override
     public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException {
-        return super.invokeAny(wrapAll(tasks), timeout, unit);
+        return delegate().invokeAny(wrapAll(tasks), timeout, unit);
+    }
+
+    @Override
+    public void shutdown() {
+        delegate().shutdown();
+    }
+
+    @Override
+    public List<Runnable> shutdownNow() {
+        // TODO Unwrap?
+        return delegate().shutdownNow();
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return delegate().isShutdown();
+    }
+
+    @Override
+    public boolean isTerminated() {
+        return delegate().isTerminated();
+    }
+
+    @Override
+    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        return delegate().awaitTermination(timeout, unit);
     }
 }

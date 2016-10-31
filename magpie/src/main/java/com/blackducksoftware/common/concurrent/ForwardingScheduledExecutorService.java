@@ -15,8 +15,7 @@
  */
 package com.blackducksoftware.common.concurrent;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -39,7 +38,7 @@ public abstract class ForwardingScheduledExecutorService extends ForwardingExecu
         private final ScheduledExecutorService delegate;
 
         protected SimpleScheduledForwardingExecutorService(ScheduledExecutorService delegate) {
-            this.delegate = checkNotNull(delegate);
+            this.delegate = Objects.requireNonNull(delegate);
         }
 
         @Override
