@@ -84,7 +84,7 @@ public class ExtraEnums {
      * Returns the names for the supplied enumerated values.
      */
     public static <E extends Enum<E>> Set<String> names(E... enumValues) {
-        return Stream.of(enumValues).map(Enum::toString).collect(ExtraCollectors.toImmutableSet());
+        return Stream.of(enumValues).map(Enum::name).collect(ExtraCollectors.toImmutableSet());
     }
 
     /**
