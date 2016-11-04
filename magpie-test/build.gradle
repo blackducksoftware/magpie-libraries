@@ -1,0 +1,8 @@
+description = 'Black Duck Software Magpie Test'
+
+dependencies {
+	compile 'com.google.code.findbugs:jsr305'
+	compile 'com.google.jimfs:jimfs'
+	compile 'com.google.truth:truth'
+	compile 'junit:junit'
+}

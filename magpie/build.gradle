@@ -1,5 +1,12 @@
+description = 'Black Duck Software Magpie'
+
 dependencies {
-    compile 'com.google.code.findbugs:jsr305'
-    testCompile 'org.mockito:mockito-core'
-    testCompile 'com.google.guava:guava-testlib'
+	compile 'com.google.code.findbugs:jsr305'
+	compile 'com.google.guava:guava'
+
+	testCompile project(':magpie-test')
+	testCompile 'com.google.jimfs:jimfs'
+	testCompile 'com.google.truth:truth'
+	testCompile 'junit:junit'
+	testCompile 'org.mockito:mockito-core'
 }

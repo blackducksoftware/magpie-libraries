@@ -29,11 +29,6 @@ subprojects {
 	apply plugin: 'nebula.maven-publish'
 
 	sourceCompatibility = 1.8
-	
-	dependencies {
-		testCompile 'junit:junit'
-		testCompile 'com.google.truth:truth'
-	}
 
 	jar {
 		manifest {

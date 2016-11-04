@@ -1,1 +1,1 @@
-include 'magpie'
+include 'magpie', 'magpie-test'
