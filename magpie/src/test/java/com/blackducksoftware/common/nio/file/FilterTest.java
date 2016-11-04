@@ -16,6 +16,7 @@
 package com.blackducksoftware.common.nio.file;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.stream.Collectors.toList;
 
 import org.junit.Test;
 
@@ -24,40 +25,40 @@ public class FilterTest {
     @Test
     public void defaultPatternNormalizer_blank() {
         // For various definitions of blank
-        assertThat(Filter.defaultPatternNormalizer().apply("")).isEmpty();
-        assertThat(Filter.defaultPatternNormalizer().apply(" ")).isEmpty();
+        assertThat(Filter.defaultPatternNormalizer().apply("").collect(toList())).isEmpty();
+        assertThat(Filter.defaultPatternNormalizer().apply(" ").collect(toList())).isEmpty();
 
         // Ignore a more general definition of whitespace
-        assertThat(Filter.defaultPatternNormalizer().apply("\t")).isEmpty();
+        assertThat(Filter.defaultPatternNormalizer().apply("\t").collect(toList())).isEmpty();
     }
 
     @Test
     public void defaultPatternNormalizer_comment() {
         // Comment
-        assertThat(Filter.defaultPatternNormalizer().apply("# Test")).isEmpty();
+        assertThat(Filter.defaultPatternNormalizer().apply("# Test").collect(toList())).isEmpty();
 
         // Strict definition
-        assertThat(Filter.defaultPatternNormalizer().apply(" # Not comment")).isNotEmpty();
+        assertThat(Filter.defaultPatternNormalizer().apply(" # Not comment").collect(toList())).isNotEmpty();
 
         // Escaped
-        assertThat(Filter.defaultPatternNormalizer().apply("\\# Test")).containsExactly("# Test");
+        assertThat(Filter.defaultPatternNormalizer().apply("\\# Test").collect(toList())).containsExactly("# Test");
     }
 
     @Test
     public void defaultPatternNormalizer_trailingSpace() {
         // Trailing spaces
-        assertThat(Filter.defaultPatternNormalizer().apply("Foo ")).containsExactly("Foo");
-        assertThat(Filter.defaultPatternNormalizer().apply("Foo  ")).containsExactly("Foo");
+        assertThat(Filter.defaultPatternNormalizer().apply("Foo ").collect(toList())).containsExactly("Foo");
+        assertThat(Filter.defaultPatternNormalizer().apply("Foo  ").collect(toList())).containsExactly("Foo");
 
         // Not trailing whitespace
-        assertThat(Filter.defaultPatternNormalizer().apply("Foo\t")).containsExactly("Foo\t");
+        assertThat(Filter.defaultPatternNormalizer().apply("Foo\t").collect(toList())).containsExactly("Foo\t");
 
         // Escaped trailing spaces
-        assertThat(Filter.defaultPatternNormalizer().apply("Foo\\ ")).containsExactly("Foo ");
-        assertThat(Filter.defaultPatternNormalizer().apply("Foo\\ \\ ")).containsExactly("Foo  ");
+        assertThat(Filter.defaultPatternNormalizer().apply("Foo\\ ").collect(toList())).containsExactly("Foo ");
+        assertThat(Filter.defaultPatternNormalizer().apply("Foo\\ \\ ").collect(toList())).containsExactly("Foo  ");
 
         // Both trailing and escaped
-        assertThat(Filter.defaultPatternNormalizer().apply("Foo\\  ")).containsExactly("Foo ");
+        assertThat(Filter.defaultPatternNormalizer().apply("Foo\\  ").collect(toList())).containsExactly("Foo ");
     }
 
 }

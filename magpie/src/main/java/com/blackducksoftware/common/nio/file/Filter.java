@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -28,25 +29,20 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
+import com.blackducksoftware.common.base.ExtraCollectors;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Ordering;
 
 /**
  * A filtering mechanism based on Git conventions.
@@ -235,7 +231,7 @@ public class Filter {
      * The normalizer for processing raw patterns supplied by the user (either through exclude files or command line
      * options). If the pattern is meaningless, this function will map to an empty iterable.
      */
-    private final Function<String, Iterable<String>> patternNormalizer;
+    private final Function<String, Stream<String>> patternNormalizer;
 
     /**
      * The list of path matchers for this filter.
@@ -253,35 +249,35 @@ public class Filter {
     private final LoadingCache<Path, List<PatternPathMatcher>> perDirectoryMatchers = CacheBuilder.newBuilder()
             .build(new CacheLoader<Path, List<PatternPathMatcher>>() {
                 @Override
-                public List<PatternPathMatcher> load(final Path directory) throws Exception {
+                public List<PatternPathMatcher> load(final Path directory) {
                     // Turn patterns into path matchers
-                    return FluentIterable.from(patterns(directory))
-                            .transformAndConcat(patternNormalizer)
-                            .transform(new Function<String, PatternPathMatcher>() {
-                                @Override
-                                public PatternPathMatcher apply(String pattern) {
-                                    return PatternPathMatcher.create(pattern, directory);
-                                }
-                            })
-                            .toSortedList(Ordering.natural());
+                    return patterns(directory)
+                            .flatMap(patternNormalizer)
+                            .map(pattern -> PatternPathMatcher.create(pattern, directory))
+                            .sorted()
+                            .collect(ExtraCollectors.toImmutableList());
                 }
 
-                private Iterable<String> patterns(Path directory) throws IOException {
+                private Stream<String> patterns(Path directory) {
                     // Read all of the patterns from all of the existing exclude-per-directory files
-                    final List<Iterable<String>> patterns = new ArrayList<>(excludePerDirectoryNames.size() + 1);
-                    for (String name : excludePerDirectoryNames) {
-                        Path file = directory.resolve(name);
-                        if (Files.exists(file)) {
-                            patterns.add(Files.readAllLines(file, Charset.defaultCharset()));
-                        }
-                    }
+                    Stream<String> patterns = excludePerDirectoryNames.stream()
+                            .map(directory::resolve)
+                            .filter(Files::exists)
+                            .flatMap(file -> {
+                                try {
+                                    return Files.readAllLines(file, Charset.defaultCharset()).stream();
+                                } catch (IOException e) {
+                                    throw new UncheckedIOException(e);
+                                }
+                            });
 
                     // Recursively load parent patterns up to the root
                     final Path parent = directory.getParent();
                     if (parent != null && parent.startsWith(top)) {
-                        patterns.add(patterns(parent));
+                        return Stream.concat(patterns, patterns(parent));
+                    } else {
+                        return patterns;
                     }
-                    return Iterables.concat(patterns);
                 }
             });
 
@@ -290,7 +286,7 @@ public class Filter {
      */
     private final FilterPathMatcher pathMatcher = new FilterPathMatcher();
 
-    private Filter(Path top, Function<String, Iterable<String>> patternNormalizer) {
+    private Filter(Path top, Function<String, Stream<String>> patternNormalizer) {
         this.top = checkNotNull(top);
         this.patternNormalizer = checkNotNull(patternNormalizer);
         checkArgument(Files.isDirectory(top), "top must be a directory");
@@ -306,7 +302,7 @@ public class Filter {
     /**
      * Creates a new filter for matching paths within the specified top level directory.
      */
-    public static Filter create(Path top, Function<String, Iterable<String>> patternNormalizer) {
+    public static Filter create(Path top, Function<String, Stream<String>> patternNormalizer) {
         return new Filter(top, patternNormalizer);
     }
 
@@ -314,20 +310,23 @@ public class Filter {
      * Excludes files matching the specified pattern.
      */
     public final Filter exclude(String pattern) {
-        for (String rawPattern : normalize(ImmutableSet.of(pattern))) {
-            matchers.add(PatternPathMatcher.create(rawPattern, top));
-        }
-        Collections.sort(matchers);
-        return this;
+        return addMatches(Stream.of(pattern));
     }
 
     /**
      * Read exclude patterns from the specified file.
      */
     public final Filter excludeFrom(Path file) throws IOException {
-        for (String rawPattern : normalize(Files.readAllLines(file, Charset.defaultCharset()))) {
-            matchers.add(PatternPathMatcher.create(rawPattern, top));
-        }
+        return addMatches(Files.readAllLines(file, Charset.defaultCharset()).stream());
+    }
+
+    /**
+     * Add the normalized pattern matches.
+     */
+    private Filter addMatches(Stream<String> patterns) {
+        patterns.flatMap(patternNormalizer)
+                .map(pattern -> PatternPathMatcher.create(pattern, top))
+                .forEach(matchers::add);
         Collections.sort(matchers);
         return this;
     }
@@ -339,13 +338,6 @@ public class Filter {
         excludePerDirectoryNames.add(name);
         perDirectoryMatchers.invalidateAll();
         return this;
-    }
-
-    /**
-     * Apply pattern normalization to the supplied sequence of patterns.
-     */
-    private Iterable<String> normalize(Iterable<String> patterns) {
-        return FluentIterable.from(patterns).transformAndConcat(patternNormalizer);
     }
 
     /**
@@ -368,38 +360,35 @@ public class Filter {
      * This method will apply escapes, e.g. if this function returns a pattern that starts with a "#" or has trailing
      * spaces, it is because they were escaped in the input.
      */
-    public static Function<String, Iterable<String>> defaultPatternNormalizer() {
-        return new Function<String, Iterable<String>>() {
-            @Override
-            public Iterable<String> apply(@Nullable String line) {
-                // Skip blank lines and comments
-                if (line == null || CharMatcher.WHITESPACE.matchesAllOf(line) || line.charAt(0) == '#') {
-                    return ImmutableSet.of();
-                }
-
-                // Unescape comments
-                String pattern = line;
-                if (pattern.startsWith("\\#")) {
-                    pattern = pattern.substring(1);
-                }
-
-                // Remove unescaped trailing space
-                while (pattern.endsWith(" ") && !pattern.endsWith("\\ ")) {
-                    pattern = pattern.substring(0, pattern.length() - 1);
-                }
-
-                // Unescape trailing space
-                int trailingSpace = 0;
-                while (pattern.endsWith("\\ ")) {
-                    pattern = pattern.substring(0, pattern.length() - 2);
-                    trailingSpace++;
-                }
-                if (trailingSpace > 0) {
-                    pattern += Strings.repeat(" ", trailingSpace);
-                }
-
-                return ImmutableSet.of(pattern);
+    public static Function<String, Stream<String>> defaultPatternNormalizer() {
+        return line -> {
+            // Skip blank lines and comments
+            if (line == null || CharMatcher.WHITESPACE.matchesAllOf(line) || line.charAt(0) == '#') {
+                return Stream.empty();
             }
+
+            // Unescape comments
+            String pattern = line;
+            if (pattern.startsWith("\\#")) {
+                pattern = pattern.substring(1);
+            }
+
+            // Remove unescaped trailing space
+            while (pattern.endsWith(" ") && !pattern.endsWith("\\ ")) {
+                pattern = pattern.substring(0, pattern.length() - 1);
+            }
+
+            // Unescape trailing space
+            int trailingSpace = 0;
+            while (pattern.endsWith("\\ ")) {
+                pattern = pattern.substring(0, pattern.length() - 2);
+                trailingSpace++;
+            }
+            if (trailingSpace > 0) {
+                pattern += Strings.repeat(" ", trailingSpace);
+            }
+
+            return Stream.of(pattern);
         };
     }
 
