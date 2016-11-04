@@ -79,7 +79,7 @@ public class BundleControlEncodingTest {
      * {@code BundleControl} and the class loader of the test class.
      */
     protected static ResourceBundle getBundle(String name) {
-        return ResourceBundle.getBundle(name,
+        return ResourceBundle.getBundle(BundleControlEncodingTest.class.getPackage().getName() + '.' + name,
                 Locale.ROOT,
                 BundleControlEncodingTest.class.getClassLoader(),
                 BundleControl.create());
