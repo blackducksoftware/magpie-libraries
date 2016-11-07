@@ -37,6 +37,7 @@ public class ExtraCollectors {
      * {@code IllegalStateException}.
      */
     public static <E> Collector<E, ?, Optional<E>> getOnly() {
+        // https://plus.google.com/+LouisWasserman
         // http://stackoverflow.com/questions/22694884/filter-java-stream-to-1-and-only-1-element/22695424#22695424
         return Collector.of(
                 AtomicReference<E>::new,
@@ -62,6 +63,7 @@ public class ExtraCollectors {
      * Returns a collector which builds an {@code ImmutableList}.
      */
     public static <T> Collector<T, ImmutableList.Builder<T>, List<T>> toImmutableList() {
+        // http://jakewharton.com
         // https://gist.github.com/JakeWharton/9734167
         return Collector.of(
                 ImmutableList.Builder::new,
@@ -74,7 +76,6 @@ public class ExtraCollectors {
      * Returns a collector which builds an {@code ImmutableSet}.
      */
     public static <T> Collector<T, ImmutableSet.Builder<T>, Set<T>> toImmutableSet() {
-        // https://gist.github.com/JakeWharton/9734167
         return Collector.of(
                 ImmutableSet.Builder::new,
                 ImmutableSet.Builder::add,

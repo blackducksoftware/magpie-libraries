@@ -19,10 +19,16 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+/**
+ * Extra string utilities.
+ *
+ * @author jgustie
+ */
 public class ExtraStrings {
 
     /**
-     * Returns a string ensuring that it begins with the specified prefix, prepending it if necessary.
+     * Returns a string ensuring that it begins with the specified prefix. For example,
+     * {@code ensurePrefix("/", "/foo").equals("/foo")} and {@code ensurePrefix("/", "foo").equals("/foo")}.
      */
     @Nullable
     public static String ensurePrefix(CharSequence prefix, @Nullable CharSequence value) {
@@ -36,19 +42,19 @@ public class ExtraStrings {
         }
     }
 
+    /**
+     * Ensures that two strings are joined by with the specified delimiter. For example,
+     * {@code ensureDelimiter("foo", "/", "bar").equals("foo/bar")} as does
+     * {@code ensureDelimiter("foo/", "/", "bar").equals("foo/bar")} and
+     * {@code ensureDelimiter("foo", "/", "/bar").equals("foo/bar")}.
+     */
     public static String ensureDelimiter(@Nullable CharSequence start, CharSequence delimiter, @Nullable CharSequence end) {
         Objects.requireNonNull(delimiter);
         if (start == null && end == null) {
             return delimiter.toString();
         }
 
-        StringBuilder result = new StringBuilder((start != null ? start.length() : 0) + delimiter.length() + (end != null ? end.length() : 0));
-
-        boolean delimit = true;
-        if (start != null && startsWith(start, delimiter, start.length() - delimiter.length())) {
-            delimit = false;
-        }
-
+        boolean delimit = start == null || !startsWith(start, delimiter, start.length() - delimiter.length());
         int endOffset = 0;
         if (end != null && startsWith(end, delimiter, 0)) {
             if (delimit) {
@@ -58,6 +64,8 @@ public class ExtraStrings {
             }
         }
 
+        int len = (start != null ? start.length() : 0) + (delimit ? delimiter.length() : 0) + (end != null ? end.length() - endOffset : 0);
+        StringBuilder result = new StringBuilder(len);
         if (start != null) {
             result.append(start);
         }
@@ -70,6 +78,9 @@ public class ExtraStrings {
         return result.toString();
     }
 
+    /**
+     * Internal implementation for testing arbitrary character sequence prefixes.
+     */
     private static boolean startsWith(CharSequence value, CharSequence prefix, int offset) {
         int o = prefix.length();
         int pi = 0;
