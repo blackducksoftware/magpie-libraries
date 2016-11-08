@@ -120,7 +120,7 @@ public class Filter {
         @Override
         public final boolean matches(Path path) {
             // Relativize the path against the proper directory
-            final Path relativePath = directory.relativize(path);
+            Path relativePath = directory.relativize(path);
 
             // Match the full path name or the name segments
             boolean matches = false;
@@ -272,7 +272,7 @@ public class Filter {
                             });
 
                     // Recursively load parent patterns up to the root
-                    final Path parent = directory.getParent();
+                    Path parent = directory.getParent();
                     if (parent != null && parent.startsWith(top)) {
                         return Stream.concat(patterns, patterns(parent));
                     } else {

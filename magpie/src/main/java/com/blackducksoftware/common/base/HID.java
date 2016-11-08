@@ -16,7 +16,6 @@
 package com.blackducksoftware.common.base;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
 
@@ -138,7 +137,7 @@ public final class HID {
                     if (entryName.isEmpty()) {
                         return EMPTY_PATH;
                     }
-                    final boolean absolute = entryName.charAt(0) == '/';
+                    boolean absolute = entryName.charAt(0) == '/';
                     if (entryName.length() == 1 && (entryName.charAt(0) == '.' || absolute)) {
                         return EMPTY_PATH;
                     }
@@ -215,8 +214,8 @@ public final class HID {
      * Internal use only factory method.
      */
     private static HID create(String scheme, @Nullable String authority, @Nullable HID container, String entryName) {
-        checkNotNull(scheme);
-        final String[] path = PATHS.getUnchecked(entryName);
+        Objects.requireNonNull(scheme);
+        String[] path = PATHS.getUnchecked(entryName);
         if (container != null) {
             // Copy the container
             String[][] segments = Arrays.copyOf(container.segments, container.segments.length + 1);
@@ -247,7 +246,7 @@ public final class HID {
 
     public static HID from(URI uri) {
         checkArgument(uri.isAbsolute(), "URI must be absolute: '%s'", uri);
-        final String scheme = uri.getScheme().toLowerCase();
+        String scheme = uri.getScheme().toLowerCase();
         if (BLACK_DUCK_SCHEMES.contains(scheme) && uri.getFragment() != null) {
             // Black Duck schemes use "<scheme>:<archiveUri>#<entryName>" for URIs
             // THESE SCHEMES MAY HAVE FRAGMENTS THAT DO NOT START WITH "/"
@@ -375,7 +374,7 @@ public final class HID {
      */
     @Nullable
     public HID getParent() {
-        final int depth = depth();
+        int depth = depth();
         if (depth > 0) {
             return new HID(schemes, authorities, segments, nesting(), depth - 1);
         } else {
@@ -430,7 +429,7 @@ public final class HID {
      */
     public boolean isAncestor(HID other) {
         // Compare all but the last segment (which is allowed to be different)
-        final int otherNesting = other.nesting();
+        int otherNesting = other.nesting();
         for (int i = 0; i < otherNesting; ++i) {
             if (!Arrays.equals(segments[i], other.segments[i])) {
                 return false;
@@ -443,7 +442,7 @@ public final class HID {
         }
 
         // Compare all segments at the other nesting level
-        final int otherDepth = other.depth();
+        int otherDepth = other.depth();
         for (int i = 0; i < otherDepth; ++i) {
             if (!segments[otherNesting][i].equals(other.segments[otherNesting][i])) {
                 return false;

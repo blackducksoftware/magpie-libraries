@@ -202,7 +202,7 @@ public final class KeyPairStore {
             } else if (protection instanceof CallbackHandlerProtection) {
                 // Use the callback handler to resolve a password
                 // TODO i18n?
-                final PasswordCallback callback = new PasswordCallback("Password for key " + keyFile.getFileName(), false);
+                PasswordCallback callback = new PasswordCallback("Password for key " + keyFile.getFileName(), false);
                 try {
                     ((CallbackHandlerProtection) protection).getCallbackHandler().handle(new Callback[] { callback });
                     char[] password = callback.getPassword();
@@ -286,7 +286,7 @@ public final class KeyPairStore {
         @Override
         public void engineLoad(LoadStoreParameter param) throws IOException, NoSuchAlgorithmException, CertificateException {
             if (param instanceof KeyPairStoreLoadStoreParameter) {
-                final KeyPairStoreLoadStoreParameter simpleParam = (KeyPairStoreLoadStoreParameter) param;
+                KeyPairStoreLoadStoreParameter simpleParam = (KeyPairStoreLoadStoreParameter) param;
 
                 // Load the private key material
                 checkPrivateKeyPermissions(simpleParam.getKeyPath());
@@ -513,7 +513,7 @@ public final class KeyPairStore {
         // There was a "-----" somewhere, assume RFC 7468 textual encoding
         List<String> base64 = null;
         String label = null;
-        final Map<String, String> properties = new LinkedHashMap<>();
+        Map<String, String> properties = new LinkedHashMap<>();
         try {
             for (String line : ByteSource.wrap(keyMaterial).asCharSource(StandardCharsets.US_ASCII).readLines()) {
                 line = line.trim();
@@ -545,7 +545,7 @@ public final class KeyPairStore {
             throw new InvalidKeySpecException("unable to find encapsulated data");
         }
 
-        final byte[] encodedKey = BaseEncoding.base64().decode(Joiner.on("").join(base64));
+        byte[] encodedKey = BaseEncoding.base64().decode(Joiner.on("").join(base64));
         return pemKeySpec(encodedKey, label, properties, password);
     }
 
@@ -619,14 +619,14 @@ public final class KeyPairStore {
      * Reads the private key algorithm from the encoded PKCS #8 private key info structure.
      */
     private static String pkcs8PrivateKeyAlgorithm(PKCS8EncodedKeySpec keySpec) throws InvalidKeySpecException, NoSuchAlgorithmException {
-        final ByteBuffer encoded = ByteBuffer.wrap(keySpec.getEncoded());
+        ByteBuffer encoded = ByteBuffer.wrap(keySpec.getEncoded());
         expectTag(encoded, (byte) 0x30);
         if (expectTag(encoded, (byte) 0x02) != 1 || encoded.get() != 0) {
             throw new InvalidKeySpecException("PKCS #8 private key info, expected version 0");
         }
         expectTag(encoded, (byte) 0x30);
-        final int len = expectTag(encoded, (byte) 0x06);
-        final String oid = readOid((ByteBuffer) encoded.slice().limit(len));
+        int len = expectTag(encoded, (byte) 0x06);
+        String oid = readOid((ByteBuffer) encoded.slice().limit(len));
         encoded.position(encoded.position() + len);
 
         return oidToJcaAlgorithm(oid);
@@ -636,7 +636,7 @@ public final class KeyPairStore {
      * Reads the key encryption algorithm from the encrypted PKCS #8 encrypted private key info structure.
      */
     private static String algorithmName(EncryptedPrivateKeyInfo privateKeyInfo) throws NoSuchAlgorithmException {
-        final String algName = privateKeyInfo.getAlgName();
+        String algName = privateKeyInfo.getAlgName();
         switch (algName) {
         case "1.2.840.113549.1.5.13":
             // TODO Can we support this?
@@ -750,9 +750,9 @@ public final class KeyPairStore {
     private static Cipher generateOpenSSLCipher(String procType, String dekInfo, char[] password)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
         // Split the SSLeay properties up
-        final List<String> dekInfos = Splitter.on(',').trimResults().limit(2).splitToList(Strings.nullToEmpty(dekInfo));
-        final List<String> opensslAlgorithm = Splitter.on('-').splitToList(dekInfos.get(0).toUpperCase());
-        final byte[] iv = BaseEncoding.base16().decode(dekInfos.get(1)); // TODO Is this optional?
+        List<String> dekInfos = Splitter.on(',').trimResults().limit(2).splitToList(Strings.nullToEmpty(dekInfo));
+        List<String> opensslAlgorithm = Splitter.on('-').splitToList(dekInfos.get(0).toUpperCase());
+        byte[] iv = BaseEncoding.base16().decode(dekInfos.get(1)); // TODO Is this optional?
         if (opensslAlgorithm.isEmpty()) {
             throw new NoSuchAlgorithmException("UNKNOWN (DEK-Info: " + dekInfo + ")");
         }
@@ -796,8 +796,8 @@ public final class KeyPairStore {
             mode = padding = null;
         }
 
-        final byte[] secret = new byte[keySize / 8];
-        final byte[] encodedPassword = new String(password).getBytes(StandardCharsets.ISO_8859_1);
+        byte[] secret = new byte[keySize / 8];
+        byte[] encodedPassword = new String(password).getBytes(StandardCharsets.ISO_8859_1);
         Hasher hasher = Hashing.md5().newHasher();
         int pos = 0;
         while (pos < secret.length) {

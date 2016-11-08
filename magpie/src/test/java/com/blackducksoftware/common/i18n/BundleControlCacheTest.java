@@ -44,8 +44,8 @@ public class BundleControlCacheTest {
     public void testCaching() throws IOException {
         final Path directory = Files.createTempDirectory(getClass().getName() + "#testCaching");
         try {
-            final ClassLoader loader = new URLClassLoader(new URL[] { directory.toUri().toURL() });
-            final Properties properties = new Properties();
+            ClassLoader loader = new URLClassLoader(new URL[] { directory.toUri().toURL() });
+            Properties properties = new Properties();
 
             // Write out a properties file that contains 'test=foo'
             properties.setProperty("test", "foo");

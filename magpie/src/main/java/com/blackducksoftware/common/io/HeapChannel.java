@@ -77,9 +77,9 @@ public class HeapChannel implements SeekableByteChannel {
     public int write(ByteBuffer src) throws ClosedChannelException {
         Objects.requireNonNull(src);
         requireOpen();
-        final int start = pos;
+        int start = pos;
         // TODO Int overflow
-        final int end = start + src.remaining();
+        int end = start + src.remaining();
         if (end > buf.length) {
             buf = Arrays.copyOf(buf, end);
         }
