@@ -65,4 +65,11 @@ public class HeapOutputStream extends ByteArrayOutputStream {
         return new HeapInputStream(buf, 0, count);
     }
 
+    /**
+     * Creates a new read-only byte buffer from the current contents written to this output stream.
+     */
+    public synchronized ByteBuffer toByteBuffer() {
+        return ByteBuffer.wrap(buf, 0, count).asReadOnlyBuffer();
+    }
+
 }
