@@ -43,8 +43,8 @@ public class PathSubject extends Subject<PathSubject, Path> {
      * <p>
      * This will be removed when Truth is fixed.
      */
-    public static PathSubject assertThatPath(Path target) {
-        return Truth.assertAbout(FACTORY).that(target);
+    public static SubjectFactory<PathSubject, Path> paths() {
+        return FACTORY;
     }
 
     /**
@@ -52,12 +52,14 @@ public class PathSubject extends Subject<PathSubject, Path> {
      * <p>
      * This will be removed when Truth is fixed.
      */
-    public static SubjectFactory<PathSubject, Path> paths() {
-        return FACTORY;
+    public static PathSubject assertThat(Path target) {
+        return Truth.assertAbout(paths()).that(target);
     }
 
-    private PathSubject(FailureStrategy failureStrategy, Path subject) {
-        super(failureStrategy, subject);
+    private PathSubject(FailureStrategy failureStrategy, Path actual) {
+        super(failureStrategy, actual);
     }
+
+    // NOTE: This is really just to resolve compilation ambiguity, we can wait for #172
 
 }

@@ -36,27 +36,27 @@ public class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuffer> {
         }
     };
 
-    public static ByteBufferSubject assertThatByteBuffer(ByteBuffer target) {
-        return Truth.assertAbout(FACTORY).that(target);
-    }
-
     public static SubjectFactory<ByteBufferSubject, ByteBuffer> byteBuffers() {
         return FACTORY;
     }
 
-    private ByteBufferSubject(FailureStrategy failureStrategy, ByteBuffer subject) {
-        super(failureStrategy, subject);
+    public static ByteBufferSubject assertThat(ByteBuffer target) {
+        return Truth.assertAbout(byteBuffers()).that(target);
+    }
+
+    private ByteBufferSubject(FailureStrategy failureStrategy, ByteBuffer actual) {
+        super(failureStrategy, actual);
     }
 
     public void hasNextBytes(byte... expected) {
-        if (getSubject() == null) {
+        if (actual() == null) {
             fail("hasNextBytes", expected);
-        } else if (getSubject().remaining() < expected.length) {
+        } else if (actual().remaining() < expected.length) {
             fail("hasNextBytes", expected);
         } else {
-            final int off = getSubject().position();
+            final int off = actual().position();
             for (int i = 0; i < expected.length; ++i) {
-                if (getSubject().get(off + i) != expected[i]) {
+                if (actual().get(off + i) != expected[i]) {
                     fail("hasNextBytes", expected);
                 }
             }
