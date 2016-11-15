@@ -15,6 +15,9 @@
  */
 package com.blackducksoftware.common.base;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.BitSet;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +44,7 @@ public class ExtraEnums {
     /**
      * Returns the string representations for the supplied enumerated values.
      */
+    @SafeVarargs
     public static <E extends Enum<E>> List<String> stringValues(E... enumValues) {
         return Stream.of(enumValues).map(Enum::toString).collect(ExtraCollectors.toImmutableList());
     }
@@ -62,6 +66,7 @@ public class ExtraEnums {
     /**
      * Returns the unique string representations for the supplied enumerated values.
      */
+    @SafeVarargs
     public static <E extends Enum<E>> Set<String> uniqueStringValues(E... enumValues) {
         return Stream.of(enumValues).map(Enum::toString).collect(ExtraCollectors.toImmutableSet());
     }
@@ -83,6 +88,7 @@ public class ExtraEnums {
     /**
      * Returns the names for the supplied enumerated values.
      */
+    @SafeVarargs
     public static <E extends Enum<E>> Set<String> names(E... enumValues) {
         return Stream.of(enumValues).map(Enum::name).collect(ExtraCollectors.toImmutableSet());
     }
@@ -94,12 +100,39 @@ public class ExtraEnums {
         return StreamSupport.stream(enumValues.spliterator(), false).map(Enum::name).collect(ExtraCollectors.toImmutableSet());
     }
 
-    // TODO Int limits us to 32 enum values.
+    /**
+     * Returns a set of enum constants whose ordinals correspond to the set bit positions in the supplied integer value.
+     * This requires that the enum constants be defined in a fixed, well-known order; before trying to use this method,
+     * be sure that precautions are taken to ensure that enum declarations are stable.
+     * <p>
+     * This method only works for enums with no more then 64 constants, for larger enums use
+     * {@link #fromBitSet(Class, BitSet)}.
+     */
     @Beta
-    public static <E extends Enum<E>> EnumSet<E> fromBitSet(Class<E> enumClass, int bitSet) {
+    public static <E extends Enum<E>> EnumSet<E> fromBitSet(Class<E> enumClass, long bitSet) {
+        E[] enumConstants = enumClass.getEnumConstants();
+        checkArgument(enumConstants.length <= 64, "jumbo enum, use BitSet instead long: %s", enumClass.getName());
+        // TODO Check position of leftmost bit compared to the length?
+
+        EnumSet<E> result = EnumSet.noneOf(enumClass);
+        for (E value : enumConstants) {
+            if ((bitSet & (1L << value.ordinal())) != 0) {
+                result.add(value);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a set of enum constants whose ordinals correspond to the set bit positions in the supplied bit set.
+     * This requires that the enum constants be defined in a fixed, well-known order; before trying to use this method,
+     * be sure that precautions are taken to ensure that enum declarations are stable.
+     */
+    @Beta
+    public static <E extends Enum<E>> EnumSet<E> fromBitSet(Class<E> enumClass, BitSet bitSet) {
         EnumSet<E> result = EnumSet.noneOf(enumClass);
         for (E value : enumClass.getEnumConstants()) {
-            if ((bitSet & 1 << value.ordinal()) != 0) {
+            if (bitSet.get(value.ordinal())) {
                 result.add(value);
             }
         }

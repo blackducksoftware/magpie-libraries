@@ -46,6 +46,19 @@ public class ExtraEnumsTest {
         }
     }
 
+    public enum TestJumboEnum {
+        ENUM_00, ENUM_01, ENUM_02, ENUM_03, ENUM_04, ENUM_05, ENUM_06, ENUM_07,
+        ENUM_08, ENUM_09, ENUM_0A, ENUM_0B, ENUM_0C, ENUM_0D, ENUM_0E, ENUM_0F,
+        ENUM_10, ENUM_11, ENUM_12, ENUM_13, ENUM_14, ENUM_15, ENUM_16, ENUM_17,
+        ENUM_18, ENUM_19, ENUM_1A, ENUM_1B, ENUM_1C, ENUM_1D, ENUM_1E, ENUM_1F,
+        ENUM_20, ENUM_21, ENUM_22, ENUM_23, ENUM_24, ENUM_25, ENUM_26, ENUM_27,
+        ENUM_28, ENUM_29, ENUM_2A, ENUM_2B, ENUM_2C, ENUM_2D, ENUM_2E, ENUM_2F,
+        ENUM_30, ENUM_31, ENUM_32, ENUM_33, ENUM_34, ENUM_35, ENUM_36, ENUM_37,
+        ENUM_38, ENUM_39, ENUM_3A, ENUM_3B, ENUM_3C, ENUM_3D, ENUM_3E, ENUM_3F,
+        ENUM_40, ENUM_41, ENUM_42, ENUM_43, ENUM_44, ENUM_45, ENUM_46, ENUM_47,
+        ENUM_48, ENUM_49, ENUM_4A, ENUM_4B, ENUM_4C, ENUM_4D, ENUM_4E, ENUM_4F;
+    }
+
     @Test
     public void stringValues_all() {
         assertThat(ExtraEnums.stringValues(TestEnum.class)).containsExactly("0", "1", "2").inOrder();
@@ -89,6 +102,16 @@ public class ExtraEnumsTest {
     @Test
     public void names_some() {
         assertThat(ExtraEnums.names(TestEnum.ENUM_1, TestEnum.ENUM_2)).containsExactly("ENUM_1", "ENUM_2");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromBitSet_jumboLong() {
+        ExtraEnums.fromBitSet(TestJumboEnum.class, 0L);
+    }
+
+    @Test
+    public void fromBitSet_long() {
+        assertThat(ExtraEnums.fromBitSet(TestEnum.class, 0x07)).containsAllOf(TestEnum.ENUM_0, TestEnum.ENUM_1, TestEnum.ENUM_2);
     }
 
 }
