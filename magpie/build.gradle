@@ -11,3 +11,9 @@ dependencies {
 	testCompile 'junit:junit'
 	testCompile 'org.mockito:mockito-core'
 }
+
+tasks.withType(JavaCompile) {
+	// Disable insecure crypto usage because we are passing algorithm names extracted 
+	// from encoded keys as variables to the JCA factory methods.
+	options.compilerArgs += [ '-Xep:InsecureCryptoUsage:OFF' ]
+}

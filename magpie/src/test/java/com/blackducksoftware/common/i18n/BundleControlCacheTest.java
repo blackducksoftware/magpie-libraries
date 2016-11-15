@@ -17,11 +17,11 @@ package com.blackducksoftware.common.i18n;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,7 +49,7 @@ public class BundleControlCacheTest {
 
             // Write out a properties file that contains 'test=foo'
             properties.setProperty("test", "foo");
-            try (Writer out = new FileWriter(directory.resolve("test.properties").toFile())) {
+            try (Writer out = Files.newBufferedWriter(directory.resolve("test.properties"), Charset.defaultCharset())) {
                 properties.store(out, null);
             }
 
@@ -59,7 +59,7 @@ public class BundleControlCacheTest {
 
             // Overwrite the properties file with 'test=bar'
             properties.setProperty("test", "bar");
-            try (Writer out = new FileWriter(directory.resolve("test.properties").toFile())) {
+            try (Writer out = Files.newBufferedWriter(directory.resolve("test.properties"), Charset.defaultCharset())) {
                 properties.store(out, null);
             }
 

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -487,7 +488,7 @@ public final class KeyPairStore {
         try {
             // Decrypt the private key using the password in the platforms default character encoding
             EncryptedPrivateKeyInfo privateKeyInfo = new EncryptedPrivateKeyInfo(keyMaterial);
-            Key decryptKey = new SecretKeySpec(new String(password).getBytes(), algorithmName(privateKeyInfo));
+            Key decryptKey = new SecretKeySpec(new String(password).getBytes(Charset.defaultCharset()), algorithmName(privateKeyInfo));
             return privateKeyInfo.getKeySpec(decryptKey);
         } catch (IOException e) {
             // TODO Just like "bad padding", an incorrect password manifests itself as overrun?
@@ -582,7 +583,7 @@ public final class KeyPairStore {
             if (password != null) {
                 try {
                     EncryptedPrivateKeyInfo privateKeyInfo = new EncryptedPrivateKeyInfo(encodedKey);
-                    Key decryptKey = new SecretKeySpec(new String(password).getBytes(), algorithmName(privateKeyInfo));
+                    Key decryptKey = new SecretKeySpec(new String(password).getBytes(Charset.defaultCharset()), algorithmName(privateKeyInfo));
                     return privateKeyInfo.getKeySpec(decryptKey);
                 } catch (NoSuchAlgorithmException e) {
                     throw (UnrecoverableKeyException) new UnrecoverableKeyException("unsupported key encryption algorithm").initCause(e);
