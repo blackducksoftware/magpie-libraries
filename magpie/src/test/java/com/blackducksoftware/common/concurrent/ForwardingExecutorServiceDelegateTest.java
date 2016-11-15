@@ -15,7 +15,7 @@
  */
 package com.blackducksoftware.common.concurrent;
 
-import static org.mockito.Mockito.mock;
+import static org.junit.Assume.assumeNotNull;
 import static org.mockito.Mockito.verify;
 
 import java.util.Collection;
@@ -23,7 +23,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import com.blackducksoftware.common.concurrent.ForwardingExecutorService.SimpleForwardingExecutorService;
 import com.google.common.collect.ImmutableList;
@@ -33,13 +36,25 @@ import com.google.common.collect.ImmutableList;
  *
  * @author jgustie
  */
-public class ForwardingExecutorServiceTest {
+public class ForwardingExecutorServiceDelegateTest {
+
+    @Mock
+    private ExecutorService mockedExecutorService;
+
+    @Mock
+    private Callable<Void> callableTask;
+
+    @Mock
+    private Runnable runnableTask;
+
+    @Before
+    public void initMocks() {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test
-    public void testKnownDelegateMethods() throws Exception {
-        ExecutorService mockedExecutorService = mock(ExecutorService.class);
-        Callable<Void> callableTask = mock(Callable.class);
-        Runnable runnableTask = mock(Runnable.class);
+    public void allKnownDelegateMethods() throws Exception {
+        assumeNotNull(mockedExecutorService, callableTask, runnableTask);
         Collection<Callable<Void>> callableTasks = ImmutableList.of(callableTask);
         ExecutorService forwardingExecutorService = new SimpleForwardingExecutorService(mockedExecutorService) {
         };
@@ -72,7 +87,5 @@ public class ForwardingExecutorServiceTest {
         verify(mockedExecutorService).invokeAny(callableTasks);
         verify(mockedExecutorService).invokeAny(callableTasks, 0, TimeUnit.MILLISECONDS);
     }
-
-    // TODO Verify wrapping
 
 }
