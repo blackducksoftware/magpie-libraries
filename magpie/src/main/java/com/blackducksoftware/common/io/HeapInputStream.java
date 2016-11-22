@@ -17,6 +17,7 @@ package com.blackducksoftware.common.io;
 
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SeekableByteChannel;
 
 /**
@@ -55,12 +56,20 @@ public class HeapInputStream extends ByteArrayInputStream {
     }
 
     /**
-     * Returns this input stream as a channel. Does not copy the contents.
+     * Returns this input stream as a read-only channel. Does not copy the contents. If you require a writable channel,
+     * create a new {@link HeapChannel} first; then use
+     * {@link java.nio.channels.Channels#newInputStream(java.nio.channels.ReadableByteChannel) Channels.newInputStream}
+     * to get the input stream.
      */
     public SeekableByteChannel getChannel() {
-        @SuppressWarnings("resource")
-        HeapChannel heapChannel = new HeapChannel(buf, offset, count);
-        return heapChannel.position(pos - offset);
+        try {
+            @SuppressWarnings("resource")
+            HeapChannel heapChannel = new HeapChannel(buf, offset, count);
+            return heapChannel.position(pos - offset);
+        } catch (ClosedChannelException e) {
+            // We just created the channel, it can't be closed
+            throw new IllegalStateException(e);
+        }
     }
 
 }

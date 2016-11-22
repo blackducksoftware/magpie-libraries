@@ -22,6 +22,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
+import com.google.common.base.Optional;
+import com.google.common.io.ByteSource;
+
 /**
  * An extension of the standard byte array output stream that exposes more ways to access the written content.
  *
@@ -46,20 +49,25 @@ public class HeapOutputStream extends ByteArrayOutputStream {
 
     /**
      * Transfers the contents written to this output stream into another writable channel.
+     *
+     * @deprecated Use {@code channel.write(hos.toByteBuffer())} instead.
      */
+    @Deprecated
     public synchronized void transferTo(WritableByteChannel channel) throws IOException {
-        channel.write(ByteBuffer.wrap(buf, 0, count).asReadOnlyBuffer());
+        channel.write(toByteBuffer());
     }
 
     /**
      * Creates a new seekable channel from the current contents written to this output stream.
      */
     public synchronized SeekableByteChannel getChannel() {
+        // FIXME This exposes write access to the underlying buffer
         return new HeapChannel(buf, 0, count);
     }
 
     /**
-     * Creates a new input stream from the current contents written to this output stream.
+     * Creates a new input stream from the current contents written to this output stream. If additional content is
+     * written to this stream after invocation, it will not be reflected by the returned stream.
      */
     public synchronized InputStream getInputStream() {
         return new HeapInputStream(buf, 0, count);
@@ -70,6 +78,28 @@ public class HeapOutputStream extends ByteArrayOutputStream {
      */
     public synchronized ByteBuffer toByteBuffer() {
         return ByteBuffer.wrap(buf, 0, count).asReadOnlyBuffer();
+    }
+
+    /**
+     * Returns a byte source which can provide access to the contents written to this output stream.
+     */
+    public synchronized ByteSource asByteSource() {
+        return new ByteSource() {
+            @Override
+            public InputStream openStream() throws IOException {
+                return getInputStream();
+            }
+
+            @Override
+            public InputStream openBufferedStream() throws IOException {
+                return getInputStream();
+            }
+
+            @Override
+            public Optional<Long> sizeIfKnown() {
+                return Optional.of(Long.valueOf(count));
+            }
+        };
     }
 
 }
