@@ -27,7 +27,7 @@ import com.google.common.truth.Truth;
  *
  * @author jgustie
  */
-public class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuffer> {
+public final class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuffer> {
 
     private static final SubjectFactory<ByteBufferSubject, ByteBuffer> FACTORY = new SubjectFactory<ByteBufferSubject, ByteBuffer>() {
         @Override
@@ -45,7 +45,18 @@ public class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuffer> {
     }
 
     private ByteBufferSubject(FailureStrategy failureStrategy, ByteBuffer actual) {
+        // TODO Use slice so we don't mess with the actual buffer's state?
         super(failureStrategy, actual);
+    }
+
+    @Override
+    protected String actualCustomStringRepresentation() {
+        if (actual() != null) {
+            return String.format("%s[pos=%d lim=%d cap=%d]",
+                    actual().getClass().getSimpleName(), actual().position(), actual().limit(), actual().capacity());
+        } else {
+            return "null";
+        }
     }
 
     public void hasNextBytes(byte... expected) {
@@ -60,6 +71,12 @@ public class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuffer> {
                     fail("hasNextBytes", expected);
                 }
             }
+        }
+    }
+
+    public void hasRemaining(int remaining) {
+        if (actual().remaining() != remaining) {
+            failWithBadResults("has remaining", remaining, "has", actual().remaining());
         }
     }
 
