@@ -17,11 +17,14 @@ package com.blackducksoftware.common.io;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
+import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
 
 import com.google.common.annotations.Beta;
 
@@ -32,10 +35,7 @@ import com.google.common.annotations.Beta;
  */
 public class HeapChannel implements SeekableByteChannel {
 
-    private final AtomicBoolean closed = new AtomicBoolean();
-
-    // TODO Replace this with Set<OpenOption>?
-    private final boolean readOnly;
+    private final Set<StandardOpenOption> openOptions;
 
     private byte[] buf;
 
@@ -48,11 +48,10 @@ public class HeapChannel implements SeekableByteChannel {
     /**
      * Creates a new channel with the specified initial buffer size.
      */
-    // TODO Should we have a HeapChannel(OpenOption ...options) constructor instead?
     @Beta
     public HeapChannel(int size) {
+        openOptions = EnumSet.of(StandardOpenOption.READ, StandardOpenOption.WRITE);
         buf = new byte[size];
-        readOnly = false;
     }
 
     /**
@@ -66,28 +65,28 @@ public class HeapChannel implements SeekableByteChannel {
      * Creates a read-only channel from the supplied byte range.
      */
     public HeapChannel(byte[] buf, int off, int len) {
+        openOptions = EnumSet.of(StandardOpenOption.READ);
         this.buf = buf;
         this.off = off;
         count = Math.min(off + len, buf.length);
-        readOnly = true;
     }
 
     @Override
     public boolean isOpen() {
-        return !closed.get();
+        return !openOptions.isEmpty();
     }
 
     @Override
     public void close() {
-        closed.set(true);
+        openOptions.clear();
     }
 
     @Override
     public int read(ByteBuffer dst) throws ClosedChannelException {
         Objects.requireNonNull(dst);
-        requireOpen();
+        requireOpen(StandardOpenOption.READ);
         if (pos < count) {
-            int len = Math.min(dst.remaining(), count - pos);
+            int len = Math.min(dst.remaining(), count - off - pos);
             dst.put(buf, off + pos, len);
             pos += len;
             return len;
@@ -99,13 +98,11 @@ public class HeapChannel implements SeekableByteChannel {
     @Override
     public int write(ByteBuffer src) throws ClosedChannelException, NonWritableChannelException {
         Objects.requireNonNull(src);
-        requireOpen();
-        requireWritable();
+        requireOpen(StandardOpenOption.WRITE);
         int start = pos;
         // TODO Int overflow
         int end = start + src.remaining();
         if (end > buf.length) {
-            // TODO Open option contains APPEND?
             buf = Arrays.copyOf(buf, end);
         }
         src.get(buf, start, end - start);
@@ -135,13 +132,12 @@ public class HeapChannel implements SeekableByteChannel {
 
     @Override
     public long size() {
-        return count;
+        return count - off;
     }
 
     @Override
     public HeapChannel truncate(long size) throws ClosedChannelException {
-        requireWritable();
-        requireOpen();
+        requireOpen(StandardOpenOption.WRITE);
         if (size < 0L) {
             throw new IllegalArgumentException("size must be non-negative");
         } else if (size < Integer.MAX_VALUE) {
@@ -155,15 +151,21 @@ public class HeapChannel implements SeekableByteChannel {
         return this;
     }
 
-    private void requireOpen() throws ClosedChannelException {
-        if (closed.get()) {
+    private void requireOpen(StandardOpenOption... options)
+            throws ClosedChannelException, NonReadableChannelException, NonWritableChannelException {
+        if (openOptions.isEmpty()) {
             throw new ClosedChannelException();
-        }
-    }
-
-    private void requireWritable() throws NonWritableChannelException {
-        if (readOnly) {
-            throw new NonWritableChannelException();
+        } else {
+            for (StandardOpenOption option : options) {
+                if (!openOptions.contains(option)) {
+                    switch (option) {
+                    case READ:
+                        throw new NonReadableChannelException();
+                    case WRITE:
+                        throw new NonWritableChannelException();
+                    }
+                }
+            }
         }
     }
 }
