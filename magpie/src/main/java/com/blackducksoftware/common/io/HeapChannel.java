@@ -165,6 +165,8 @@ public class HeapChannel implements SeekableByteChannel {
                         throw new NonReadableChannelException();
                     case WRITE:
                         throw new NonWritableChannelException();
+                    default:
+                        throw new IllegalStateException("unsupported open option: " + option);
                     }
                 }
             }
