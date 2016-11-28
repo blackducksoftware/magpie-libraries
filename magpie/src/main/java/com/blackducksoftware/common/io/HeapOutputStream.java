@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.channels.WritableByteChannel;
 
 import com.google.common.base.Optional;
 import com.google.common.io.ByteSource;
@@ -48,20 +47,9 @@ public class HeapOutputStream extends ByteArrayOutputStream {
     }
 
     /**
-     * Transfers the contents written to this output stream into another writable channel.
-     *
-     * @deprecated Use {@code channel.write(hos.toByteBuffer())} instead.
-     */
-    @Deprecated
-    public synchronized void transferTo(WritableByteChannel channel) throws IOException {
-        channel.write(toByteBuffer());
-    }
-
-    /**
      * Creates a new seekable channel from the current contents written to this output stream.
      */
     public synchronized SeekableByteChannel getChannel() {
-        // FIXME This exposes write access to the underlying buffer
         return new HeapChannel(buf, 0, count);
     }
 
