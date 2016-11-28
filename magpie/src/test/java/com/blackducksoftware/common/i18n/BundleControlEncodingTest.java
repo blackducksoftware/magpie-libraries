@@ -16,18 +16,13 @@
 package com.blackducksoftware.common.i18n;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assert_;
 
-import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -49,19 +44,6 @@ import org.junit.runners.Parameterized.Parameters;
 public class BundleControlEncodingTest {
 
     /**
-     * The default character set before this class starts running.
-     */
-    private static Charset defaultCharset;
-
-    /**
-     * Captures the default character set so we can change it for testing.
-     */
-    @BeforeClass
-    public static void captureDefaultCharset() {
-        defaultCharset = Charset.defaultCharset();
-    }
-
-    /**
      * This is a very small subset of characters that are often encoded differently.
      */
     @Parameters
@@ -78,33 +60,11 @@ public class BundleControlEncodingTest {
      * Loads the specified bundle from the {@linkplain Locale#ROOT root locale} using the
      * {@code BundleControl} and the class loader of the test class.
      */
-    protected static ResourceBundle getBundle(String name) {
-        return ResourceBundle.getBundle(BundleControlEncodingTest.class.getPackage().getName() + '.' + name,
+    protected static ResourceBundle getEncodedBundle(String charsetName) {
+        return ResourceBundle.getBundle(BundleControlEncodingTest.class.getPackage().getName() + '.' + charsetName,
                 Locale.ROOT,
                 BundleControlEncodingTest.class.getClassLoader(),
-                BundleControl.create());
-    }
-
-    /**
-     * Clears the default character set so the {@code file.encoding} property will be re-read.
-     */
-    @Before
-    public void unsetDefaultCharset() throws ReflectiveOperationException {
-        Field defaultCharset = Charset.class.getDeclaredField("defaultCharset");
-        defaultCharset.setAccessible(true);
-        defaultCharset.set(null, null);
-    }
-
-    /**
-     * Restores the default character set observed before any of the tests ran.
-     */
-    @After
-    public void restoreDefaultCharset() throws ReflectiveOperationException {
-        System.setProperty("file.encoding", defaultCharset.name());
-        unsetDefaultCharset();
-        assert_().withFailureMessage("unable to restore default charset")
-                .that(Charset.defaultCharset())
-                .isEqualTo(defaultCharset);
+                new BundleControl(Charset.forName(charsetName)));
     }
 
     // =============================================================================================
@@ -117,26 +77,18 @@ public class BundleControlEncodingTest {
     }
 
     @Test
-    public void testDefaultEncoding() {
-        assertThat(getBundle(Charset.defaultCharset().name()).getString(key)).isEqualTo(value);
-    }
-
-    @Test
     public void testUtf8Encoding() {
-        System.setProperty("file.encoding", "UTF-8");
-        assertThat(getBundle("UTF-8").getString(key)).isEqualTo(value);
+        assertThat(getEncodedBundle("UTF-8").getString(key)).isEqualTo(value);
     }
 
     @Test
     public void testIso88591Encoding() {
-        System.setProperty("file.encoding", "ISO-8859-1");
-        assertThat(getBundle("ISO-8859-1").getString(key)).isEqualTo(value);
+        assertThat(getEncodedBundle("ISO-8859-1").getString(key)).isEqualTo(value);
     }
 
     @Test
     public void testWindows1252Encoding() {
-        System.setProperty("file.encoding", "windows-1252");
-        assertThat(getBundle("windows-1252").getString(key)).isEqualTo(value);
+        assertThat(getEncodedBundle("windows-1252").getString(key)).isEqualTo(value);
     }
 
 }

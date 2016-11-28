@@ -21,27 +21,38 @@ import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
- * An alternate resource bundle control which has better control over character encoding.
+ * An alternate resource bundle control which has better control over character encoding. And by "better control" we
+ * mean you get UTF-8.
  *
  * @author jgustie
  */
 public class BundleControl extends ResourceBundle.Control {
 
-    protected BundleControl() {
+    /**
+     * The encoding to use when the loaded resource does not expose one through URL headers.
+     */
+    private final Charset defaultEncoding;
+
+    @VisibleForTesting
+    protected BundleControl(Charset defaultEncoding) {
+        this.defaultEncoding = Objects.requireNonNull(defaultEncoding);
     }
 
     /**
-     * Creates a new resource bundle control.
+     * Creates a new resource bundle control for loading UTF-8 encoded property bundles.
      */
     public static BundleControl create() {
-        return new BundleControl();
+        return new BundleControl(StandardCharsets.UTF_8);
     }
 
     /**
@@ -49,7 +60,7 @@ public class BundleControl extends ResourceBundle.Control {
      * <em>does not cache</em> and may introduce performance issues when used excessively.
      */
     public static BundleControl createDevelopmentControl() {
-        return new BundleControl() {
+        return new BundleControl(StandardCharsets.UTF_8) {
             @Override
             public long getTimeToLive(String baseName, Locale locale) {
                 Objects.requireNonNull(baseName);
@@ -64,20 +75,21 @@ public class BundleControl extends ResourceBundle.Control {
             throws IllegalAccessException, InstantiationException, IOException {
         ResourceBundle result = null;
         if (FORMAT_PROPERTIES.contains(format)) {
-            // Intercept attempts to load PropertyResourceBundle instances
             URL url = loader.getResource(toResourceName(toBundleName(baseName, locale), "properties"));
             if (url != null) {
                 URLConnection connection = url.openConnection();
                 connection.setUseCaches(!reload);
 
                 // It is extremely unlikely that the connection will have any type of encoding
-                String encoding = Optional.ofNullable(connection.getContentEncoding()).orElse(Charset.defaultCharset().name());
+                Charset encoding = Optional.ofNullable(connection.getContentEncoding())
+                        .map(Charset::forName)
+                        .orElse(defaultEncoding);
+
                 try (Reader reader = new InputStreamReader(connection.getInputStream(), encoding)) {
                     result = new PropertyResourceBundle(reader);
                 }
             }
         } else {
-            // If we are not loading a PropertyResourceBundle, just let the super handle it
             result = super.newBundle(baseName, locale, format, loader, reload);
         }
         return result;
