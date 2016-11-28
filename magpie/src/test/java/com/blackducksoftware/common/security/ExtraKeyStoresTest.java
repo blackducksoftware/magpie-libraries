@@ -18,6 +18,12 @@ package com.blackducksoftware.common.security;
 import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.junit.Test;
 
@@ -27,6 +33,8 @@ import org.junit.Test;
  * @author jgustie
  */
 public class ExtraKeyStoresTest extends AbstractSecurityTest {
+
+    private static final char[] DEFAULT_PASSWORD = "changeit".toCharArray();
 
     @Test
     public void keyStoreAlgorithm_jks() throws IOException {
@@ -46,6 +54,31 @@ public class ExtraKeyStoresTest extends AbstractSecurityTest {
     @Test
     public void keyStoreAlgorithm_pk8_pem() throws IOException {
         assertThat(ExtraKeyStores.guessKeyStoreAlgorithm(file("privkey.pk8.pem"))).isNull();
+    }
+
+    @Test
+    public void getOnlyKeyProtection_password() throws Exception {
+        KeyStore.Builder builder = KeyStore.Builder.newInstance("jks", null, file("user.jks").toFile(), new KeyStore.PasswordProtection(DEFAULT_PASSWORD));
+        assertThat(ExtraKeyStores.getOnlyKeyProtection(builder).getPassword()).isEqualTo(DEFAULT_PASSWORD);
+    }
+
+    @Test
+    public void getOnlyKeyProtection_callback() throws Exception {
+        KeyStore.Builder builder = KeyStore.Builder.newInstance("jks", null, file("user.jks").toFile(), new KeyStore.CallbackHandlerProtection(callbacks -> {
+            for (Callback callback : callbacks) {
+                if (callback instanceof PasswordCallback) {
+                    ((PasswordCallback) callback).setPassword(DEFAULT_PASSWORD);
+                } else {
+                    throw new UnsupportedCallbackException(callback);
+                }
+            }
+        }));
+        assertThat(ExtraKeyStores.getOnlyKeyProtection(builder).getPassword()).isEqualTo(DEFAULT_PASSWORD);
+    }
+
+    @Test(expected = KeyStoreException.class)
+    public void getOnlyKeyProtection_emptyKeyStore() throws KeyStoreException {
+        ExtraKeyStores.getOnlyKeyProtection(KeyStore.Builder.newInstance("jks", null, new KeyStore.PasswordProtection(DEFAULT_PASSWORD)));
     }
 
 }
