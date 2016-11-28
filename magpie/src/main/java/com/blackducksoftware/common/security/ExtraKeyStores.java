@@ -24,7 +24,7 @@ import java.util.Enumeration;
 
 import javax.annotation.Nullable;
 
-public class ExtraKeyStores {
+public final class ExtraKeyStores {
 
     /**
      * Attempts to guess the key store algorithm of a file based on magic numbers found in the file.
@@ -88,4 +88,7 @@ public class ExtraKeyStores {
         }
     }
 
+    private ExtraKeyStores() {
+        assert false;
+    }
 }

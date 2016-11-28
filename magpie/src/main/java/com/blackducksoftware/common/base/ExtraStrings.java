@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
  *
  * @author jgustie
  */
-public class ExtraStrings {
+public final class ExtraStrings {
 
     /**
      * Returns a string ensuring that it begins with the specified prefix. For example,

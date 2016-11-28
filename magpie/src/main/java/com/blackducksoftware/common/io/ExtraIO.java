@@ -34,7 +34,7 @@ import com.google.common.io.ByteStreams;
  *
  * @author jgustie
  */
-public class ExtraIO {
+public final class ExtraIO {
 
     /**
      * Creates a new {@link PrintWriter} using an explicit character encoding.
@@ -48,8 +48,7 @@ public class ExtraIO {
      */
     public static InputStream buffer(InputStream in) {
         Objects.requireNonNull(in);
-        if (in instanceof BufferedInputStream
-                || in instanceof ByteArrayInputStream) {
+        if (in instanceof BufferedInputStream || in instanceof ByteArrayInputStream) {
             return in;
         } else {
             return new BufferedInputStream(in);
@@ -61,9 +60,7 @@ public class ExtraIO {
      */
     public static OutputStream buffer(OutputStream out) {
         Objects.requireNonNull(out);
-        if (out instanceof BufferedOutputStream
-                || out instanceof ByteArrayOutputStream
-                || out == ByteStreams.nullOutputStream()) {
+        if (out instanceof BufferedOutputStream || out instanceof ByteArrayOutputStream || out == ByteStreams.nullOutputStream()) {
             return out;
         } else {
             return new BufferedOutputStream(out);

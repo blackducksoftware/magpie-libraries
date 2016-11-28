@@ -32,7 +32,7 @@ import com.google.common.annotations.Beta;
  *
  * @author jgustie
  */
-public class ExtraEnums {
+public final class ExtraEnums {
 
     /**
      * Returns all of the string representations for an enumerated type.

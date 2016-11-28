@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableSet;
  *
  * @author jgustie
  */
-public class ExtraCollectors {
+public final class ExtraCollectors {
 
     /**
      * Returns a collector that will return the only element in a stream. The resulting optional will be empty if the
