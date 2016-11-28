@@ -17,6 +17,8 @@ package com.blackducksoftware.common.base;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.util.BitSet;
+
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -111,7 +113,13 @@ public class ExtraEnumsTest {
 
     @Test
     public void fromBitSet_long() {
-        assertThat(ExtraEnums.fromBitSet(TestEnum.class, 0x07)).containsAllOf(TestEnum.ENUM_0, TestEnum.ENUM_1, TestEnum.ENUM_2);
+        assertThat(ExtraEnums.fromBitSet(TestEnum.class, 0x05)).containsAllOf(TestEnum.ENUM_0, TestEnum.ENUM_2);
+    }
+
+    @Test
+    public void fromBitSet_bitSet() {
+        assertThat(ExtraEnums.fromBitSet(TestJumboEnum.class, BitSet.valueOf(new byte[] { 0x0D })))
+                .containsAllOf(TestJumboEnum.ENUM_00, TestJumboEnum.ENUM_02, TestJumboEnum.ENUM_03);
     }
 
 }

@@ -21,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -29,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.blackducksoftware.common.concurrent.ForwardingExecutorService.SimpleForwardingExecutorService;
+import com.blackducksoftware.common.concurrent.ForwardingScheduledExecutorService.SimpleScheduledForwardingExecutorService;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -40,6 +42,9 @@ public class ForwardingExecutorServiceDelegateTest {
 
     @Mock
     private ExecutorService mockedExecutorService;
+
+    @Mock
+    private ScheduledExecutorService mockedScheduledExecutorService;
 
     @Mock
     private Callable<Void> callableTask;
@@ -86,6 +91,25 @@ public class ForwardingExecutorServiceDelegateTest {
         verify(mockedExecutorService).invokeAll(callableTasks, 0, TimeUnit.MILLISECONDS);
         verify(mockedExecutorService).invokeAny(callableTasks);
         verify(mockedExecutorService).invokeAny(callableTasks, 0, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void allKnownDelegateScheduledMethods() throws Exception {
+        assumeNotNull(mockedExecutorService, callableTask, runnableTask);
+        ScheduledExecutorService forwardingScheduledExecutorService = new SimpleScheduledForwardingExecutorService(mockedScheduledExecutorService) {
+        };
+
+        // Call every method we know
+        forwardingScheduledExecutorService.schedule(runnableTask, 0, TimeUnit.MILLISECONDS);
+        forwardingScheduledExecutorService.schedule(callableTask, 0, TimeUnit.MILLISECONDS);
+        forwardingScheduledExecutorService.scheduleAtFixedRate(runnableTask, 0, 0, TimeUnit.MILLISECONDS);
+        forwardingScheduledExecutorService.scheduleWithFixedDelay(runnableTask, 0, 0, TimeUnit.MILLISECONDS);
+
+        // Verify said methods were invoked on wrapped executor service
+        verify(mockedScheduledExecutorService).schedule(runnableTask, 0, TimeUnit.MILLISECONDS);
+        verify(mockedScheduledExecutorService).schedule(callableTask, 0, TimeUnit.MILLISECONDS);
+        verify(mockedScheduledExecutorService).scheduleAtFixedRate(runnableTask, 0, 0, TimeUnit.MILLISECONDS);
+        verify(mockedScheduledExecutorService).scheduleWithFixedDelay(runnableTask, 0, 0, TimeUnit.MILLISECONDS);
     }
 
 }
