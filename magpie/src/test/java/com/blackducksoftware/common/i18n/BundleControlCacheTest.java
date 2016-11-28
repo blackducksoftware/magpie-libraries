@@ -15,22 +15,24 @@
  */
 package com.blackducksoftware.common.i18n;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.charset.Charset;
-import java.nio.file.FileVisitResult;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -40,54 +42,78 @@ import org.junit.Test;
  */
 public class BundleControlCacheTest {
 
+    private Path bundleFile;
+
+    @Before
+    public void createTemporaryPropertyBundleFile() throws IOException {
+        bundleFile = Files.createTempFile(getClass().getSimpleName() + "#testCaching", ".properties");
+    }
+
+    @After
+    public void deleteTemporaryPropertyBundleFile() throws IOException {
+        Files.deleteIfExists(bundleFile);
+    }
+
     @Test
     public void testCaching() throws IOException {
-        final Path directory = Files.createTempDirectory(getClass().getName() + "#testCaching");
-        try {
-            ClassLoader loader = new URLClassLoader(new URL[] { directory.toUri().toURL() });
-            Properties properties = new Properties();
+        ClassLoader loader = loader();
+        BundleControl control = BundleControl.create();
 
-            // Write out a properties file that contains 'test=foo'
-            properties.setProperty("test", "foo");
-            try (Writer out = Files.newBufferedWriter(directory.resolve("test.properties"), Charset.defaultCharset())) {
-                properties.store(out, null);
-            }
+        writeUTF8Properties(bundleFile, "test", "foo");
+        assertThat(ResourceBundle.getBundle(baseName(), targetLocale(), loader, control).getString("test")).isEqualTo("foo");
 
-            // Load the resource bundle, verify
-            ResourceBundle bundle = ResourceBundle.getBundle("test", Locale.ROOT, loader, BundleControl.create());
-            assertThat(bundle.getString("test")).isEqualTo("foo");
+        writeUTF8Properties(bundleFile, "test", "bar");
+        assertThat(ResourceBundle.getBundle(baseName(), targetLocale(), loader, control).getString("test")).isEqualTo("foo");
 
-            // Overwrite the properties file with 'test=bar'
-            properties.setProperty("test", "bar");
-            try (Writer out = Files.newBufferedWriter(directory.resolve("test.properties"), Charset.defaultCharset())) {
-                properties.store(out, null);
-            }
+        ResourceBundle.clearCache(loader);
+        assertThat(ResourceBundle.getBundle(baseName(), targetLocale(), loader, control).getString("test")).isEqualTo("bar");
+    }
 
-            // Load the resource bundle, verify the value is cached
-            bundle = ResourceBundle.getBundle("test", Locale.ROOT, loader, BundleControl.create());
-            assertThat(bundle.getString("test")).isEqualTo("foo");
+    @Test
+    public void testDevelopmentControl() throws IOException {
+        ClassLoader loader = loader();
+        BundleControl control = BundleControl.createDevelopmentControl();
 
-            // Explicitly clear the cache
-            ResourceBundle.clearCache(loader);
+        writeUTF8Properties(bundleFile, "test", "foo");
+        assertThat(ResourceBundle.getBundle(baseName(), targetLocale(), loader, control).getString("test")).isEqualTo("foo");
 
-            // Load the resource bundle, verify the value is reloaded
-            bundle = ResourceBundle.getBundle("test", Locale.ROOT, loader, BundleControl.create());
-            assertThat(bundle.getString("test")).isEqualTo("bar");
-        } finally {
-            // Wipe out our temporary directory
-            Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return super.visitFile(file, attrs);
-                }
+        writeUTF8Properties(bundleFile, "test", "bar");
+        assertThat(ResourceBundle.getBundle(baseName(), targetLocale(), loader, control).getString("test")).isEqualTo("bar");
+    }
 
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return super.postVisitDirectory(directory, exc);
-                }
-            });
+    /**
+     * Returns the bundle base name given the current temporary bundle file.
+     */
+    private String baseName() {
+        String result = bundleFile.getFileName().toString();
+        return result.substring(0, result.length() - ".properties".length());
+    }
+
+    /**
+     * Returns the target locale given the current temporary bundle file.
+     */
+    private Locale targetLocale() {
+        return Locale.ROOT;
+    }
+
+    /**
+     * Returns the class loader given the current temporary bundle file.
+     */
+    private ClassLoader loader() throws MalformedURLException {
+        return new URLClassLoader(new URL[] { bundleFile.getParent().toUri().toURL() });
+    }
+
+    /**
+     * Writes a UTF-8 encoded properties file to the specified path, overwriting any existing properties.
+     */
+    private static void writeUTF8Properties(Path path, String... nameValuePairs) throws IOException {
+        checkArgument(nameValuePairs.length % 2 == 0, "expected even number of entries for creating bundle");
+        Properties properties = new Properties();
+        for (int i = 0; i < nameValuePairs.length; i += 2) {
+            properties.setProperty(nameValuePairs[i], nameValuePairs[i + 1]);
+        }
+        try (Writer out = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING)) {
+            properties.store(out, null);
         }
     }
 
