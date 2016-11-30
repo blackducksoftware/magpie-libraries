@@ -1,6 +1,9 @@
 description = 'Black Duck Software Magpie Test'
 
 dependencies {
+	compile 'com.fasterxml.jackson.core:jackson-annotations'
+	compile 'com.fasterxml.jackson.core:jackson-core'
+	compile 'com.fasterxml.jackson.core:jackson-databind'
 	compile 'com.google.code.findbugs:jsr305'
 	compile 'com.google.jimfs:jimfs'
 	compile 'com.google.truth:truth'
