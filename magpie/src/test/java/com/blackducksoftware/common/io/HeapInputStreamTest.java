@@ -101,4 +101,24 @@ public class HeapInputStreamTest {
         }
     }
 
+    @Test
+    public void newHeapInputStream_fromBufferLimit() throws IOException {
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[] { 0x02, 0x03 });
+        buffer.limit(1);
+        try (HeapInputStream in = new HeapInputStream(buffer)) {
+            assertThat(in.read()).isEqualTo(0x02);
+            assertThat(in.read()).isEqualTo(-1);
+        }
+    }
+
+    @Test
+    public void newHeapInputStream_fromBufferSliceLimit() throws IOException {
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[] { 0x01, 0x02, 0x03 }, 1, 2).slice();
+        buffer.limit(1);
+        try (HeapInputStream in = new HeapInputStream(buffer)) {
+            assertThat(in.read()).isEqualTo(0x02);
+            assertThat(in.read()).isEqualTo(-1);
+        }
+    }
+
 }

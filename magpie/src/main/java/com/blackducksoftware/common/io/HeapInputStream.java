@@ -49,7 +49,7 @@ public class HeapInputStream extends ByteArrayInputStream {
         if (buf.hasArray()) {
             this.buf = buf.array();
             pos = offset = buf.arrayOffset() + buf.position();
-            count = Math.min(buf.arrayOffset() + buf.remaining() + 1, this.buf.length);
+            count = buf.arrayOffset() + buf.limit();
         } else {
             throw new IllegalArgumentException("buffer must be backed by an array");
         }
