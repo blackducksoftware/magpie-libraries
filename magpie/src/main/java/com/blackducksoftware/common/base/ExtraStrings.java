@@ -79,7 +79,32 @@ public final class ExtraStrings {
     }
 
     /**
+     * Returns a string ensuring that it does not end with the specified suffix. For example,
+     * {@code removeSuffix("foo.bar", ".bar").equals("foo")} and
+     * {@code removeSuffix("foo.gus", ".bar").equals("foo.gus")}.
+     */
+    @Nullable
+    public static String removeSuffix(@Nullable CharSequence value, @Nullable CharSequence suffix) {
+        if (value != null && suffix != null) {
+            int pos = value.length() - suffix.length();
+            if (startsWith(value, suffix, pos)) {
+                return value.subSequence(0, pos).toString();
+            } else {
+                return value.toString();
+            }
+        } else {
+            return value != null ? value.toString() : null;
+        }
+    }
+
+    /**
      * Internal implementation for testing arbitrary character sequence prefixes.
+     * <p>
+     * Note that you can use this to implement "ends with" as well:
+     *
+     * <pre>
+     * startsWith(value, suffix, value.length() - suffix.length())
+     * </pre>
      */
     private static boolean startsWith(CharSequence value, CharSequence prefix, int offset) {
         int o = prefix.length();
