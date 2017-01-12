@@ -226,6 +226,8 @@ public final class KeyPairStore {
      * but we will create one each time so any security failures are treated the same as any other error.
      */
     private static final class KeyPairStoreProvider extends Provider {
+        private static final long serialVersionUID = 7920020778906707545L;
+
         private KeyPairStoreProvider() {
             super("Key Pair Key Store", 0.0, "");
             putService(new Service(this, "KeyStore", "keypair", KeyPairStoreSpi.class.getName(), null, null));

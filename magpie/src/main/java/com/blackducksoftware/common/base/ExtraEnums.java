@@ -38,7 +38,7 @@ public final class ExtraEnums {
      * Returns all of the string representations for an enumerated type.
      */
     public static <E extends Enum<E>> List<String> stringValues(Class<E> enumClass) {
-        return Stream.of(enumClass.getEnumConstants()).map(Enum::toString).collect(ExtraCollectors.toImmutableList());
+        return Stream.of(enumClass.getEnumConstants()).map(E::toString).collect(ExtraCollectors.toImmutableList());
     }
 
     /**
@@ -46,21 +46,21 @@ public final class ExtraEnums {
      */
     @SafeVarargs
     public static <E extends Enum<E>> List<String> stringValues(E... enumValues) {
-        return Stream.of(enumValues).map(Enum::toString).collect(ExtraCollectors.toImmutableList());
+        return Stream.of(enumValues).map(E::toString).collect(ExtraCollectors.toImmutableList());
     }
 
     /**
      * Returns the string representations for the supplied enumerated values.
      */
     public static <E extends Enum<E>> List<String> stringValues(Iterable<E> enumValues) {
-        return StreamSupport.stream(enumValues.spliterator(), false).map(Enum::toString).collect(ExtraCollectors.toImmutableList());
+        return StreamSupport.stream(enumValues.spliterator(), false).map(E::toString).collect(ExtraCollectors.toImmutableList());
     }
 
     /**
      * Returns the unique string representations for an enumerated type.
      */
     public static <E extends Enum<E>> Set<String> uniqueStringValues(Class<E> enumClass) {
-        return Stream.of(enumClass.getEnumConstants()).map(Enum::toString).collect(ExtraCollectors.toImmutableSet());
+        return Stream.of(enumClass.getEnumConstants()).map(E::toString).collect(ExtraCollectors.toImmutableSet());
     }
 
     /**
@@ -68,21 +68,21 @@ public final class ExtraEnums {
      */
     @SafeVarargs
     public static <E extends Enum<E>> Set<String> uniqueStringValues(E... enumValues) {
-        return Stream.of(enumValues).map(Enum::toString).collect(ExtraCollectors.toImmutableSet());
+        return Stream.of(enumValues).map(E::toString).collect(ExtraCollectors.toImmutableSet());
     }
 
     /**
      * Returns the unique string representations for the supplied enumerated values.
      */
     public static <E extends Enum<E>> Set<String> uniqueStringValues(Iterable<E> enumValues) {
-        return StreamSupport.stream(enumValues.spliterator(), false).map(Enum::toString).collect(ExtraCollectors.toImmutableSet());
+        return StreamSupport.stream(enumValues.spliterator(), false).map(E::toString).collect(ExtraCollectors.toImmutableSet());
     }
 
     /**
      * Returns all of names for an enumerated type.
      */
     public static <E extends Enum<E>> Set<String> names(Class<E> enumClass) {
-        return Stream.of(enumClass.getEnumConstants()).map(Enum::name).collect(ExtraCollectors.toImmutableSet());
+        return Stream.of(enumClass.getEnumConstants()).map(E::name).collect(ExtraCollectors.toImmutableSet());
     }
 
     /**
@@ -90,14 +90,14 @@ public final class ExtraEnums {
      */
     @SafeVarargs
     public static <E extends Enum<E>> Set<String> names(E... enumValues) {
-        return Stream.of(enumValues).map(Enum::name).collect(ExtraCollectors.toImmutableSet());
+        return Stream.of(enumValues).map(E::name).collect(ExtraCollectors.toImmutableSet());
     }
 
     /**
      * Returns the names for the supplied enumerated values.
      */
     public static <E extends Enum<E>> Set<String> names(Iterable<E> enumValues) {
-        return StreamSupport.stream(enumValues.spliterator(), false).map(Enum::name).collect(ExtraCollectors.toImmutableSet());
+        return StreamSupport.stream(enumValues.spliterator(), false).map(E::name).collect(ExtraCollectors.toImmutableSet());
     }
 
     /**
