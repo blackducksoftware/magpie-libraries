@@ -131,4 +131,19 @@ public class ExtraStringsTest {
         assertThat(ExtraStrings.ensureDelimiter("wxy", "xy", "xyz")).isEqualTo("wxyz");
     }
 
+    @Test
+    public void beforeLastMatching() {
+        assertThat(ExtraStrings.beforeLast("wxyz", 'y')).isEqualTo("wx");
+    }
+
+    @Test
+    public void beforeLastNotMatching() {
+        assertThat(ExtraStrings.beforeLast("wxyz", 'a')).isEqualTo("wxyz");
+    }
+
+    @Test
+    public void beforeLastNull() {
+        assertThat(ExtraStrings.beforeLast(null, 'a')).isNull();
+    }
+
 }

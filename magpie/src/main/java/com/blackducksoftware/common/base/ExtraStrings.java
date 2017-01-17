@@ -98,6 +98,23 @@ public final class ExtraStrings {
     }
 
     /**
+     * Returns a string of all the characters before the last occurrence of the specified character. For example,
+     * {@code beforeLast("foobar", 'b').equals("foo")} and {@code beforeLast("foobar", 'x').equals("foobar")}.
+     */
+    public static String beforeLast(@Nullable CharSequence value, char c) {
+        if (value != null) {
+            for (int i = value.length() - 1; i >= 0; --i) {
+                if (value.charAt(i) == c) {
+                    return value.subSequence(0, i).toString();
+                }
+            }
+            return value.toString();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Internal implementation for testing arbitrary character sequence prefixes.
      * <p>
      * Note that you can use this to implement "ends with" as well:
