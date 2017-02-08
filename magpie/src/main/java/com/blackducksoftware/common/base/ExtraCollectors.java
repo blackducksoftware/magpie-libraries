@@ -61,7 +61,10 @@ public final class ExtraCollectors {
 
     /**
      * Returns a collector which builds an {@code ImmutableList}.
+     *
+     * @deprecated This functionality is available in Guava 21.0.
      */
+    @Deprecated
     public static <T> Collector<T, ImmutableList.Builder<T>, List<T>> toImmutableList() {
         // http://jakewharton.com
         // https://gist.github.com/JakeWharton/9734167
@@ -74,7 +77,10 @@ public final class ExtraCollectors {
 
     /**
      * Returns a collector which builds an {@code ImmutableSet}.
+     * 
+     * @deprecated This functionality is available in Guava 21.0.
      */
+    @Deprecated
     public static <T> Collector<T, ImmutableSet.Builder<T>, Set<T>> toImmutableSet() {
         return Collector.of(
                 ImmutableSet.Builder::new,
