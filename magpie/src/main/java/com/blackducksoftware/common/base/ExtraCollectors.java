@@ -15,9 +15,7 @@
  */
 package com.blackducksoftware.common.base;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collector;
 
@@ -65,7 +63,7 @@ public final class ExtraCollectors {
      * @deprecated This functionality is available in Guava 21.0.
      */
     @Deprecated
-    public static <T> Collector<T, ImmutableList.Builder<T>, List<T>> toImmutableList() {
+    public static <T> Collector<T, ImmutableList.Builder<T>, ImmutableList<T>> toImmutableList() {
         // http://jakewharton.com
         // https://gist.github.com/JakeWharton/9734167
         return Collector.of(
@@ -81,7 +79,7 @@ public final class ExtraCollectors {
      * @deprecated This functionality is available in Guava 21.0.
      */
     @Deprecated
-    public static <T> Collector<T, ImmutableSet.Builder<T>, Set<T>> toImmutableSet() {
+    public static <T> Collector<T, ImmutableSet.Builder<T>, ImmutableSet<T>> toImmutableSet() {
         return Collector.of(
                 ImmutableSet.Builder::new,
                 ImmutableSet.Builder::add,
