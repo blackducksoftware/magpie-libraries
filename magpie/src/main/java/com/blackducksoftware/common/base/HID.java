@@ -62,12 +62,12 @@ public final class HID {
     /**
      * URI schemes that use the Black Duck archive scheme definition.
      */
-    private static final Set<String> BLACK_DUCK_SCHEMES = ImmutableSet.of("zip", "jar", "bdjar", "tar", "rpm", "ar", "arj", "cpio", "dump", "sevenz");
+    private static final ImmutableSet<String> BLACK_DUCK_SCHEMES = ImmutableSet.of("zip", "jar", "bdjar", "tar", "rpm", "ar", "arj", "cpio", "dump", "sevenz");
 
     /**
      * URI schemes that use the Java archive scheme definition.
      */
-    private static final Set<String> JAVA_SCHEMES = ImmutableSet.of("jar");
+    private static final ImmutableSet<String> JAVA_SCHEMES = ImmutableSet.of("jar");
 
     /**
      * The character used for joining paths.

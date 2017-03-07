@@ -33,15 +33,15 @@ import com.google.common.collect.ImmutableSet;
  */
 class JsonUtil {
 
-    private static final Set<Class<?>> INTEGRAL_NUMBER_TYPES = ImmutableSet.of(
+    private static final ImmutableSet<Class<?>> INTEGRAL_NUMBER_TYPES = ImmutableSet.of(
             Byte.class, byte.class, Short.class, short.class, Integer.class, int.class, Long.class, long.class, BigInteger.class);
 
-    private static final Set<Class<?>> FLOATING_POINT_NUMBER_TYPES = ImmutableSet.of(
+    private static final ImmutableSet<Class<?>> FLOATING_POINT_NUMBER_TYPES = ImmutableSet.of(
             Float.class, float.class, Double.class, double.class, BigDecimal.class);
 
-    private static final Set<Class<?>> TEXTUAL_TYPES = ImmutableSet.of(String.class);
+    private static final ImmutableSet<Class<?>> TEXTUAL_TYPES = ImmutableSet.of(String.class);
 
-    private static final Set<Class<?>> BOOLEAN_TYPES = ImmutableSet.of(Boolean.class, boolean.class);
+    private static final ImmutableSet<Class<?>> BOOLEAN_TYPES = ImmutableSet.of(Boolean.class, boolean.class);
 
     /**
      * Checks if a node is compatible with a specific Java type.
