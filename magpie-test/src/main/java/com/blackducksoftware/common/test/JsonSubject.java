@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -118,8 +120,24 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
 
     /**
      * Fails if the supplied JSON pointer does not match, otherwise returns a new subject for additional verification.
+     * Generates a JSON Pointer string using {@code toString} representations of the supplied sequence. For example,
+     * {@code at("foo", "bar")} is the same as {@code at("/foo/bar")}.
      */
-    public JsonSubject at(String pointer) {
+    public JsonSubject at(Object... tokens) {
+        // Assume a single element starting with "/" is just a valid pointer, otherwise build it
+        checkArgument(tokens != null && tokens.length > 0);
+        String pointer;
+        if (tokens.length == 1 && tokens[0].toString().startsWith("/")) {
+            pointer = tokens[0].toString();
+        } else {
+            pointer = Stream.of(tokens)
+                    .map(Object::toString)
+                    .map(s -> s.replace("~", "~0"))
+                    .map(s -> s.replace("/", "~1"))
+                    .collect(Collectors.joining("/", "/", ""));
+        }
+
+        // Resolve the JSON node using the pointer
         JsonNode next = actual().at(pointer);
         if (next.isMissingNode()) {
             fail("matches anything at pointer", pointer);
