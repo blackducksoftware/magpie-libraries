@@ -53,6 +53,7 @@ public class ExtraCollectorsTest {
     }
 
     @Test(expected = IllegalStateException.class)
+    @SuppressWarnings("ReturnValueIgnored")
     public void getOnlyMultiple() {
         Stream.of("x", "y").collect(ExtraCollectors.getOnly());
     }
@@ -73,6 +74,7 @@ public class ExtraCollectorsTest {
     }
 
     @Test(expected = IllegalStateException.class)
+    @SuppressWarnings("ReturnValueIgnored")
     public void getOnlySplitMultiple() {
         splitStream("x", "y").collect(ExtraCollectors.getOnly());
     }
