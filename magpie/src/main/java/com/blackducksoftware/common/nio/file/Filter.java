@@ -18,6 +18,8 @@ package com.blackducksoftware.common.nio.file;
 import static com.blackducksoftware.common.nio.file.FnMatch.fnmatch;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -36,7 +38,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.blackducksoftware.common.base.ExtraCollectors;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
@@ -255,7 +256,7 @@ public class Filter {
                             .flatMap(patternNormalizer)
                             .map(pattern -> PatternPathMatcher.create(pattern, directory))
                             .sorted()
-                            .collect(ExtraCollectors.toImmutableList());
+                            .collect(collectingAndThen(toList(), Collections::unmodifiableList));
                 }
 
                 private Stream<String> patterns(Path directory) {
