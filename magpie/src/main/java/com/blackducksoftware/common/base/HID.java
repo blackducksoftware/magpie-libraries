@@ -30,9 +30,9 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -46,7 +46,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Ordering;
 import com.google.common.net.UrlEscapers;
 
 /**
@@ -87,12 +86,9 @@ public final class HID {
     /**
      * Normalization procedure for path segments.
      */
-    private static final Function<String, String> PATH_SEGMENT_NORMALIZER = new Function<String, String>() {
-        @Override
-        public String apply(String segment) {
-            // Perform Unicode normalization on the text
-            return Normalizer.normalize(segment, Normalizer.Form.NFC);
-        }
+    private static final Function<String, String> PATH_SEGMENT_NORMALIZER = segment -> {
+        // Perform Unicode normalization on the text
+        return Normalizer.normalize(segment, Normalizer.Form.NFC);
     };
 
     /**
@@ -103,25 +99,22 @@ public final class HID {
     // TODO Locale specific?
     // TODO Work breaks?
     // TODO Share logic with version comparator?
-    private static final Ordering<String> SEGMENT_ORDER = Ordering.natural();
+    private static final Comparator<String> SEGMENT_ORDER = Comparator.naturalOrder();
 
     /**
      * Ordering that sorts HID according to a pre-order tree traversal.
      */
-    private static final Ordering<HID> PRE_ORDER = new Ordering<HID>() {
-        @Override
-        public int compare(HID left, HID right) {
-            ComparisonChain compare = ComparisonChain.start();
-            for (int i = 0; i < Math.min(left.segments.length, right.segments.length) && compare.result() == 0; ++i) {
-                String[] leftNested = left.segments[i], rightNested = right.segments[i];
-                for (int j = 0; j < Math.min(leftNested.length, rightNested.length) && compare.result() == 0; ++j) {
-                    compare = compare.compare(leftNested[j], rightNested[j], SEGMENT_ORDER);
-                }
-                compare = compare.compare(leftNested.length, rightNested.length);
+    private static final Comparator<HID> PRE_ORDER = (left, right) -> {
+        ComparisonChain compare = ComparisonChain.start();
+        for (int i = 0; i < Math.min(left.segments.length, right.segments.length) && compare.result() == 0; ++i) {
+            String[] leftNested = left.segments[i], rightNested = right.segments[i];
+            for (int j = 0; j < Math.min(leftNested.length, rightNested.length) && compare.result() == 0; ++j) {
+                compare = compare.compare(leftNested[j], rightNested[j], SEGMENT_ORDER);
             }
-            compare = compare.compare(left.segments.length, right.segments.length);
-            return compare.result();
+            compare = compare.compare(leftNested.length, rightNested.length);
         }
+        compare = compare.compare(left.segments.length, right.segments.length);
+        return compare.result();
     };
 
     /**
@@ -287,7 +280,7 @@ public final class HID {
      *
      * Given a collection of unordered HID's, this ordering would produce {@code hdabcegf}.
      */
-    public static Ordering<HID> preOrder() {
+    public static Comparator<HID> preOrder() {
         return PRE_ORDER;
     }
 
