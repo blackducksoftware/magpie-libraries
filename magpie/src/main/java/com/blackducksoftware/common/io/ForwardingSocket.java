@@ -153,32 +153,32 @@ public abstract class ForwardingSocket extends Socket {
     }
 
     @Override
-    public void setSoTimeout(int timeout) throws SocketException {
+    public synchronized void setSoTimeout(int timeout) throws SocketException {
         delegate().setSoTimeout(timeout);
     }
 
     @Override
-    public int getSoTimeout() throws SocketException {
+    public synchronized int getSoTimeout() throws SocketException {
         return delegate().getSoTimeout();
     }
 
     @Override
-    public void setSendBufferSize(int size) throws SocketException {
+    public synchronized void setSendBufferSize(int size) throws SocketException {
         delegate().setSendBufferSize(size);
     }
 
     @Override
-    public int getSendBufferSize() throws SocketException {
+    public synchronized int getSendBufferSize() throws SocketException {
         return delegate().getSendBufferSize();
     }
 
     @Override
-    public void setReceiveBufferSize(int size) throws SocketException {
+    public synchronized void setReceiveBufferSize(int size) throws SocketException {
         delegate().setReceiveBufferSize(size);
     }
 
     @Override
-    public int getReceiveBufferSize() throws SocketException {
+    public synchronized int getReceiveBufferSize() throws SocketException {
         return delegate().getReceiveBufferSize();
     }
 
@@ -213,7 +213,7 @@ public abstract class ForwardingSocket extends Socket {
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
         delegate().close();
     }
 
