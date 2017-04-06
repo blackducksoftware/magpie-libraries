@@ -46,7 +46,7 @@ public class FilterFilteringTest {
         try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/bar", "/foo/bar", etc.
-            filter(files).exclude("bar").walk(result);
+            filter(files).exclude("bar").walkFileTree(result);
             assertThat(result).isEmpty();
         }
     }
@@ -56,7 +56,7 @@ public class FilterFilteringTest {
         try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/bar", but not "/foo/bar"
-            filter(files).exclude("/bar").walk(result);
+            filter(files).exclude("/bar").walkFileTree(result);
             assertThat(result).isNotEmpty();
         }
     }
@@ -66,7 +66,7 @@ public class FilterFilteringTest {
         try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/foo/bar" because it is a directory
-            filter(files).exclude("bar/").walk(result);
+            filter(files).exclude("bar/").walkFileTree(result);
             assertThat(result).isEmpty();
         }
     }
@@ -76,7 +76,7 @@ public class FilterFilteringTest {
         try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/bar/...", but not "/foo/bar/..." (pattern contains a separator!)
-            filter(files).exclude("bar/**").walk(result);
+            filter(files).exclude("bar/**").walkFileTree(result);
             assertThat(result).isNotEmpty();
         }
     }
@@ -86,7 +86,7 @@ public class FilterFilteringTest {
         try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/foo/bar/gus"
-            filter(files).exclude("*/bar/*").walk(result);
+            filter(files).exclude("*/bar/*").walkFileTree(result);
             assertThat(result).isEmpty();
         }
     }
@@ -99,7 +99,7 @@ public class FilterFilteringTest {
                 .build()) {
             FileCollector result = new FileCollector();
             // Even though the file is in the foo directory, "/bar" matches from the root
-            filter(files).excludeFrom(files.getPath("/foo/excludeFrom")).walk(result);
+            filter(files).excludeFrom(files.getPath("/foo/excludeFrom")).walkFileTree(result);
             assertThat(result).hasSize(2);
         }
     }
@@ -112,7 +112,7 @@ public class FilterFilteringTest {
                 .build()) {
             FileCollector result = new FileCollector();
             // Exclude per directory will exclude relative to the file itself
-            filter(files).excludePerDirectory("excludePerDir").walk(result);
+            filter(files).excludePerDirectory("excludePerDir").walkFileTree(result);
             assertThat(result).containsExactly("/foo/excludePerDir");
         }
     }
@@ -131,7 +131,7 @@ public class FilterFilteringTest {
                 .build()) {
             FileCollector result = new FileCollector();
             // Exclude per directory files merge up to the top directory
-            filter(files).exclude("excludePerDir").excludePerDirectory("excludePerDir").walk(result);
+            filter(files).exclude("excludePerDir").excludePerDirectory("excludePerDir").walkFileTree(result);
             assertThat(result).isEmpty();
         }
     }
@@ -145,7 +145,7 @@ public class FilterFilteringTest {
                 .build()) {
             FileCollector result = new FileCollector();
             // Exclude per directory files merge up to the top directory
-            filter(files).exclude("excludePerDir").excludePerDirectory("excludePerDir").walk(result);
+            filter(files).exclude("excludePerDir").excludePerDirectory("excludePerDir").walkFileTree(result);
             assertThat(result).containsExactly("/foo/bar/gus/test1.txt");
         }
     }
@@ -159,7 +159,7 @@ public class FilterFilteringTest {
                 .build()) {
             FileCollector result = new FileCollector();
             // Same setup as the negate test, but ignore the file using an exclude
-            filter(files).exclude("excludePerDir").excludePerDirectory("excludePerDir").exclude("*.txt").walk(result);
+            filter(files).exclude("excludePerDir").excludePerDirectory("excludePerDir").exclude("*.txt").walkFileTree(result);
             assertThat(result).isEmpty();
         }
     }

@@ -352,8 +352,16 @@ public class Filter {
      * Walks the file tree from the root directory of this filter. This filter is applied during the walk so excluded
      * files will not be seen by the supplied visitor.
      */
-    public Path walk(FileVisitor<Path> visitor) throws IOException {
+    public Path walkFileTree(FileVisitor<Path> visitor) throws IOException {
         return Files.walkFileTree(top, new FilteredFileVisitor(visitor));
+    }
+
+    /**
+     * Walks the file tree from the root directory of this filter. This filter is applied during the walk so excluded
+     * files are not in the sequence.
+     */
+    public Stream<Path> walk() throws IOException {
+        return Files.walk(top).filter(pathMatcher::matches);
     }
 
     /**
