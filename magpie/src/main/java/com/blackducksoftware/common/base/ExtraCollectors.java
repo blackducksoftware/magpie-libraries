@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collector;
 
+import com.blackducksoftware.common.annotations.Obsolete;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -59,10 +60,8 @@ public final class ExtraCollectors {
 
     /**
      * Returns a collector which builds an {@code ImmutableList}.
-     *
-     * @deprecated This functionality is available in Guava 21.0.
      */
-    @Deprecated
+    @Obsolete(value = "This functionality is available in Guava 21.0", see = "com.google.common.collect.ImmutableList#toImmutableList")
     public static <T> Collector<T, ImmutableList.Builder<T>, ImmutableList<T>> toImmutableList() {
         // http://jakewharton.com
         // https://gist.github.com/JakeWharton/9734167
@@ -75,10 +74,8 @@ public final class ExtraCollectors {
 
     /**
      * Returns a collector which builds an {@code ImmutableSet}.
-     * 
-     * @deprecated This functionality is available in Guava 21.0.
      */
-    @Deprecated
+    @Obsolete(value = "This functionality is available in Guava 21.0", see = "com.google.common.collect.ImmutableSet#toImmutableSet")
     public static <T> Collector<T, ImmutableSet.Builder<T>, ImmutableSet<T>> toImmutableSet() {
         return Collector.of(
                 ImmutableSet.Builder::new,
