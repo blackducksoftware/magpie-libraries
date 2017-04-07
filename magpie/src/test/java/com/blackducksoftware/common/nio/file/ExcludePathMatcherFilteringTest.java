@@ -39,7 +39,7 @@ import com.google.common.collect.Iterators;
  *
  * @author jgustie
  */
-public class FilterFilteringTest {
+public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludeFromTop_directory() throws Exception {
@@ -169,8 +169,8 @@ public class FilterFilteringTest {
     /**
      * Helper to create a filter from a file system's root directory.
      */
-    private static Filter filter(FileSystem fileSystem) {
-        return Filter.create(Iterables.getOnlyElement(fileSystem.getRootDirectories()));
+    private static ExcludePathMatcher.Builder filter(FileSystem fileSystem) {
+        return new ExcludePathMatcher.Builder().from(Iterables.getOnlyElement(fileSystem.getRootDirectories()));
     }
 
     /**
