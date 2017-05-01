@@ -36,6 +36,12 @@ public final class ExtraStreams {
      * Is another way of doing:
      *
      * <pre>
+     * List<String> strs = objs.stream().filter(String.class::isInstance).map(String.class::cast).collect(toList());
+     * </pre>
+     *
+     * Which is another way of doing:
+     *
+     * <pre>
      * List<String> strs = new ArrayList<>();
      * for (Object obj : objs) {
      *     if (obj instanceof String) {

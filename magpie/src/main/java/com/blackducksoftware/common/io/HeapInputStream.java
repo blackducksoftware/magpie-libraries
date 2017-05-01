@@ -18,7 +18,6 @@ package com.blackducksoftware.common.io;
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SeekableByteChannel;
 
 /**
  * An extension of the standard byte array input stream that exposes more ways to access the content.
@@ -61,7 +60,7 @@ public class HeapInputStream extends ByteArrayInputStream {
      * {@link java.nio.channels.Channels#newInputStream(java.nio.channels.ReadableByteChannel) Channels.newInputStream}
      * to get the input stream.
      */
-    public SeekableByteChannel getChannel() {
+    public HeapChannel getChannel() {
         try {
             @SuppressWarnings("resource")
             HeapChannel heapChannel = new HeapChannel(buf, offset, count);

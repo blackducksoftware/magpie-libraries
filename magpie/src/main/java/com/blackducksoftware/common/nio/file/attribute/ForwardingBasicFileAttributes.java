@@ -24,7 +24,9 @@ import java.util.Objects;
  * attributes should come from another instance of basic file attributes.
  *
  * @author jgustie
+ * @deprecated Turns out this wasn't such a great idea.
  */
+@Deprecated
 public abstract class ForwardingBasicFileAttributes implements BasicFileAttributes {
 
     /**
