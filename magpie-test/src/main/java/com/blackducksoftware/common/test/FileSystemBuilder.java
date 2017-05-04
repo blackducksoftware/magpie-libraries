@@ -44,7 +44,7 @@ public class FileSystemBuilder {
     /**
      * The Jimfs configuration to use when creating the in-memory file system.
      */
-    private Configuration config = Configuration.unix();
+    private Configuration.Builder config;
 
     /**
      * A list of directory paths to create.
@@ -56,8 +56,16 @@ public class FileSystemBuilder {
      */
     private final ListMultimap<String, String> fileContents = LinkedListMultimap.create();
 
-    public static FileSystemBuilder create() {
-        return new FileSystemBuilder();
+    public FileSystemBuilder() {
+        config = Configuration.unix().toBuilder();
+    }
+
+    /**
+     * Replace the file system configuration with one that mimics Windows.
+     */
+    public FileSystemBuilder asWindows() {
+        config = Configuration.windows().toBuilder();
+        return this;
     }
 
     /**
@@ -91,7 +99,7 @@ public class FileSystemBuilder {
      * Creates the in-memory file system as specified.
      */
     public FileSystem build() throws IOException {
-        final FileSystem fileSystem = Jimfs.newFileSystem(config);
+        FileSystem fileSystem = Jimfs.newFileSystem(config.build());
         createContent(Iterables.getOnlyElement(fileSystem.getRootDirectories()));
         return fileSystem;
     }
@@ -103,10 +111,10 @@ public class FileSystemBuilder {
      */
     public void createContent(Path root) throws IOException {
         for (String dir : directories) {
-            Files.createDirectories(root.resolve(dir.substring(1)));
+            Files.createDirectories(root.resolve(dir.substring(1).replace("/", root.getFileSystem().getSeparator())));
         }
         for (Entry<String, Collection<String>> file : fileContents.asMap().entrySet()) {
-            Path filePath = root.resolve(file.getKey().substring(1));
+            Path filePath = root.resolve(file.getKey().substring(1).replace("/", root.getFileSystem().getSeparator()));
             Files.createDirectories(filePath.getParent());
             Files.write(filePath, file.getValue(), UTF_8);
         }

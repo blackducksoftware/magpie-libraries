@@ -42,6 +42,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableList;
@@ -127,7 +128,7 @@ public class ExcludePathMatcher implements PathMatcher {
             // Match the full path name or the name segments
             boolean matches = false;
             if (pathnameMatch) {
-                matches = fnmatch(pattern, relativePath.toString(), PATHNAME);
+                matches = fnmatch(pattern, Joiner.on('/').join(relativePath), PATHNAME);
             } else {
                 for (int i = 0; i < relativePath.getNameCount() && !matches; ++i) {
                     matches = fnmatch(pattern, relativePath.getName(i).toString());
