@@ -43,7 +43,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludeFromTop_directory() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
+        try (FileSystem files = new FileSystemBuilder().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/bar", "/foo/bar", etc.
             filter(files).exclude("bar").walkFileTree(result);
@@ -53,7 +53,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludeFromTop_anchoredDirectory() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
+        try (FileSystem files = new FileSystemBuilder().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/bar", but not "/foo/bar"
             filter(files).exclude("/bar").walkFileTree(result);
@@ -63,7 +63,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludeFromTop_directoryOnly() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
+        try (FileSystem files = new FileSystemBuilder().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/foo/bar" because it is a directory
             filter(files).exclude("bar/").walkFileTree(result);
@@ -73,7 +73,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludeFromTop_doubleWild() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
+        try (FileSystem files = new FileSystemBuilder().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/bar/...", but not "/foo/bar/..." (pattern contains a separator!)
             filter(files).exclude("bar/**").walkFileTree(result);
@@ -83,7 +83,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludeFromTop_bookEndWild() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create().addHelloWorld("/foo/bar/gus/test.txt").build()) {
+        try (FileSystem files = new FileSystemBuilder().addHelloWorld("/foo/bar/gus/test.txt").build()) {
             FileCollector result = new FileCollector();
             // Excludes "/foo/bar/gus"
             filter(files).exclude("*/bar/*").walkFileTree(result);
@@ -93,7 +93,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludeFromFile_excludesFromTop() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create()
+        try (FileSystem files = new FileSystemBuilder()
                 .addHelloWorld("/foo/bar/gus/test.txt")
                 .addFile("/foo/excludeFrom", "/bar")
                 .build()) {
@@ -106,7 +106,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludePerDirectory_excludesFromDir() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create()
+        try (FileSystem files = new FileSystemBuilder()
                 .addHelloWorld("/foo/bar/gus/test.txt")
                 .addFile("/foo/excludePerDir", "/bar")
                 .build()) {
@@ -119,7 +119,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludePerDirectory_mergeParentPatterns() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create()
+        try (FileSystem files = new FileSystemBuilder()
                 .addHelloWorld("/foo/bar/gus/test1.txt")
                 .addHelloWorld("/foo/bar/gus/test2.txt")
                 .addHelloWorld("/foo/bar/gus/test3.txt")
@@ -138,7 +138,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludePerDirectory_negate() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create()
+        try (FileSystem files = new FileSystemBuilder()
                 .addHelloWorld("/foo/bar/gus/test1.txt")
                 .addFile("/foo/excludePerDir", "test1.txt")
                 .addFile("/foo/bar/gus/excludePerDir", "!test1.txt")
@@ -152,7 +152,7 @@ public class ExcludePathMatcherFilteringTest {
 
     @Test
     public void excludePerDirectory_excludeMasksNegate() throws Exception {
-        try (FileSystem files = FileSystemBuilder.create()
+        try (FileSystem files = new FileSystemBuilder()
                 .addHelloWorld("/foo/bar/gus/test1.txt")
                 .addFile("/foo/excludePerDir", "test1.txt")
                 .addFile("/foo/bar/gus/excludePerDir", "!test1.txt")
@@ -160,6 +160,16 @@ public class ExcludePathMatcherFilteringTest {
             FileCollector result = new FileCollector();
             // Same setup as the negate test, but ignore the file using an exclude
             filter(files).exclude("excludePerDir").excludePerDirectory("excludePerDir").exclude("*.txt").walkFileTree(result);
+            assertThat(result).isEmpty();
+        }
+    }
+
+    @Test
+    public void excludeFromTop_anchoredDirectoryWindows() throws Exception {
+        try (FileSystem files = new FileSystemBuilder().asWindows().addHelloWorld("/foo/bar/gus/test.txt").build()) {
+            FileCollector result = new FileCollector();
+            // Exclusion pattern contains "/" which isn't a windows separator
+            filter(files).exclude("/foo/bar").walkFileTree(result);
             assertThat(result).isEmpty();
         }
     }
