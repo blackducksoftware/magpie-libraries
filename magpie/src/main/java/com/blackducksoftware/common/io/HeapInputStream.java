@@ -71,4 +71,11 @@ public class HeapInputStream extends ByteArrayInputStream {
         }
     }
 
+    /**
+     * Returns an empty input stream.
+     */
+    public static HeapInputStream empty() {
+        return new HeapInputStream(EMPTY_BYTE_ARRAY);
+    }
+
 }
