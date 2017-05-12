@@ -17,13 +17,17 @@ package com.blackducksoftware.common.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.CharArrayReader;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.Objects;
 
@@ -52,6 +56,18 @@ public final class ExtraIO {
             return in;
         } else {
             return new BufferedInputStream(in);
+        }
+    }
+
+    /**
+     * Conditionally buffers a character stream, returning the supplied stream if buffering is not necessary.
+     */
+    public static Reader buffer(Reader reader) {
+        Objects.requireNonNull(reader);
+        if (reader instanceof BufferedReader || reader instanceof CharArrayReader || reader instanceof StringReader) {
+            return reader;
+        } else {
+            return new BufferedReader(reader);
         }
     }
 
