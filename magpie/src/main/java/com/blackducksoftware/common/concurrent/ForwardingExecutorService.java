@@ -96,7 +96,7 @@ public abstract class ForwardingExecutorService implements ExecutorService {
 
     @Override
     public Future<?> submit(Runnable task) {
-        return delegate().submit(task);
+        return delegate().submit(wrap(task));
     }
 
     @Override
