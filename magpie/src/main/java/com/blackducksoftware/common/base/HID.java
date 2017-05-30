@@ -350,6 +350,23 @@ public final class HID {
     }
 
     /**
+     * Returns {@code true} if the most specific path in this HID contains exactly the specified name components.
+     */
+    public boolean containsPathNames(String... names) {
+        // Looks a lot like `Collections.indexOfSublist`
+        int max = depth() - names.length;
+        next: for (int index = 0; index <= max; ++index) {
+            for (int i = 0, j = index; i < names.length; ++i, ++j) {
+                if (!names[i].equals(segments[nesting()][j])) {
+                    continue next;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Returns the path of the supplied HID relativized against this HID. Both HIDs must be at the same nesting level
      * and this HID must be an ancestor of the supplied HID; otherwise this method just returns {@code null}.
      */

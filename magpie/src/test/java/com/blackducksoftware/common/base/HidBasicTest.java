@@ -351,6 +351,24 @@ public class HidBasicTest {
         assertThat(HID.from(URI.create("tar:file:%2Fz%2Fy%2Fx#/h/d/a")).getPathNames()).containsExactly("h", "d", "a");
     }
 
+    @Test
+    public void containsPathNames() {
+        assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("x")).isTrue();
+        assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("x", "y")).isTrue();
+        assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("x", "y", "z")).isTrue();
+        assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("y", "z")).isTrue();
+        assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("y")).isTrue();
+        assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("z")).isTrue();
+        assertThat(HID.from(URI.create("tar:file:%2Fz%2Fy%2Fx#/h/d/a")).containsPathNames("a")).isTrue();
+    }
+
+    @Test
+    public void doesNotContainPathNames() {
+        assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("a")).isFalse();
+        assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("x", "z")).isFalse();
+        assertThat(HID.from(URI.create("tar:file:%2Fz%2Fy%2Fx#/h/d/a")).containsPathNames("x")).isFalse();
+    }
+
     @Test(expected = UnsupportedOperationException.class)
     public void immutablePathNames() {
         HID.from(URI.create("file:/x/y/z")).getPathNames().add("a");
