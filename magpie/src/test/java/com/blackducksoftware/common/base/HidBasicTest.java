@@ -352,6 +352,13 @@ public class HidBasicTest {
     }
 
     @Test
+    public void containerNames() {
+        assertThat(HID.from(URI.create("file:/x/y/z")).getContainerNames()).isEmpty();
+        assertThat(HID.from(URI.create("tar:file:%2Fz%2Fy%2Fx#/h/d/a")).getContainerNames()).containsExactly("x");
+        assertThat(HID.from(URI.create("zip:tar:file:%252Fz%252Fy%252Fx%23%2Fh%2Fd%2Fa#/l/m/n")).getContainerNames()).containsExactly("a", "x");
+    }
+
+    @Test
     public void containsPathNames() {
         assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("x")).isTrue();
         assertThat(HID.from(URI.create("file:/x/y/z")).containsPathNames("x", "y")).isTrue();

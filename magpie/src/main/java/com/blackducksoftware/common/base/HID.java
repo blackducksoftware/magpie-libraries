@@ -350,6 +350,19 @@ public final class HID {
     }
 
     /**
+     * Returns the individual names of each container in this HID. The most specific container is first.
+     */
+    public List<String> getContainerNames() {
+        // This is small enough, just copy the data so it can be accessed randomly.
+        String[] result = new String[nesting()];
+        for (int i = 0; i < result.length; ++i) {
+            int j = segments.length - i - 2;
+            result[i] = segments[j][segments[j].length - 1];
+        }
+        return Collections.unmodifiableList(Arrays.asList(result));
+    }
+
+    /**
      * Returns {@code true} if the most specific path in this HID contains exactly the specified name components.
      */
     public boolean containsPathNames(String... names) {
