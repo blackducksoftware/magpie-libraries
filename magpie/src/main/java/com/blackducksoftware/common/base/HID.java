@@ -33,11 +33,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.cache.CacheBuilder;
@@ -59,9 +59,10 @@ import com.google.common.net.UrlEscapers;
 public final class HID {
 
     /**
-     * URI schemes that use the Black Duck archive scheme definition.
+     * URI schemes that use the hierarchical archive scheme definition.
      */
-    private static final ImmutableSet<String> BLACK_DUCK_SCHEMES = ImmutableSet.of("zip", "jar", "bdjar", "tar", "rpm", "ar", "arj", "cpio", "dump", "sevenz");
+    private static final ImmutableSet<String> HIERARCHICAL_FRAGMENT_SCHEMES = ImmutableSet.of("zip", "jar", "tar", "rpm", "ar", "arj", "cpio", "dump",
+            "sevenz");
 
     /**
      * URI schemes that use the Java archive scheme definition.
@@ -240,16 +241,13 @@ public final class HID {
     public static HID from(URI uri) {
         checkArgument(uri.isAbsolute(), "URI must be absolute: '%s'", uri);
         String scheme = uri.getScheme().toLowerCase();
-        if (BLACK_DUCK_SCHEMES.contains(scheme) && uri.getFragment() != null) {
-            // Black Duck schemes use "<scheme>:<archiveUri>#<entryName>" for URIs
-            // THESE SCHEMES MAY HAVE FRAGMENTS THAT DO NOT START WITH "/"
+        if (uri.getFragment() != null
+                && (HIERARCHICAL_FRAGMENT_SCHEMES.contains(scheme) || uri.getFragment().startsWith("/"))) {
+            // Hierarchical schemes use "<scheme>:<archiveUri>#<entryName>" for URIs
             return fromHierarchicalFragmentUri(uri);
         } else if (JAVA_SCHEMES.contains(scheme)) {
             // Java schemes use "<scheme>:<archiveUri>!/<entryName>" for URIs
             return fromJavaUri(uri);
-        } else if (uri.getFragment() != null && uri.getFragment().startsWith("/")) {
-            // Support arbitrary URI schemes like "<scheme>:<archiveUri>#/<entryName>"
-            return fromHierarchicalFragmentUri(uri);
         }
 
         // For other URIs, we do not have any place to put non-path information
