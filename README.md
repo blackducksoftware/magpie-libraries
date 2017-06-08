@@ -1,5 +1,8 @@
 # Magpie Libraries
 
+[![Build Status](https://travis-ci.org/blackducksoftware/magpie-libraries.svg?branch=master)](https://travis-ci.org/blackducksoftware/magpie-libraries)
+[![Download](https://api.bintray.com/packages/bds/oss/magpie-libraries/images/download.svg)](https://bintray.com/bds/oss/magpie-libraries/_latestVersion)
+
 Really useful stuff.
 
 ## Requirements
