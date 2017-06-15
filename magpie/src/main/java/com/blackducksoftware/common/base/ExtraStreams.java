@@ -30,7 +30,7 @@ public final class ExtraStreams {
      * A function for filtering a stream by type. For example:
      *
      * <pre>
-     * List<String> strs = objs.stream().flatMap(instanceOf(String.class)).collect(toList());
+     * List<String> strs = objs.stream().flatMap(ofType(String.class)).collect(toList());
      * </pre>
      *
      * Is another way of doing:
@@ -50,7 +50,7 @@ public final class ExtraStreams {
      * }
      * </pre>
      */
-    public static <T> Function<Object, Stream<T>> instanceOf(Class<T> type) {
+    public static <T> Function<Object, Stream<T>> ofType(Class<T> type) {
         Objects.requireNonNull(type);
         return obj -> type.isInstance(obj) ? Stream.of(type.cast(obj)) : Stream.empty();
     }
