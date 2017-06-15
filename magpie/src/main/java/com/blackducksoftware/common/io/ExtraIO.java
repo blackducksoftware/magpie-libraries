@@ -22,12 +22,15 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayReader;
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.Objects;
 
@@ -80,6 +83,17 @@ public final class ExtraIO {
             return out;
         } else {
             return new BufferedOutputStream(out);
+        }
+    }
+
+    /**
+     * Closes the supplied {@code Closeable}, wrapping any {@code IOException} in an {@code UncheckedIOException}.
+     */
+    public static void closeUnchecked(Closeable c) throws UncheckedIOException {
+        try {
+            c.close();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
