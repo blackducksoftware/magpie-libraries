@@ -392,27 +392,46 @@ public final class HID {
 
     /**
      * Returns the directory level parent identifier. This corresponds to the "directory" that contains this identifier.
+     * <p>
+     * Note that if this HID is a "{@linkplain #getRoot() root}", this method will return the container HID.
      */
     @Nullable
     public HID getParent() {
-        int depth = depth();
-        if (depth > 0) {
-            return new HID(schemes, authorities, segments, nesting(), depth - 1);
-        } else {
+        if (isRoot()) {
             return getContainer();
+        } else {
+            return new HID(schemes, authorities, segments, nesting(), depth() - 1);
         }
     }
 
     /**
-     * Returns the directory level root identifier. This corresponds to the top-most directory (e.g. "/") that contains
-     * this identifier.
+     * Checks to see if this HID has a parent.
+     * <p>
+     * <em>IMPORTANT</em> This check is not consistent with {@code getParent() != null} as it only considers parents at
+     * the current nesting level. The {@code getParent()} method could still return the container even if this method
+     * returns {@code false}.
+     *
+     * @deprecated Use {@code !isRoot()} instead.
      */
-    public HID getRoot() {
-        return isRoot() ? this : new HID(schemes, authorities, segments, nesting(), 0);
+    @Deprecated
+    public boolean hasParent() {
+        return !isRoot();
     }
 
     /**
-     * Returns {@code true} if this HID represents a root.
+     * Returns the directory level root identifier. This corresponds to the top-most directory (e.g. "/") at the current
+     * nesting level.
+     */
+    public HID getRoot() {
+        if (isRoot()) {
+            return this;
+        } else {
+            return new HID(schemes, authorities, segments, nesting(), 0);
+        }
+    }
+
+    /**
+     * Returns {@code true} if this HID represents a root at the current nesting level.
      */
     public boolean isRoot() {
         return depth() == 0;
@@ -423,7 +442,11 @@ public final class HID {
      */
     @Nullable
     public HID getContainer() {
-        return hasContainer() ? new HID(schemes, authorities, segments, nesting() - 1, -1) : null;
+        if (hasContainer()) {
+            return new HID(schemes, authorities, segments, nesting() - 1, -1);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -438,7 +461,7 @@ public final class HID {
      * from).
      */
     public HID getBase() {
-        if (nesting() > 0) {
+        if (hasContainer()) {
             return new HID(schemes, authorities, segments, 0, -1);
         } else {
             return this;
