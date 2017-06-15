@@ -32,6 +32,8 @@ import com.google.common.base.CharMatcher;
  */
 public final class InvalidCertificateChainCallback extends InvalidCertificateCallback {
 
+    private static final long serialVersionUID = -374147648020177306L;
+
     private final X509Certificate[] chain;
 
     private final String authType;

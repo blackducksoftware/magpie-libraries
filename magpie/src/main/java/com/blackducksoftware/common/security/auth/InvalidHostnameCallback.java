@@ -24,6 +24,8 @@ import javax.net.ssl.SSLSession;
  */
 public class InvalidHostnameCallback extends InvalidCertificateCallback {
 
+    private static final long serialVersionUID = -5171287305538904156L;
+
     public InvalidHostnameCallback(String host, SSLSession session) {
         // TODO Get the expected names from the certificate chain on the session?
         super(host);

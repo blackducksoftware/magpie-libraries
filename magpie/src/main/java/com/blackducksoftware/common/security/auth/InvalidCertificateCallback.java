@@ -29,6 +29,8 @@ import com.blackducksoftware.common.security.auth.InvalidCertificateCallback.Cho
  */
 public abstract class InvalidCertificateCallback extends EnumChoiceCallback<Choice> {
 
+    private static final long serialVersionUID = 8864038835200227083L;
+
     /**
      * The levels of trust to apply to the untrusted certificate chain.
      */

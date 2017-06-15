@@ -38,6 +38,8 @@ import com.google.common.collect.ImmutableList;
  *
  * @author jgustie
  */
+// In general we are ignoring future return values because they aren't meaningful in these tests
+@SuppressWarnings("FutureReturnValueIgnored")
 public class ForwardingExecutorServiceDelegateTest {
 
     @Mock

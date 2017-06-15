@@ -39,6 +39,8 @@ import javax.security.auth.callback.ChoiceCallback;
  */
 public class EnumChoiceCallback<E extends Enum<E>> extends ChoiceCallback {
 
+    private static final long serialVersionUID = 5534324499615987270L;
+
     /**
      * The type of choices, needed to convert from selected indexes back to enum values.
      */
@@ -55,7 +57,7 @@ public class EnumChoiceCallback<E extends Enum<E>> extends ChoiceCallback {
      */
     private static <E extends Enum<E>> String[] choices(Class<E> choices, ResourceBundle bundle) {
         return Stream.of(choices.getEnumConstants())
-                .map(Enum::name)
+                .map(E::name)
                 .map(bundle::getString)
                 // TODO Use a prefix based on the class name?
                 .toArray(String[]::new);
@@ -88,7 +90,6 @@ public class EnumChoiceCallback<E extends Enum<E>> extends ChoiceCallback {
     public Optional<E> getSelectedChoice() {
         int[] selectedIndexes = getSelectedIndexes();
         if (selectedIndexes != null && selectedIndexes.length > 0) {
-            // WTF. No `OptionalInt.mapToObj(IntFunction<? extends E>)`?
             return IntStream.of(selectedIndexes)
                     .mapToObj(i -> choices.getEnumConstants()[i])
                     .findFirst();
