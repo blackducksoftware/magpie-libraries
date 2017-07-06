@@ -73,7 +73,8 @@ public class EnumChoiceCallback<E extends Enum<E>> extends ChoiceCallback {
     /**
      * Set the selected choices.
      */
-    public void setSelectedChoices(@SuppressWarnings("unchecked") E... choices) {
+    @SuppressWarnings("unchecked")
+    public void setSelectedChoices(E... choices) {
         setSelectedIndexes(Stream.of(choices).mapToInt(E::ordinal).toArray());
     }
 
