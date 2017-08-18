@@ -15,6 +15,9 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.value.Rules.TokenType.RFC2045;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -109,17 +112,17 @@ public class ContentType {
             parameters = new LinkedHashMap<>();
         }
 
-        public Builder type(String type) {
+        public Builder type(CharSequence type) {
             this.type = Rules.checkType(type);
             return this;
         }
 
-        public Builder subtype(String subtype) {
+        public Builder subtype(CharSequence subtype) {
             this.subtype = Rules.checkSubtype(subtype);
             return this;
         }
 
-        public Builder parameter(String attribute, String value) {
+        public Builder parameter(CharSequence attribute, CharSequence value) {
             parameters.put(Rules.checkAttribute(attribute), Rules.checkValue(value));
             return this;
         }
@@ -129,7 +132,26 @@ public class ContentType {
         }
 
         void parse(CharSequence input) {
-            // TODO
+            int start, end = 0;
+            parameters.clear();
+
+            start = end;
+            end = Rules.nextRegName(input, start);
+            checkArgument(end > start, "missing type: %s", input);
+            type(input.subSequence(start, end));
+
+            start = end;
+            end = Rules.nextChar(input, start, '/');
+            checkArgument(end > start, "missing delimiter: %s", input);
+
+            start = end;
+            end = Rules.nextRegName(input, start);
+            checkArgument(end > start, "missing subtype: %s", input);
+            subtype(input.subSequence(start, end));
+
+            start = end;
+            end = Rules.remainingNameValues(RFC2045, input, start, this::parameter);
+            checkArgument(end == input.length(), "invalid parameters: %s", input);
         }
 
     }

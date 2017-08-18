@@ -15,16 +15,21 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.value.Rules.TokenType.RFC7230;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -109,22 +114,22 @@ public class Product {
             comments = new ArrayList<>(1);
         }
 
-        public Builder name(String name) {
+        public Builder name(CharSequence name) {
             this.name = Rules.checkToken(name);
             return this;
         }
 
-        public Builder version(String version) {
-            this.version = Rules.checkToken(version);
+        public Builder version(@Nullable CharSequence version) {
+            this.version = version != null ? Rules.checkToken(version) : null;
             return this;
         }
 
-        public Builder comment(String comment) {
+        public Builder comment(CharSequence comment) {
             comments = new ArrayList<>(Collections.singleton(Rules.checkComment(comment)));
             return this;
         }
 
-        public Builder addComment(String comment) {
+        public Builder addComment(CharSequence comment) {
             comments.add(Rules.checkComment(comment));
             return this;
         }
@@ -135,7 +140,81 @@ public class Product {
         }
 
         void parse(CharSequence input) {
-            // TODO
+            int start, end = 0;
+            version(null);
+            comments.clear();
+
+            start = end;
+            end = Rules.nextToken(RFC7230, input, start);
+            checkArgument(end > start, "missing name: %s", input);
+            name(input.subSequence(start, end));
+
+            start = end;
+            if (start < input.length() && input.charAt(start++) == '/') {
+                end = Rules.nextToken(RFC7230, input, start);
+                checkArgument(end > start, "missing version: %s", input);
+                version(input.subSequence(start, end));
+            }
+
+            start = end;
+            if (start < input.length()) {
+                end = Rules.nextNonWsp(input, start);
+                checkArgument(end > start, "missing RWS: %s", input);
+            }
+
+            start = end;
+            end = Rules.remainingTokens(input, start, (this::addComment));
+            checkArgument(end == input.length(), "invalid comments: %s", input);
+        }
+
+    }
+
+    /**
+     * A typed list of products.
+     */
+    public static final class ProductList extends LinkedList<Product> {
+
+        private ProductList() {
+        }
+
+        public static ProductList parse(CharSequence input) {
+            ProductList result = new ProductList();
+            Builder builder = new Builder();
+            List<CharSequence> tokens = new ArrayList<>();
+            Rules.remainingTokens(input, 0, tokens::add);
+            for (int i = 0; i < tokens.size();) {
+                builder.parse(tokens.get(i));
+                while (++i < tokens.size() && Rules.matchesWithQuotes(tokens.get(i), '(', ')', x -> true)) {
+                    builder.addComment(tokens.get(i));
+                }
+                result.add(builder.build());
+            }
+            return result;
+        }
+
+        public static ProductList forClass(Class<?> type) {
+            Package pkg = checkNotNull(type.getPackage(), "missing package information: %s", type.getName());
+
+            ProductList result = new ProductList();
+            Builder builder = new Builder();
+
+            builder.name(Rules.retainTokenChars(RFC7230, pkg.getImplementationTitle()))
+                    .version(Rules.retainTokenChars(RFC7230, pkg.getImplementationVersion()));
+            if (!Strings.isNullOrEmpty(pkg.getImplementationVendor())) {
+                builder.comment('(' + pkg.getImplementationVendor() + ')');
+            }
+            result.add(builder.build());
+
+            if (pkg.getSpecificationTitle() != null) {
+                builder.name(Rules.retainTokenChars(RFC7230, pkg.getSpecificationTitle()))
+                        .version(Rules.retainTokenChars(RFC7230, pkg.getSpecificationVersion()));
+                if (!Strings.isNullOrEmpty(pkg.getSpecificationVendor())) {
+                    builder.comment('(' + pkg.getSpecificationVendor() + ')');
+                }
+                result.add(builder.build());
+            }
+
+            return result;
         }
 
     }

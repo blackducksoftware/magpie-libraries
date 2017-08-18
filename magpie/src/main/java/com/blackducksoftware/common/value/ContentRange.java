@@ -15,6 +15,7 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.value.Rules.TokenType.RFC7230;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
@@ -48,7 +49,7 @@ public abstract class ContentRange {
                 checkArgument(contentLength >= 0, "unsatisfied range must have content-length");
             } else {
                 checkArgument(firstByte <= lastByte, "invalid byte-range: %s-%s", firstByte, lastByte);
-                checkArgument(contentLength > lastByte, "invalid byte-range: %s-%s/%s", firstByte, lastByte, contentLength);
+                checkArgument(contentLength < 0 || contentLength > lastByte, "invalid byte-range: %s-%s/%s", firstByte, lastByte, contentLength);
             }
         }
 
@@ -66,12 +67,12 @@ public abstract class ContentRange {
             }
         }
 
-        public boolean isCompleteLengthUnknown() {
+        public boolean isUnknownLength() {
             return completeLength < 0;
         }
 
         public boolean isUnsatisfied() {
-            return firstBytePos < 0 && lastBytePos < 0 && !isCompleteLengthUnknown();
+            return firstBytePos < 0 && lastBytePos < 0 && !isUnknownLength();
         }
 
         public long firstBytePos() {
@@ -165,36 +166,32 @@ public abstract class ContentRange {
             checkArgument(firstByte >= 0, "invalid first-byte-pos: %s", firstByte);
             checkArgument(lastByte >= firstByte, "invalid last-byte-pos: %s", lastByte);
             checkArgument(contentLength > lastByte, "invalid content-length: %s", contentLength);
-            this.unit = "bytes";
             this.firstByte = firstByte;
             this.lastByte = lastByte;
             this.contentLength = contentLength;
-            return this;
+            return unit("bytes");
         }
 
         public Builder unsatisifiedByteRange(long contentLength) {
             checkArgument(contentLength >= 0, "invalid content-length: %s", contentLength);
-            this.unit = "bytes";
             this.firstByte = -1L;
             this.lastByte = -1L;
             this.contentLength = contentLength;
-            return this;
+            return unit("bytes");
         }
 
         public Builder unknownLengthByteRange(long firstByte, long lastByte) {
             checkArgument(firstByte >= 0, "invalid first-byte-pos: %s", firstByte);
             checkArgument(lastByte >= firstByte, "invalid last-byte-pos: %s", lastByte);
-            this.unit = "bytes";
             this.firstByte = firstByte;
             this.lastByte = lastByte;
             this.contentLength = -1L;
-            return this;
+            return unit("bytes");
         }
 
         public Builder otherRange(String unit, String range) {
-            this.unit = Rules.checkOtherRangeUnit(unit);
-            this.otherRange = null;
-            return this;
+            this.otherRange = range; // No restrictions?!
+            return unit(unit);
         }
 
         public ContentRange build() {
@@ -205,8 +202,71 @@ public abstract class ContentRange {
             }
         }
 
+        private Builder unit(CharSequence unit) {
+            if (Rules.isBytesUnit(unit)) {
+                this.unit = unit.toString();
+            } else {
+                this.unit = Rules.checkOtherRangeUnit(unit);
+            }
+            return this;
+        }
+
         void parse(CharSequence input) {
-            // TODO
+            int start, end = 0;
+
+            start = end;
+            end = Rules.nextToken(RFC7230, input, start);
+            checkArgument(end > start, "missing unit: %s", input);
+            unit(input.subSequence(start, end));
+
+            start = end;
+            end = Rules.nextChar(input, start, ' ');
+            checkArgument(end > start, "missing delimiter: %s", input);
+
+            int length = input.length();
+            if (Rules.isBytesUnit(unit)) {
+                start = end;
+                end = nextUnknown(input, start, "byte-range-res");
+                if (end > start) {
+                    firstByte = lastByte = -1L;
+                } else {
+                    end = Rules.nextDigit(input, start);
+                    checkArgument(end > start, "missing first-byte-pos: %s", input);
+                    firstByte = Long.parseLong(input.subSequence(start, end).toString());
+
+                    start = end;
+                    end = Rules.nextChar(input, start, '-');
+                    checkArgument(end > start, "missing byte-range delimiter: %s", input);
+
+                    start = end;
+                    end = Rules.nextDigit(input, start);
+                    checkArgument(end > start, "missing last-byte-pos: %s", input);
+                    lastByte = Long.parseLong(input.subSequence(start, end).toString());
+                }
+
+                start = end;
+                end = Rules.nextChar(input, start, '/');
+                checkArgument(end > start, "missing byte-range-resp delimiter: %s", input);
+
+                start = end;
+                end = nextUnknown(input, start, "complete-length");
+                if (end > start) {
+                    contentLength = -1;
+                } else {
+                    end = Rules.nextDigit(input, start);
+                    checkArgument(end > start, "missing content-length: %s", input);
+                    contentLength = Long.parseLong(input.subSequence(start, end).toString());
+                }
+            } else {
+                start = end;
+                end = length;
+                otherRange = input.subSequence(start, end).toString();
+            }
+        }
+
+        private static int nextUnknown(CharSequence input, int start, String rule) {
+            checkArgument(start < input.length(), "missing %s: %s", rule, input);
+            return input.charAt(start) == '*' ? start + 1 : start;
         }
 
     }

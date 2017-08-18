@@ -22,6 +22,9 @@ import java.net.URISyntaxException;
 import java.util.IllformedLocaleException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -47,7 +50,7 @@ final class Rules {
 
         private static final CharMatcher SPACE = CharMatcher.is((char) 32);
 
-        private static final CharMatcher CTL = CharMatcher.inRange((char) 0, (char) 31);
+        private static final CharMatcher CTL = CharMatcher.inRange((char) 0, (char) 31).or(CharMatcher.is((char) 127));
 
     }
 
@@ -60,8 +63,11 @@ final class Rules {
 
         private static final CharMatcher tspecials = CharMatcher.anyOf("()<>@,;:\\\"/[]?=");
 
+        // This isn't a real rule, but we needed a composed matcher
+        private static final CharMatcher TOKEN_CHAR_MATCHER = RFC822.CHAR.and(RFC822.SPACE.or(RFC822.CTL).or(tspecials).negate());
+
         public static boolean isToken(CharSequence input) {
-            return input.length() > 0 && RFC822.CHAR.and(RFC822.SPACE.or(RFC822.CTL).or(tspecials).negate()).matchesAllOf(input);
+            return input.length() > 0 && TOKEN_CHAR_MATCHER.matchesAllOf(input);
         }
 
     }
@@ -127,7 +133,7 @@ final class Rules {
     /**
      * @see <a href="https://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>
      */
-    @VisibleForTesting
+
     static final class RFC5234 {
 
         private static final CharMatcher ALPHA = CharMatcher.inRange('A', 'Z').or(CharMatcher.inRange('a', 'z'));
@@ -143,6 +149,8 @@ final class Rules {
         private static final CharMatcher SP = CharMatcher.is(' ');
 
         private static final CharMatcher VCHAR = CharMatcher.inRange('!', '~');
+
+        private static final CharMatcher WSP = SP.or(HTAB);
 
     }
 
@@ -238,7 +246,7 @@ final class Rules {
         }
 
         public static boolean isRelationTypes(CharSequence input) {
-            return isRelationType(input) || matchesWithQuotes(input, '"', i -> Splitter.on(RFC5234.SP)
+            return isRelationType(input) || matchesWithQuotes(input, '"', '"', i -> Splitter.on(RFC5234.SP)
                     .omitEmptyStrings()
                     .splitToList(i)
                     .stream()
@@ -293,7 +301,7 @@ final class Rules {
         }
 
         public static boolean isToken(CharSequence input) {
-            return tchar.matchesAllOf(input);
+            return input.length() > 0 && tchar.matchesAllOf(input);
         }
 
         public static boolean isQuotedPair(CharSequence input) {
@@ -415,34 +423,40 @@ final class Rules {
         return input.toString();
     }
 
-    public static void checkRelationTypes(@Nullable CharSequence input) {
+    public static String checkRelationTypes(@Nullable CharSequence input) {
         checkArgument(input != null, "null relation-types");
         checkArgument(RFC5988.isRelationTypes(input), "invalid relation-types: %s", input);
+        return input.toString();
     }
 
-    public static void checkURIReference(@Nullable CharSequence input) {
+    public static String checkURIReference(@Nullable CharSequence input) {
         checkArgument(input != null, "null URI-Reference");
-        checkArgument(matchesWithQuotes(input, '"', RFC3986::isURIReference));
+        checkArgument(matchesWithQuotes(input, '"', '"', RFC3986::isURIReference));
+        return input.toString();
     }
 
-    public static void checkLanguageTag(@Nullable CharSequence input) {
+    public static String checkLanguageTag(@Nullable CharSequence input) {
         checkArgument(input != null, "null Language-Tag");
         checkArgument(RFC5646.isLanguageTag(input), "invalid Language-Tag: %s", input);
+        return input.toString();
     }
 
-    public static void checkExtValue(@Nullable CharSequence input) {
+    public static String checkExtValue(@Nullable CharSequence input) {
         checkArgument(input != null, "null ext-value");
         checkArgument(RFC5987.isExtValue(input), "invalid ext-value: %s", input);
+        return input.toString();
     }
 
-    public static void checkMediaDesc(@Nullable CharSequence input) {
+    public static String checkMediaDesc(@Nullable CharSequence input) {
         checkArgument(input != null, "null MediaDesc");
-        checkArgument(REChtml401.isMediaDesc(input) || matchesWithQuotes(input, '"', REChtml401::isMediaDesc), "invalid MediaDesc: %s", input);
+        checkArgument(REChtml401.isMediaDesc(input) || matchesWithQuotes(input, '"', '"', REChtml401::isMediaDesc), "invalid MediaDesc: %s", input);
+        return input.toString();
     }
 
-    public static void checkMediaTypeOrQuotedMt(@Nullable CharSequence input) {
+    public static String checkMediaTypeOrQuotedMt(@Nullable CharSequence input) {
         checkArgument(input != null, "null media-type");
-        checkArgument(RFC5988.isMediaType(input) || matchesWithQuotes(input, '"', RFC5988::isMediaType), "invalid media-type or quoted-mt: %s", input);
+        checkArgument(RFC5988.isMediaType(input) || matchesWithQuotes(input, '"', '"', RFC5988::isMediaType), "invalid media-type or quoted-mt: %s", input);
+        return input.toString();
     }
 
     public static void checkLinkExtension(@Nullable CharSequence parmname, @Nullable CharSequence value) {
@@ -489,12 +503,190 @@ final class Rules {
     /**
      * Common use case where we need to check quotes and further validate the content
      */
-    private static boolean matchesWithQuotes(CharSequence input, char quote, Predicate<CharSequence> predicate) {
+    public static boolean matchesWithQuotes(CharSequence input, char quoteStart, char quoteEnd, Predicate<CharSequence> predicate) {
         int limit = input.length() - 1;
         return input.length() > 2
-                && input.charAt(0) == quote
-                && input.charAt(limit) == quote
+                && input.charAt(0) == quoteStart
+                && input.charAt(limit) == quoteEnd
                 && predicate.test(input.subSequence(1, limit));
+    }
+
+    /**
+     * Tokens are typically defined as one or more character of a specific character set. This allows us to vary the
+     * definition for the different definitions of what a token character is.
+     */
+    public enum TokenType {
+        RFC2045(Rules.RFC2045.TOKEN_CHAR_MATCHER, Rules.RFC2045.TOKEN_CHAR_MATCHER),
+        RFC5988(Rules.RFC5987.attrChar, Rules.RFC5988.ptokenchar),
+        RFC7230(Rules.RFC7230.tchar, Rules.RFC7230.tchar);
+
+        private final CharMatcher keyTokenChar;
+
+        private final CharMatcher valueTokenChar;
+
+        private TokenType(CharMatcher keyTokenChar, CharMatcher valueTokenChar) {
+            this.keyTokenChar = Objects.requireNonNull(keyTokenChar);
+            this.valueTokenChar = Objects.requireNonNull(valueTokenChar);
+        }
+    }
+
+    // TODO All these use the same logic, condense!
+
+    /**
+     * Returns the end index of the token in the character sequence given the specified starting point. If the sequence
+     * does not start with a token, the starting position is returned.
+     */
+    public static int nextToken(TokenType tokenType, CharSequence input, int start) {
+        int pos = start, length = input.length();
+        while (pos < length && tokenType.keyTokenChar.matches(input.charAt(pos))) {
+            ++pos;
+        }
+        return pos;
+    }
+
+    /**
+     * Returns the end index of the next reg-name in the character sequence given the specified starting point.
+     */
+    public static int nextRegName(CharSequence input, int start) {
+        int pos = start, length = Math.min(start + 127, input.length());
+        while (pos < length && RFC4288.regNameChars.matches(input.charAt(pos))) {
+            ++pos;
+        }
+        return pos;
+    }
+
+    /**
+     * Returns the end index of the next digit in the character sequence given the specified starting point.
+     */
+    public static int nextDigit(CharSequence input, int start) {
+        int pos = start, length = input.length();
+        while (pos < length && RFC5234.DIGIT.matches(input.charAt(pos))) {
+            ++pos;
+        }
+        return pos;
+    }
+
+    /**
+     * Returns the start index of the next non-WSP in the character sequence.
+     */
+    public static int nextNonWsp(CharSequence input, int start) {
+        int pos = start, length = input.length();
+        while (pos < length && RFC5234.WSP.matches(input.charAt(pos))) {
+            ++pos;
+        }
+        return pos;
+    }
+
+    /**
+     * Returns the end index of the next matching character. The input must have at least enough characters to perform
+     * the check, if the character matches then this method will effectively return {@code start + 1}.
+     */
+    // TODO If we can toggle optional/required then this would work for Product as well
+    public static int nextChar(CharSequence input, int start, char expected) {
+        checkArgument(start < input.length(), "missing %s: %s", expected, input);
+        return input.charAt(start) == expected ? start + 1 : start;
+    }
+
+    /**
+     * Returns the end index of the next quoted string or quoted string. The unquoted (effective) value is accumulated
+     * in the supplied buffer.
+     */
+    public static int nextTokenOrQuotedString(TokenType tokenType, CharSequence input, int start) {
+        if (tokenType.valueTokenChar.matches(input.charAt(start))) {
+            return nextToken(tokenType, input, start);
+        } else if (input.charAt(start) == '"') {
+            int pos = start + 1, length = input.length();
+            while (pos < length) {
+                char c = input.charAt(pos++);
+                if (c == '"') {
+                    return pos;
+                } else if (c == '\\' && pos < length) {
+                    ++pos;
+                }
+            }
+            throw new IllegalArgumentException("missing DQUOTE: " + input);
+        } else {
+            return start;
+        }
+    }
+
+    /**
+     * Reads ";" delimited name/value pairs until the end of input.
+     */
+    public static int remainingNameValues(TokenType tokenType, CharSequence input, int start, BiConsumer<CharSequence, CharSequence> consumer) {
+        int pos = start, length = input.length();
+        int end = pos;
+        while (end < length) {
+            pos = Rules.nextNonWsp(input, end);
+            checkArgument(pos < length && input.charAt(pos) == ';', "missing pair delimiter (;): %s", input);
+            end = Rules.nextNonWsp(input, pos + 1);
+
+            pos = end;
+            end = Rules.nextToken(tokenType, input, pos);
+            checkArgument(end > pos, "missing pair name: %s", input);
+            CharSequence name = input.subSequence(pos, end);
+
+            pos = Rules.nextNonWsp(input, end);
+            checkArgument(pos < input.length() && input.charAt(pos) == '=', "missing pair splitter (=): %s", input);
+            end = Rules.nextNonWsp(input, pos + 1);
+
+            pos = end;
+            end = Rules.nextTokenOrQuotedString(tokenType, input, pos);
+            checkArgument(end > pos, "missing pair value: %s", input);
+            consumer.accept(name, input.subSequence(pos, end));
+        }
+        return end;
+    }
+
+    /**
+     * Reads whitespace delimited tokens until the end of input. Treats entire comments as a single token.
+     */
+    public static int remainingTokens(CharSequence input, int start, Consumer<CharSequence> consumer) {
+        int pos = start, length = input.length();
+        StringBuilder buffer = new StringBuilder();
+        int commentDepth = 0;
+        while (pos < length) {
+            char c = input.charAt(pos++);
+            if (c == '\\' && pos < length) {
+                buffer.append(input.charAt(++pos));
+            } else if (c == '(') {
+                commentDepth++;
+                buffer.append(c);
+            } else if (c == ')') {
+                commentDepth--;
+                buffer.append(c);
+                checkArgument(commentDepth >= 0, "unbalanced '(...)': %s", input);
+                if (commentDepth == 0) {
+                    consumer.accept(buffer.toString());
+                    buffer.setLength(0);
+                }
+            } else if (RFC5234.WSP.matches(c) && commentDepth == 0) {
+                if (buffer.length() > 0) {
+                    consumer.accept(buffer.toString());
+                    buffer.setLength(0);
+                }
+            } else {
+                buffer.append(c);
+            }
+        }
+        if (buffer.length() > 0) {
+            consumer.accept(buffer.toString());
+        }
+        return pos;
+    }
+
+    /**
+     * Helper to make a string into a conforming token by stripping away non-token characters.
+     */
+    @Nullable
+    public static String retainTokenChars(TokenType tokenType, @Nullable CharSequence input) {
+        if (input != null) {
+            String result = tokenType.keyTokenChar.retainFrom(input);
+            checkArgument(input.length() == 0 || !result.isEmpty(), "input contained no token characters: " + input);
+            return result;
+        } else {
+            return null;
+        }
     }
 
 }

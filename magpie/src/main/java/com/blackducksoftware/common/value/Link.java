@@ -15,6 +15,9 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.value.Rules.TokenType.RFC5988;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -98,41 +101,43 @@ public class Link {
             linkParams.put("type", null);
         }
 
-        public Builder uriReference(String uriReference) {
-            this.uriReference = uriReference;
+        public Builder uriReference(CharSequence uriReference) {
+            this.uriReference = uriReference.toString(); // TODO Validate?
             return this;
         }
 
-        public Builder linkParam(String parmname, String value) {
-            switch (parmname) {
+        public Builder linkParam(CharSequence parmname, CharSequence value) {
+            String actualValue;
+            switch (parmname.toString()) {
             case "rel":
-                Rules.checkRelationTypes(value);
+                actualValue = Rules.checkRelationTypes(value);
                 break;
             case "anchor":
-                Rules.checkURIReference(value);
+                actualValue = Rules.checkURIReference(value);
                 break;
             case "rev":
-                Rules.checkRelationTypes(value);
+                actualValue = Rules.checkRelationTypes(value);
                 break;
             case "hreflang":
-                Rules.checkLanguageTag(value);
+                actualValue = Rules.checkLanguageTag(value);
                 break;
             case "media":
-                Rules.checkMediaDesc(value);
+                actualValue = Rules.checkMediaDesc(value);
                 break;
             case "title":
-                Rules.checkQuotedString(value);
+                actualValue = Rules.checkQuotedString(value);
                 break;
             case "title*":
-                Rules.checkExtValue(value);
+                actualValue = Rules.checkExtValue(value);
                 break;
             case "type":
-                Rules.checkMediaTypeOrQuotedMt(value);
+                actualValue = Rules.checkMediaTypeOrQuotedMt(value);
                 break;
             default:
                 Rules.checkLinkExtension(parmname, value);
+                actualValue = value.toString();
             }
-            linkParams.put(parmname, value);
+            linkParams.put(parmname.toString(), actualValue);
             return this;
         }
 
@@ -141,9 +146,39 @@ public class Link {
         }
 
         void parse(CharSequence input) {
-            // TODO
+            int start, end = 0;
+            linkParams.clear();
+
+            start = end;
+            end = Rules.nextChar(input, start, '<');
+            checkArgument(end > start, "missing start link: %s", input);
+
+            start = end;
+            end = nextUriReference(input, start);
+            checkArgument(end > start, "missing link: %s", input);
+            uriReference(input.subSequence(start, end));
+
+            start = end;
+            end = Rules.nextChar(input, start, '>');
+            checkArgument(end > start, "missing end link: %s", input);
+
+            start = end;
+            end = Rules.remainingNameValues(RFC5988, input, start, this::linkParam);
+            checkArgument(end == input.length(), "invalid link-params: %s", input);
+        }
+
+        private static int nextUriReference(CharSequence input, int start) {
+            int pos = start, length = input.length();
+            while (pos < length - 1) {
+                if (input.charAt(++pos) == '>') {
+                    return pos;
+                }
+            }
+            return start;
         }
 
     }
+
+    // TODO Should we have a link list just like with products? Links can be comma delimited...
 
 }
