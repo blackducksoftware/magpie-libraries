@@ -17,8 +17,8 @@ package com.blackducksoftware.common.value;
 
 import static com.blackducksoftware.common.value.Rules.TokenType.RFC7230;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,10 +26,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.Strings;
+import com.google.common.collect.ForwardingList;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -102,6 +103,12 @@ public class Product {
         return builder.build();
     }
 
+    public static List<Product> parseAll(CharSequence input) {
+        ListBuilder builder = new ListBuilder();
+        builder.parse(input);
+        return builder.build();
+    }
+
     public static class Builder {
 
         private String name;
@@ -169,16 +176,24 @@ public class Product {
 
     }
 
-    /**
-     * A typed list of products.
-     */
-    public static final class ProductList extends LinkedList<Product> {
+    public static class ListBuilder {
 
-        private ProductList() {
+        private List<Product> products;
+
+        public ListBuilder() {
+            products = new LinkedList<>();
         }
 
-        public static ProductList parse(CharSequence input) {
-            ProductList result = new ProductList();
+        public ListBuilder addProduct(Product product) {
+            products.add(product);
+            return this;
+        }
+
+        public List<Product> build() {
+            return products.stream().distinct().collect(Collectors.collectingAndThen(Collectors.toList(), ProductsList::new));
+        }
+
+        void parse(CharSequence input) {
             Builder builder = new Builder();
             List<CharSequence> tokens = new ArrayList<>();
             Rules.remainingTokens(input, 0, tokens::add);
@@ -187,34 +202,32 @@ public class Product {
                 while (++i < tokens.size() && Rules.matchesWithQuotes(tokens.get(i), '(', ')', x -> true)) {
                     builder.addComment(tokens.get(i));
                 }
-                result.add(builder.build());
+                addProduct(builder.build());
             }
-            return result;
         }
 
-        public static ProductList forClass(Class<?> type) {
-            Package pkg = checkNotNull(type.getPackage(), "missing package information: %s", type.getName());
+        /**
+         * Internal implementation that ensures the result of the builder has an appropriate {@code toString}
+         * representation and cannot be modified.
+         */
+        private static final class ProductsList extends ForwardingList<Product> {
 
-            ProductList result = new ProductList();
-            Builder builder = new Builder();
+            private final List<Product> delegate;
 
-            builder.name(Rules.retainTokenChars(RFC7230, pkg.getImplementationTitle()))
-                    .version(Rules.retainTokenChars(RFC7230, pkg.getImplementationVersion()));
-            if (!Strings.isNullOrEmpty(pkg.getImplementationVendor())) {
-                builder.comment('(' + pkg.getImplementationVendor() + ')');
-            }
-            result.add(builder.build());
-
-            if (pkg.getSpecificationTitle() != null) {
-                builder.name(Rules.retainTokenChars(RFC7230, pkg.getSpecificationTitle()))
-                        .version(Rules.retainTokenChars(RFC7230, pkg.getSpecificationVersion()));
-                if (!Strings.isNullOrEmpty(pkg.getSpecificationVendor())) {
-                    builder.comment('(' + pkg.getSpecificationVendor() + ')');
-                }
-                result.add(builder.build());
+            private ProductsList(List<Product> delegate) {
+                this.delegate = Collections.unmodifiableList(delegate);
             }
 
-            return result;
+            @Override
+            protected List<Product> delegate() {
+                return delegate;
+            }
+
+            @Override
+            public String toString() {
+                return delegate().stream().map(Product::toString).collect(joining(" "));
+            }
+
         }
 
     }
