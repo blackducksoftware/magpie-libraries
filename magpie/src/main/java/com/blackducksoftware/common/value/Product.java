@@ -18,19 +18,15 @@ package com.blackducksoftware.common.value;
 import static com.blackducksoftware.common.value.Rules.TokenType.RFC7230;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ForwardingList;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -103,12 +99,6 @@ public class Product {
         return builder.build();
     }
 
-    public static List<Product> parseAll(CharSequence input) {
-        ListBuilder builder = new ListBuilder();
-        builder.parse(input);
-        return builder.build();
-    }
-
     public static class Builder {
 
         private String name;
@@ -172,62 +162,6 @@ public class Product {
             start = end;
             end = Rules.remainingTokens(input, start, (this::addComment));
             checkArgument(end == input.length(), "invalid comments: %s", input);
-        }
-
-    }
-
-    public static class ListBuilder {
-
-        private List<Product> products;
-
-        public ListBuilder() {
-            products = new LinkedList<>();
-        }
-
-        public ListBuilder addProduct(Product product) {
-            products.add(product);
-            return this;
-        }
-
-        public List<Product> build() {
-            return products.stream().distinct().collect(Collectors.collectingAndThen(Collectors.toList(), ProductsList::new));
-        }
-
-        void parse(CharSequence input) {
-            Builder builder = new Builder();
-            List<CharSequence> tokens = new ArrayList<>();
-            Rules.remainingTokens(input, 0, tokens::add);
-            for (int i = 0; i < tokens.size();) {
-                builder.parse(tokens.get(i));
-                while (++i < tokens.size() && Rules.matchesWithQuotes(tokens.get(i), '(', ')', x -> true)) {
-                    builder.addComment(tokens.get(i));
-                }
-                addProduct(builder.build());
-            }
-        }
-
-        /**
-         * Internal implementation that ensures the result of the builder has an appropriate {@code toString}
-         * representation and cannot be modified.
-         */
-        private static final class ProductsList extends ForwardingList<Product> {
-
-            private final List<Product> delegate;
-
-            private ProductsList(List<Product> delegate) {
-                this.delegate = Collections.unmodifiableList(delegate);
-            }
-
-            @Override
-            protected List<Product> delegate() {
-                return delegate;
-            }
-
-            @Override
-            public String toString() {
-                return delegate().stream().map(Product::toString).collect(joining(" "));
-            }
-
         }
 
     }
