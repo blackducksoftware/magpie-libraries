@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -90,7 +91,8 @@ public class HidSortingTest {
         assertThat(HID.preOrder().compare(HID.from(Paths.get("/b")), HID.from(Paths.get("/a/b/c/d/e")))).isGreaterThan(0);
     }
 
-    // TODO This is a test that should pass!
+    @Test
+    @Ignore("This type of sorting still needs to be implemented")
     public void numeric() {
         assertThat(Arrays.asList(
                 HID.from(Paths.get("/0")),
