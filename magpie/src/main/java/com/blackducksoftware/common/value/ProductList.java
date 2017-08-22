@@ -87,6 +87,10 @@ public class ProductList implements Iterable<Product> {
         return builder.build();
     }
 
+    public static ProductList of(Product product) {
+        return new Builder().addProduct(product).build();
+    }
+
     public static class Builder {
 
         private List<Product> products;
