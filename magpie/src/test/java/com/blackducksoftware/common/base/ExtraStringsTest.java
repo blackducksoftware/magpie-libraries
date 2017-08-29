@@ -16,6 +16,7 @@
 package com.blackducksoftware.common.base;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 
 import org.junit.Test;
 
@@ -25,6 +26,47 @@ import org.junit.Test;
  * @author jgustie
  */
 public class ExtraStringsTest {
+
+    @Test
+    public void ofEmptyNullValue() {
+        assertThat(ExtraStrings.ofEmpty(null)).isEmpty();
+    }
+
+    @Test
+    public void ofEmptyEmptyValue() {
+        assertThat(ExtraStrings.ofEmpty("")).isEmpty();
+    }
+
+    @Test
+    public void ofEmptyValue() {
+        assertThat(ExtraStrings.ofEmpty("foo")).isPresent();
+    }
+
+    @Test
+    public void ofBlankNullValue() {
+        assertThat(ExtraStrings.ofBlank(null)).isEmpty();
+    }
+
+    @Test
+    public void ofBlankEmptyValue() {
+        assertThat(ExtraStrings.ofBlank("")).isEmpty();
+    }
+
+    @Test
+    public void ofBlankBlankValue() {
+        assertThat(ExtraStrings.ofBlank(" ")).isEmpty();
+        assertThat(ExtraStrings.ofBlank("  ")).isEmpty();
+        assertThat(ExtraStrings.ofBlank("\t")).isEmpty();
+        assertThat(ExtraStrings.ofBlank("\r")).isEmpty();
+        assertThat(ExtraStrings.ofBlank("\n")).isEmpty();
+    }
+
+    @Test
+    public void ofBlankValue() {
+        assertThat(ExtraStrings.ofBlank("foo")).isPresent();
+        assertThat(ExtraStrings.ofBlank(" foo")).isPresent();
+        assertThat(ExtraStrings.ofBlank(" foo ")).isPresent();
+    }
 
     @Test(expected = NullPointerException.class)
     public void ensurePrefixNullPrefix() {

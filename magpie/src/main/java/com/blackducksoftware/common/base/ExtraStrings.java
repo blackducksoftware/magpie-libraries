@@ -16,8 +16,11 @@
 package com.blackducksoftware.common.base;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
+
+import com.google.common.base.CharMatcher;
 
 /**
  * Extra string utilities.
@@ -25,6 +28,22 @@ import javax.annotation.Nullable;
  * @author jgustie
  */
 public final class ExtraStrings {
+
+    /**
+     * Returns an optional string that is present only if the supplied value is not empty. For example,
+     * {@code ofEmpty(null).isPresent() == ofEmpty("").isPresent()}.
+     */
+    public static Optional<String> ofEmpty(@Nullable CharSequence value) {
+        return Optional.ofNullable(value).filter(cs -> cs.length() > 0).map(CharSequence::toString);
+    }
+
+    /**
+     * Returns an optional string that is present only if the supplied value contains non-whitespace characters. For
+     * example, {@code ofBlank(" foo ").map(String::trim).get().equals("foo")}
+     */
+    public static Optional<String> ofBlank(@Nullable CharSequence value) {
+        return Optional.ofNullable(value).filter(CharMatcher.whitespace().negate()::matchesAnyOf).map(CharSequence::toString);
+    }
 
     /**
      * Returns a string ensuring that it begins with the specified prefix. For example,
