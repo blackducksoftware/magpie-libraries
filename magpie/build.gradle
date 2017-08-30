@@ -17,3 +17,20 @@ tasks.withType(JavaCompile) {
 	// from encoded keys as variables to the JCA factory methods.
 	options.compilerArgs += [ '-Xep:InsecureCryptoUsage:OFF' ]
 }
+
+apply plugin: 'nebula.javadoc-jar'
+
+javadoc {
+	title = "Magpie ${project.version} API"
+	options.encoding = 'UTF-8'
+	options.docEncoding = 'UTF-8'
+	options.charSet = 'UTF-8'
+	options.noTimestamp = true
+	options.links = [
+		'http://docs.oracle.com/javase/8/docs/api/',
+		'http://static.javadoc.io/com.google.code.findbugs/jsr305/3.0.1/', // TODO This doesn't match up...
+		'http://google.github.io/guava/releases/' + dependencyRecommendations.getRecommendedVersion('com.google.guava', 'guava') + '/api/docs/'
+	]
+	options.addBooleanOption('Xdoclint:all,-missing', true)
+}
+
