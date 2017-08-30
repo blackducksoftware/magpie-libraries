@@ -134,7 +134,7 @@ public class HeapChannel implements SeekableByteChannel {
     @Override
     public long size() throws ClosedChannelException {
         requireOpen();
-        return count - off;
+        return (long) count - off;
     }
 
     @Override
