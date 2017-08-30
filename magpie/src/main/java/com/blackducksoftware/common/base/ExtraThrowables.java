@@ -35,7 +35,7 @@ public class ExtraThrowables {
      * Instead of:
      *
      * <pre>
-     * optional.orElseThrow(() -> new IllegalArgumentException("Foo " + "bar"))
+     * optional.orElseThrow(() -&gt; new IllegalArgumentException("Foo " + "bar"))
      * </pre>
      */
     public static Supplier<IllegalArgumentException> illegalArgument(String errorMessageTemplate, Object... errorMessageArgs) {
@@ -52,7 +52,7 @@ public class ExtraThrowables {
      * Instead of:
      *
      * <pre>
-     * optional.orElseThrow(() -> new IllegalStateException("Foo " + "bar"))
+     * optional.orElseThrow(() -&gt; new IllegalStateException("Foo " + "bar"))
      * </pre>
      */
     public static Supplier<IllegalStateException> illegalState(String errorMessageTemplate, Object... errorMessageArgs) {
@@ -69,7 +69,7 @@ public class ExtraThrowables {
      * Instead of:
      *
      * <pre>
-     * optional.orElseThrow(() -> new NoSuchElementException("Foo " + "bar"))
+     * optional.orElseThrow(() -&gt; new NoSuchElementException("Foo " + "bar"))
      * </pre>
      */
     public static Supplier<NoSuchElementException> noSuchElement(String errorMessageTemplate, Object... errorMessageArgs) {
@@ -86,7 +86,7 @@ public class ExtraThrowables {
      * Instead of:
      *
      * <pre>
-     * optional.orElseThrow(() -> new NullPointerException("Foo " + "bar"))
+     * optional.orElseThrow(() -&gt; new NullPointerException("Foo " + "bar"))
      * </pre>
      */
     public static Supplier<NullPointerException> nullPointer(String errorMessageTemplate, Object... errorMessageArgs) {

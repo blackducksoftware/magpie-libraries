@@ -30,19 +30,19 @@ public final class ExtraStreams {
      * A function for filtering a stream by type. For example:
      *
      * <pre>
-     * List<String> strs = objs.stream().flatMap(ofType(String.class)).collect(toList());
+     * List&lt;String&gt; strs = objs.stream().flatMap(ofType(String.class)).collect(toList());
      * </pre>
      *
      * Is another way of doing:
      *
      * <pre>
-     * List<String> strs = objs.stream().filter(String.class::isInstance).map(String.class::cast).collect(toList());
+     * List&lt;String&gt; strs = objs.stream().filter(String.class::isInstance).map(String.class::cast).collect(toList());
      * </pre>
      *
      * Which is another way of doing:
      *
      * <pre>
-     * List<String> strs = new ArrayList<>();
+     * List&lt;String&gt; strs = new ArrayList&lt;&gt;();
      * for (Object obj : objs) {
      *     if (obj instanceof String) {
      *         strs.add((String) obj);

@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableList;
  *
  * @author jgustie
  * @see <a href="https://tools.ietf.org/html/rfc7231#section-5.5.3">User-Agent</a>
- * @see <a href="https://tools.ietf.org/html/rfc7231#section-7.4.2>Server</a>
+ * @see <a href="https://tools.ietf.org/html/rfc7231#section-7.4.2">Server</a>
  */
 public class Product {
 
