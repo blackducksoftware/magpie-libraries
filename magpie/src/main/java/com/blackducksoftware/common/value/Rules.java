@@ -114,6 +114,8 @@ final class Rules {
      */
     @VisibleForTesting
     static final class RFC4288 {
+
+        // NOTE: See RFC6838 for restrictions on "." and "+" (facet and suffix)
         private static final CharMatcher regNameChars = RFC5234.ALPHA.or(RFC5234.DIGIT).or(CharMatcher.anyOf("!#$&.+-^_"));
 
         public static boolean isRegName(CharSequence input) {

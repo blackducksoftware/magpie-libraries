@@ -18,12 +18,17 @@ package com.blackducksoftware.common.value;
 import static com.blackducksoftware.common.value.Rules.TokenType.RFC2045;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.LinkedHashMap;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableMap;
+import com.blackducksoftware.common.base.ExtraCollectors;
+import com.google.common.base.Ascii;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
 
 /**
  * A content type as described in RFC2045, RFC2048, RFC4288 and RFC6838. Each content type consists of a top-level type,
@@ -40,21 +45,36 @@ import com.google.common.collect.ImmutableMap;
 public class ContentType {
 
     // Calling this class "content type" instead of "media type" to be consistent with it's representation of a response
-    // header describing an entity body.
+    // header describing an entity body (e.g. no wildcards and such that you might find in an accept header)
 
-    // TODO Special handling for facet and suffix a la. RFC6838?
+    /**
+     * Attribute name for the commonly used "charset" parameter.
+     */
+    private static final String CHARSET_ATTRIBUTE = "charset";
 
     private final String type;
 
     private final String subtype;
 
-    // TODO ListMultimap?
-    private final ImmutableMap<String, String> parameters;
+    private final ImmutableListMultimap<String, String> parameters;
 
     private ContentType(Builder builder) {
-        type = Objects.requireNonNull(builder.type);
-        subtype = Objects.requireNonNull(builder.subtype);
-        parameters = ImmutableMap.copyOf(builder.parameters);
+        type = Ascii.toLowerCase(builder.type);
+        subtype = Ascii.toLowerCase(builder.subtype);
+
+        ImmutableListMultimap.Builder<String, String> parameters = ImmutableListMultimap.builder();
+        for (Map.Entry<String, String> parameter : builder.parameters.entries()) {
+            String attribute = Ascii.toLowerCase(parameter.getKey());
+            String value = parameter.getValue();
+
+            // Normalize supported character set names (e.g. consider "utf8" and "UTF-8" as equivalent)
+            if (attribute.equals(CHARSET_ATTRIBUTE) && Charset.isSupported(value)) {
+                value = Charset.forName(value).name();
+            }
+
+            parameters.put(attribute, value);
+        }
+        this.parameters = parameters.build();
     }
 
     public String type() {
@@ -65,8 +85,69 @@ public class ContentType {
         return subtype;
     }
 
-    public Optional<String> parameter(String attribute) {
-        return Optional.ofNullable(parameters.get(attribute));
+    public Stream<String> parameter(String attribute) {
+        return parameters.get(attribute).stream();
+    }
+
+    /**
+     * Returns the character set for this content type. If a content type defines a default character set and no charset
+     * parameter is specified, the default is returned.
+     * <p>
+     * <em>IMPORTANT:</em> Some content type may have a resolvable character set but the content is actually encoded
+     * using a different character specified using another mechanism defined by the standard that introduces the MIME
+     * type registration. Use this value as a fallback to content type specific encoding rules.
+     *
+     * @throws UnsupportedOperationException
+     *             If no charset parameter is defined and no default is known
+     * @throws IllegalStateException
+     *             If multiple charset parameters were defined
+     */
+    public Charset charset() {
+        // NOTE: RFC 7159 (or 4627, or 6839, or 7158) does not define a "charset" parameter, it shouldn't be there
+        if (is("application", "json") || hasSuffix("json")) {
+            // RFC 7159 Section 8.1
+            return StandardCharsets.UTF_8;
+        }
+
+        // Assume the content type supports the "charset" attribute
+        return parameter(CHARSET_ATTRIBUTE)
+                .map(Charset::forName)
+                .collect(ExtraCollectors.getOnly())
+                .orElseGet(() -> {
+                    if (is("text", "plain")) {
+                        // RFC 6657 Section 4
+                        return StandardCharsets.US_ASCII;
+                    } else if (is("application", "xml") || is("text", "xml")) {
+                        // RFC 7303 Section 3
+                        return StandardCharsets.UTF_8;
+                    } else {
+                        throw new UnsupportedOperationException("no charset available for: " + ContentType.this.toString());
+                    }
+                });
+    }
+
+    /**
+     * Test to see if this content type has the specified suffix.
+     */
+    public boolean hasSuffix(CharSequence suffix) {
+        int pos = subtype.length() - suffix.length();
+        return pos > 0 && subtype.charAt(pos - 1) == '+'
+                && Ascii.equalsIgnoreCase(subtype.subSequence(pos, subtype.length()), suffix);
+    }
+
+    /**
+     * Test to see if this content type has the specified type and subtype. Comparison is case-insensitive.
+     */
+    public boolean is(CharSequence type, CharSequence subtype) {
+        return Ascii.equalsIgnoreCase(this.type, type) && Ascii.equalsIgnoreCase(this.subtype, subtype);
+    }
+
+    /**
+     * Test to see if this content type is another content type. This is a relaxed form of {@code equals} which only
+     * requires that this content type's parameters be a subset instead of strictly equal.
+     */
+    public boolean is(ContentType other) {
+        return is(other.type, other.subtype) && parameters.entries().containsAll(other.parameters.entries());
     }
 
     @Override
@@ -78,8 +159,7 @@ public class ContentType {
     public boolean equals(Object obj) {
         if (obj instanceof ContentType) {
             ContentType other = (ContentType) obj;
-            // TODO Straight equivalence on the parameters is not acceptable
-            return type.equalsIgnoreCase(other.type) && subtype.equalsIgnoreCase(other.subtype) && parameters.equals(other.parameters);
+            return is(other.type, other.subtype) && parameters.equals(other.parameters);
         } else {
             return false;
         }
@@ -88,7 +168,7 @@ public class ContentType {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder().append(type).append('/').append(subtype);
-        for (Map.Entry<String, String> parameter : parameters.entrySet()) {
+        for (Map.Entry<String, String> parameter : parameters.entries()) {
             result.append(';').append(parameter.getKey()).append('=').append(parameter.getValue());
         }
         return result.toString();
@@ -106,17 +186,23 @@ public class ContentType {
 
         private String subtype;
 
-        private Map<String, String> parameters;
+        private ListMultimap<String, String> parameters;
 
         public Builder() {
-            parameters = new LinkedHashMap<>();
+            parameters = LinkedListMultimap.create();
         }
 
+        /**
+         * Prefer one of the standards based top-level helpers.
+         */
         public Builder type(CharSequence type) {
             this.type = Rules.checkType(type);
             return this;
         }
 
+        /**
+         * Prefer one of the tree specific subtype helpers.
+         */
         public Builder subtype(CharSequence subtype) {
             this.subtype = Rules.checkSubtype(subtype);
             return this;
@@ -125,6 +211,107 @@ public class ContentType {
         public Builder parameter(CharSequence attribute, CharSequence value) {
             parameters.put(Rules.checkAttribute(attribute), Rules.checkValue(value));
             return this;
+        }
+
+        public Builder text() {
+            return type("text");
+        }
+
+        public Builder text(String charsetName) {
+            return text().parameter(CHARSET_ATTRIBUTE, charsetName);
+        }
+
+        public Builder text(Charset charset) {
+            return text(charset.name());
+        }
+
+        public Builder image() {
+            return type("image");
+        }
+
+        public Builder audio() {
+            return type("audio");
+        }
+
+        public Builder video() {
+            return type("video");
+        }
+
+        public Builder application() {
+            return type("application");
+        }
+
+        public Builder multipart(CharSequence boundary) {
+            // RFC 2046 says that "unrecognized" subtypes are treated as "mixed", so offer that as a default
+            return type("multipart").standard("mixed").parameter("boundary", boundary);
+        }
+
+        public Builder message() {
+            return type("message");
+        }
+
+        public Builder font() {
+            return type("font");
+        }
+
+        public Builder model() {
+            return type("model");
+        }
+
+        public Builder standard(CharSequence subtype) {
+            Objects.requireNonNull(subtype);
+            return subtype(subtype);
+        }
+
+        public Builder standard(CharSequence subtype, CharSequence suffix) {
+            Objects.requireNonNull(subtype);
+            Objects.requireNonNull(suffix);
+            return subtype(new StringBuilder().append(subtype).append('+').append(suffix));
+        }
+
+        public Builder subtype(CharSequence tree, CharSequence subtype) {
+            Objects.requireNonNull(tree);
+            Objects.requireNonNull(subtype);
+            return subtype(new StringBuilder().append(tree).append('.').append(subtype));
+        }
+
+        public Builder subtype(CharSequence tree, CharSequence subtype, CharSequence suffix) {
+            Objects.requireNonNull(tree);
+            Objects.requireNonNull(subtype);
+            Objects.requireNonNull(suffix);
+            return subtype(new StringBuilder().append(tree).append('.').append(subtype).append('+').append(suffix));
+        }
+
+        public Builder vendor(CharSequence subtype) {
+            return subtype("vnd", subtype);
+        }
+
+        public Builder vendor(CharSequence subtype, CharSequence suffix) {
+            return subtype("vnd", subtype, suffix);
+        }
+
+        public Builder producer(CharSequence producer, CharSequence subtype) {
+            return vendor(new StringBuilder().append(producer).append('.').append(subtype));
+        }
+
+        public Builder producer(CharSequence producer, CharSequence subtype, CharSequence suffix) {
+            return vendor(new StringBuilder().append(producer).append('.').append(subtype), suffix);
+        }
+
+        public Builder personal(CharSequence subtype) {
+            return subtype("prs", subtype);
+        }
+
+        public Builder personal(CharSequence subtype, CharSequence suffix) {
+            return subtype("prs", subtype, suffix);
+        }
+
+        public Builder unregistered(CharSequence subtype) {
+            return subtype("x", subtype);
+        }
+
+        public Builder unregistered(CharSequence subtype, CharSequence suffix) {
+            return subtype("x", subtype, suffix);
         }
 
         public ContentType build() {

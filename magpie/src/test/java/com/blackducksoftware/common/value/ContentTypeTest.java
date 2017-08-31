@@ -35,7 +35,7 @@ public class ContentTypeTest {
         ContentType contentType = ContentType.parse("text/plain;charset=UTF-8");
         assertThat(contentType.type()).isEqualTo("text");
         assertThat(contentType.subtype()).isEqualTo("plain");
-        assertThat(contentType.parameter("charset")).hasValue("UTF-8");
+        assertThat(contentType.parameter("charset").findFirst()).hasValue("UTF-8");
     }
 
     @Test
@@ -43,7 +43,7 @@ public class ContentTypeTest {
         ContentType contentType = ContentType.parse("text/plain; charset=UTF-8");
         assertThat(contentType.type()).isEqualTo("text");
         assertThat(contentType.subtype()).isEqualTo("plain");
-        assertThat(contentType.parameter("charset")).hasValue("UTF-8");
+        assertThat(contentType.parameter("charset").findFirst()).hasValue("UTF-8");
     }
 
 }
