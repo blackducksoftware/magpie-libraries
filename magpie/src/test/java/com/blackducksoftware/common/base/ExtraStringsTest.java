@@ -188,4 +188,19 @@ public class ExtraStringsTest {
         assertThat(ExtraStrings.beforeLast(null, 'a')).isNull();
     }
 
+    @Test
+    public void afterLastMatching() {
+        assertThat(ExtraStrings.afterLast("wxyz", 'y')).isEqualTo("z");
+    }
+
+    @Test
+    public void afterLastNotMatching() {
+        assertThat(ExtraStrings.afterLast("wxyz", 'a')).isEqualTo("wxyz");
+    }
+
+    @Test
+    public void afterLastNull() {
+        assertThat(ExtraStrings.afterLast(null, 'a')).isNull();
+    }
+
 }

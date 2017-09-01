@@ -135,6 +135,23 @@ public final class ExtraStrings {
     }
 
     /**
+     * Returns a string of all the characters after the last occurrence of the specified character. For example,
+     * {@code afterLast("foobar", 'b').equals("ar")} and {@code afterLast("foobar", 'x').equals("foobar")}.
+     */
+    public static String afterLast(@Nullable CharSequence value, char c) {
+        if (value != null) {
+            for (int i = value.length() - 1; i >= 0; --i) {
+                if (value.charAt(i) == c) {
+                    return value.subSequence(i + 1, value.length()).toString();
+                }
+            }
+            return value.toString();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Internal implementation for testing arbitrary character sequence prefixes.
      * <p>
      * Note that you can use this to implement "ends with" as well:
