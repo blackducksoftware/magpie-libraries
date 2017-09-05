@@ -507,13 +507,13 @@ public final class HID {
         if (uri == null) {
             synchronized (this) {
                 if (this.uri == null) {
-                    // TODO Can we eliminate the URI construction at each nesting level?
                     // TODO Should we be using `URI.toASCIIString()` or `IDN.toASCII()`?
+                    String uriString = null;
                     for (int i = 0; i < segments.length; ++i) {
                         StringBuilder nested = new StringBuilder().append(schemes[i]).append(':');
-                        if (uri != null) {
+                        if (uriString != null) {
                             // Build an opaque URI with a fragment
-                            nested.append(UrlEscapers.urlPathSegmentEscaper().escape(uri.toString()))
+                            nested.append(UrlEscapers.urlPathSegmentEscaper().escape(uriString))
                                     .append("#/")
                                     .append(UrlEscapers.urlFragmentEscaper().escape(PATH_JOINER.join(segments[i])));
                         } else {
@@ -522,9 +522,9 @@ public final class HID {
                                     nested.append("//").append(authorities[i]).append('/'),
                                     Stream.of(segments[i]).map(UrlEscapers.urlPathSegmentEscaper()::escape).iterator());
                         }
-                        uri = URI.create(nested.toString());
+                        uriString = nested.toString();
                     }
-                    this.uri = uri;
+                    this.uri = uri = URI.create(uriString);
                 }
             }
         }

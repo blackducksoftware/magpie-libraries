@@ -50,6 +50,17 @@ public class HidBasicTest {
     }
 
     @Test
+    public void toUriNested() {
+        URI uri = URI.create("tar:file:%2F%2F%2Ffoo%2Fbar.tar#/test.txt");
+        HID hid = HID.from(uri);
+
+        assertThat(hid.toUri().getScheme()).isEqualTo("tar");
+        assertThat(hid.toUri().getRawSchemeSpecificPart()).isEqualTo("file:%2F%2F%2Ffoo%2Fbar.tar");
+        assertThat(hid.toUri().getSchemeSpecificPart()).isEqualTo("file:///foo/bar.tar");
+        assertThat(hid.toUri().getFragment()).isEqualTo("/test.txt");
+    }
+
+    @Test
     public void fromUriUnknownScheme() {
         // For you URI junkies out there, one slash indicates hierarchy, two means host, three means no host
         assertThat(HID.from(URI.create("test:/foo/")).getPath()).isEqualTo("/foo");
