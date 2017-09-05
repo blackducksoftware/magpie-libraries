@@ -84,14 +84,6 @@ public final class HID {
     private static final String[] EMPTY_PATH = new String[0];
 
     /**
-     * Normalization procedure for path segments.
-     */
-    private static final Function<String, String> PATH_SEGMENT_NORMALIZER = segment -> {
-        // Perform Unicode normalization on the text
-        return Normalizer.normalize(segment, Normalizer.Form.NFC);
-    };
-
-    /**
      * The ordering of individual "file name" segments.
      */
     // TODO Numeric/version smart sorting
@@ -157,20 +149,18 @@ public final class HID {
                     path.add("..");
                 }
             } else if (!segment.equals(".")) {
-                path.add(segment);
+                path.add(normalizePathSegment(segment));
             }
         }
+        return path.toArray(EMPTY_PATH);
+    }
 
-        // Copy and normalize the path segments
-        if (path.isEmpty()) {
-            return EMPTY_PATH;
-        } else {
-            String[] result = new String[path.size()];
-            for (int i = 0; i < result.length; ++i) {
-                result[i] = PATH_SEGMENT_NORMALIZER.apply(path.get(i));
-            }
-            return result;
-        }
+    /**
+     * Normalization procedure for path segments.
+     */
+    private static String normalizePathSegment(String segment) {
+        // Perform Unicode normalization on the text
+        return Normalizer.normalize(segment, Normalizer.Form.NFC);
     }
 
     /**
