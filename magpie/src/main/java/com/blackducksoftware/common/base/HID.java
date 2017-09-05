@@ -31,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -40,9 +42,6 @@ import javax.annotation.Nullable;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
@@ -119,49 +118,60 @@ public final class HID {
     };
 
     /**
-     * Converts an archive entry name into a normalized path. Results are stored in a static cache so the arrays are
-     * re-used (i.e. this is more for memory then CPU savings).
+     * Static cache so the path arrays are re-used (i.e. this is more for memory then CPU savings).
      */
-    private static final LoadingCache<String, String[]> PATHS = CacheBuilder.newBuilder()
-            .maximumSize(1000)
-            .build(new CacheLoader<String, String[]>() {
-                @Override
-                public String[] load(String entryName) {
-                    // Detect empty paths
-                    if (entryName.isEmpty()) {
-                        return EMPTY_PATH;
-                    }
-                    boolean absolute = entryName.charAt(0) == '/';
-                    if (entryName.length() == 1 && (entryName.charAt(0) == '.' || absolute)) {
-                        return EMPTY_PATH;
-                    }
+    private static final Map<String, String[]> PATHS = new LinkedHashMap<String, String[]>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, String[]> eldest) {
+            return size() > 1000;
+        }
 
-                    // Split the path into a list that contains the relevant bits
-                    List<String> path = new ArrayList<>();
-                    for (String segment : PATH_SPLITTER.split(entryName)) {
-                        if (segment.equals("..")) {
-                            if (path.size() > 0 && !path.get(path.size() - 1).equals("..")) {
-                                path.remove(path.size() - 1);
-                            } else if (!absolute || !path.isEmpty()) {
-                                path.add("..");
-                            }
-                        } else if (!segment.equals(".")) {
-                            path.add(segment);
-                        }
-                    }
+        @Override
+        public String[] computeIfAbsent(String key, Function<? super String, ? extends String[]> mappingFunction) {
+            synchronized (this) {
+                return super.computeIfAbsent(key, mappingFunction);
+            }
+        }
+    };
 
-                    // Copy and normalize the path segments
-                    if (path.isEmpty()) {
-                        return EMPTY_PATH;
-                    } else {
-                        String[] result = new String[path.size()];
-                        for (int i = 0; i < result.length; ++i) {
-                            result[i] = PATH_SEGMENT_NORMALIZER.apply(path.get(i));
-                        }
-                        return result;
-                    }
+    /**
+     * Converts an archive entry name into a normalized path.
+     */
+    private static String[] toPath(String entryName) {
+        // Detect empty paths
+        if (entryName.isEmpty()) {
+            return EMPTY_PATH;
+        }
+        boolean absolute = entryName.charAt(0) == '/';
+        if (entryName.length() == 1 && (entryName.charAt(0) == '.' || absolute)) {
+            return EMPTY_PATH;
+        }
+
+        // Split the path into a list that contains the relevant bits
+        List<String> path = new ArrayList<>();
+        for (String segment : PATH_SPLITTER.split(entryName)) {
+            if (segment.equals("..")) {
+                if (path.size() > 0 && !path.get(path.size() - 1).equals("..")) {
+                    path.remove(path.size() - 1);
+                } else if (!absolute || !path.isEmpty()) {
+                    path.add("..");
                 }
-            });
+            } else if (!segment.equals(".")) {
+                path.add(segment);
+            }
+        }
+
+        // Copy and normalize the path segments
+        if (path.isEmpty()) {
+            return EMPTY_PATH;
+        } else {
+            String[] result = new String[path.size()];
+            for (int i = 0; i < result.length; ++i) {
+                result[i] = PATH_SEGMENT_NORMALIZER.apply(path.get(i));
+            }
+            return result;
+        }
+    }
 
     /**
      * The URI scheme associated with each segment level.
@@ -209,7 +219,7 @@ public final class HID {
      */
     private static HID create(String scheme, @Nullable String authority, @Nullable HID container, String entryName) {
         Objects.requireNonNull(scheme);
-        String[] path = PATHS.getUnchecked(entryName);
+        String[] path = PATHS.computeIfAbsent(entryName, HID::toPath);
         if (container != null) {
             // Copy the container
             String[][] segments = Arrays.copyOf(container.segments, container.segments.length + 1);
