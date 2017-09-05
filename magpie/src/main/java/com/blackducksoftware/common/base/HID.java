@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -43,7 +44,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.UrlEscapers;
 
@@ -507,24 +507,22 @@ public final class HID {
         if (uri == null) {
             synchronized (this) {
                 if (this.uri == null) {
+                    // TODO Can we eliminate the URI construction at each nesting level?
+                    // TODO Should we be using `URI.toASCIIString()` or `IDN.toASCII()`?
                     for (int i = 0; i < segments.length; ++i) {
+                        StringBuilder nested = new StringBuilder().append(schemes[i]).append(':');
                         if (uri != null) {
                             // Build an opaque URI with a fragment
-                            uri = URI.create(new StringBuilder()
-                                    .append(schemes[i])
-                                    .append(':')
-                                    .append(UrlEscapers.urlPathSegmentEscaper().escape(uri.toString()))
+                            nested.append(UrlEscapers.urlPathSegmentEscaper().escape(uri.toString()))
                                     .append("#/")
-                                    .append(UrlEscapers.urlFragmentEscaper().escape(PATH_JOINER.join(segments[i])))
-                                    .toString());
+                                    .append(UrlEscapers.urlFragmentEscaper().escape(PATH_JOINER.join(segments[i])));
                         } else {
                             // The base URI is a little different
-                            uri = URI.create(PATH_JOINER.appendTo(
-                                    new StringBuilder().append(schemes[i]).append("://").append(authorities[i]).append('/'),
-                                    FluentIterable.from(Arrays.asList(segments[i]))
-                                            .transform(UrlEscapers.urlPathSegmentEscaper().asFunction()))
-                                    .toString());
+                            PATH_JOINER.appendTo(
+                                    nested.append("//").append(authorities[i]).append('/'),
+                                    Stream.of(segments[i]).map(UrlEscapers.urlPathSegmentEscaper()::escape).iterator());
                         }
+                        uri = URI.create(nested.toString());
                     }
                     this.uri = uri;
                 }
@@ -564,7 +562,7 @@ public final class HID {
         if (obj instanceof HID) {
             HID other = (HID) obj;
             return Arrays.equals(schemes, other.schemes)
-                    && Arrays.deepEquals(authorities, other.authorities)
+                    && Arrays.equals(authorities, other.authorities)
                     && Arrays.deepEquals(segments, other.segments);
         }
         return false;
