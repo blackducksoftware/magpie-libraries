@@ -84,16 +84,6 @@ public final class HID {
     private static final String[] EMPTY_PATH = new String[0];
 
     /**
-     * The ordering of individual "file name" segments.
-     */
-    // TODO Numeric/version smart sorting
-    // TODO Case sensitivity?
-    // TODO Locale specific?
-    // TODO Work breaks?
-    // TODO Share logic with version comparator?
-    private static final Comparator<String> SEGMENT_ORDER = Comparator.naturalOrder();
-
-    /**
      * Ordering that sorts HID according to a pre-order tree traversal.
      */
     private static final Comparator<HID> PRE_ORDER = (left, right) -> {
@@ -101,7 +91,7 @@ public final class HID {
         for (int i = 0; i < Math.min(left.segments.length, right.segments.length) && compare.result() == 0; ++i) {
             String[] leftNested = left.segments[i], rightNested = right.segments[i];
             for (int j = 0; j < Math.min(leftNested.length, rightNested.length) && compare.result() == 0; ++j) {
-                compare = compare.compare(leftNested[j], rightNested[j], SEGMENT_ORDER);
+                compare = compare.compare(leftNested[j], rightNested[j], HID::comparePathSegments);
             }
             compare = compare.compare(leftNested.length, rightNested.length);
         }
@@ -161,6 +151,18 @@ public final class HID {
     private static String normalizePathSegment(String segment) {
         // Perform Unicode normalization on the text
         return Normalizer.normalize(segment, Normalizer.Form.NFC);
+    }
+
+    /**
+     * The ordering of individual "file name" segments.
+     */
+    // TODO Numeric/version smart sorting
+    // TODO Case sensitivity?
+    // TODO Locale specific?
+    // TODO Work breaks?
+    // TODO Share logic with version comparator?
+    private static int comparePathSegments(String left, String right) {
+        return left.compareTo(right);
     }
 
     /**
