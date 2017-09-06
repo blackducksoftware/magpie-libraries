@@ -532,51 +532,48 @@ final class Rules {
         }
     }
 
-    // TODO All these use the same logic, condense!
+    /**
+     * Returns the index of the first non-matching character.
+     */
+    public static int next(CharSequence input, CharMatcher matcher, int start) {
+        int pos = start, length = input.length();
+        while (pos < length && matcher.matches(input.charAt(pos))) {
+            ++pos;
+        }
+        return pos;
+    }
 
     /**
      * Returns the end index of the token in the character sequence given the specified starting point. If the sequence
      * does not start with a token, the starting position is returned.
      */
     public static int nextToken(TokenType tokenType, CharSequence input, int start) {
-        int pos = start, length = input.length();
-        while (pos < length && tokenType.keyTokenChar.matches(input.charAt(pos))) {
-            ++pos;
-        }
-        return pos;
+        return next(input, tokenType.keyTokenChar, start);
     }
 
     /**
      * Returns the end index of the next reg-name in the character sequence given the specified starting point.
      */
     public static int nextRegName(CharSequence input, int start) {
-        int pos = start, length = Math.min(start + 127, input.length());
-        while (pos < length && RFC4288.regNameChars.matches(input.charAt(pos))) {
-            ++pos;
+        if (input.length() > start + 127) {
+            return next(input.subSequence(start, start + 127), RFC4288.regNameChars, start);
+        } else {
+            return next(input, RFC4288.regNameChars, start);
         }
-        return pos;
     }
 
     /**
      * Returns the end index of the next digit in the character sequence given the specified starting point.
      */
     public static int nextDigit(CharSequence input, int start) {
-        int pos = start, length = input.length();
-        while (pos < length && RFC5234.DIGIT.matches(input.charAt(pos))) {
-            ++pos;
-        }
-        return pos;
+        return next(input, RFC5234.DIGIT, start);
     }
 
     /**
      * Returns the start index of the next non-WSP in the character sequence.
      */
     public static int nextNonWsp(CharSequence input, int start) {
-        int pos = start, length = input.length();
-        while (pos < length && RFC5234.WSP.matches(input.charAt(pos))) {
-            ++pos;
-        }
-        return pos;
+        return next(input, RFC5234.WSP, start);
     }
 
     /**
