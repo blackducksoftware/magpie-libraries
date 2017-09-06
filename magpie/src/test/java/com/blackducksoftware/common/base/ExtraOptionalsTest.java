@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.junit.Before;
@@ -53,6 +54,9 @@ public class ExtraOptionalsTest {
 
     @Mock
     private Supplier<Optional<String>> supplier;
+
+    @Mock
+    private Function<String, String> function;
 
     @Mock
     private BiFunction<String, String, String> combiner;
@@ -226,6 +230,22 @@ public class ExtraOptionalsTest {
         when(combiner.apply("a", "b")).thenReturn("c");
         // Using the method reference to the mock ensures default implementations work
         assertThat(ExtraOptionals.and(Optional.of("a"), Optional.of("b"), combiner::apply)).hasValue("c");
+    }
+
+    @Test
+    public void flatMapNullable_empty() {
+        assertThat(ExtraOptionals.flatMapNullable(Optional.empty(), function)).isEmpty();
+        verify(function, never()).apply(Mockito.anyString());
+    }
+
+    @Test
+    public void flatMapNullable_identity() {
+        assertThat(ExtraOptionals.flatMapNullable(Optional.of("test"), Function.identity())).hasValue("test");
+    }
+
+    @Test
+    public void flatMapNullable_functionReturnsNull() {
+        assertThat(ExtraOptionals.flatMapNullable(Optional.of("test"), x -> null)).isEmpty();
     }
 
 }
