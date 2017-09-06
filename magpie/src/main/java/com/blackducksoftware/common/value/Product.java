@@ -15,6 +15,7 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.base.ExtraFunctions.curry;
 import static com.blackducksoftware.common.value.Rules.TokenType.RFC7230;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -129,6 +130,24 @@ public class Product {
         public Builder addComment(CharSequence comment) {
             comments.add(Rules.checkComment(comment));
             return this;
+        }
+
+        public Builder simpleName(Class<?> type) {
+            return name(type.getSimpleName());
+        }
+
+        public Builder implementationTitle(Class<?> type) {
+            return name(Optional.ofNullable(type.getPackage())
+                    .map(Package::getImplementationTitle)
+                    .map(curry(RFC7230, Rules::retainTokenChars))
+                    .orElse(type.getSimpleName()));
+        }
+
+        public Builder implementationVersion(Class<?> type) {
+            return version(Optional.ofNullable(type.getPackage())
+                    .map(Package::getImplementationVersion)
+                    .map(curry(RFC7230, Rules::retainTokenChars))
+                    .orElse(null));
         }
 
         public Product build() {
