@@ -42,9 +42,7 @@ public class HidBasicTest {
         URI originalUri = URI.create("file:///foo/bar/gus.txt");
         HID hid = HID.from(originalUri);
         URI firstUri = hid.toUri();
-        URI secondURI = hid.toUri();
 
-        assertThat(firstUri).isSameAs(secondURI);
         assertThat(firstUri).isNotSameAs(originalUri);
         assertThat(firstUri).isEqualTo(originalUri);
     }

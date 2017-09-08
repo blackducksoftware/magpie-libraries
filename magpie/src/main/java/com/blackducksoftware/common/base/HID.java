@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Ascii;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ComparisonChain;
@@ -64,11 +65,6 @@ public final class HID {
             "sevenz");
 
     /**
-     * URI schemes that use the Java archive scheme definition.
-     */
-    private static final ImmutableSet<String> JAVA_SCHEMES = ImmutableSet.of("jar");
-
-    /**
      * The character used for joining paths.
      */
     private static final Joiner PATH_JOINER = Joiner.on('/');
@@ -84,25 +80,9 @@ public final class HID {
     private static final String[] EMPTY_PATH = new String[0];
 
     /**
-     * Ordering that sorts HID according to a pre-order tree traversal.
-     */
-    private static final Comparator<HID> PRE_ORDER = (left, right) -> {
-        ComparisonChain compare = ComparisonChain.start();
-        for (int i = 0; i < Math.min(left.segments.length, right.segments.length) && compare.result() == 0; ++i) {
-            String[] leftNested = left.segments[i], rightNested = right.segments[i];
-            for (int j = 0; j < Math.min(leftNested.length, rightNested.length) && compare.result() == 0; ++j) {
-                compare = compare.compare(leftNested[j], rightNested[j], HID::comparePathSegments);
-            }
-            compare = compare.compare(leftNested.length, rightNested.length);
-        }
-        compare = compare.compare(left.segments.length, right.segments.length);
-        return compare.result();
-    };
-
-    /**
      * Static cache so the path arrays are re-used (i.e. this is more for memory then CPU savings).
      */
-    private static final Map<String, String[]> PATHS = new LinkedHashMap<String, String[]>() {
+    private static final Map<String, String[]> PATH_CACHE = new LinkedHashMap<String, String[]>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, String[]> eldest) {
             return size() > 1000;
@@ -154,6 +134,25 @@ public final class HID {
     }
 
     /**
+     * Ordering that sorts HID according to a pre-order tree traversal.
+     */
+    private static int preOrderTraversal(HID left, HID right) {
+        ComparisonChain compare = ComparisonChain.start();
+        for (int i = 0; i < Math.min(left.segments.length, right.segments.length) && compare.result() == 0; ++i) {
+            String[] leftNested = left.segments[i], rightNested = right.segments[i];
+            for (int j = 0; j < Math.min(leftNested.length, rightNested.length) && compare.result() == 0; ++j) {
+                compare = compare.compare(leftNested[j], rightNested[j], HID::comparePathSegments);
+            }
+            compare = compare.compare(leftNested.length, rightNested.length);
+        }
+        compare = compare.compare(left.segments.length, right.segments.length);
+        return compare.result();
+    }
+
+    // TODO postOrderTraversal? (abcdefgh)
+    // TODO breadthFirstTraversal? (hdegabcf)
+
+    /**
      * The ordering of individual "file name" segments.
      */
     // TODO Numeric/version smart sorting
@@ -163,6 +162,28 @@ public final class HID {
     // TODO Share logic with version comparator?
     private static int comparePathSegments(String left, String right) {
         return left.compareTo(right);
+    }
+
+    /**
+     * Returns an ordering that imposes a pre-order tree traversal.
+     * <p>
+     * For example, given the tree:
+     *
+     * <pre>
+     *          h
+     *        / | \
+     *       /  e  \
+     *      d       g
+     *     /|\      |
+     *    / | \     f
+     *   a  b  c
+     * </pre>
+     *
+     * Given a collection of unordered HID's, this ordering would produce {@code hdabcegf}.
+     */
+    public static Comparator<HID> preOrder() {
+        // TODO Deprecate this method and make the other method public?
+        return HID::preOrderTraversal;
     }
 
     /**
@@ -182,11 +203,6 @@ public final class HID {
      * It is assumed that the segments are fully normalized before being passed in.
      */
     private final String[][] segments;
-
-    /**
-     * Lazily computed URI representation.
-     */
-    private volatile URI uri;
 
     private HID(String[] schemes, String[] authorities, String[][] segments, int nesting, int depth) {
         checkArgument(schemes.length == authorities.length, "schemes and authorities lengths must match");
@@ -211,7 +227,7 @@ public final class HID {
      */
     private static HID create(String scheme, @Nullable String authority, @Nullable HID container, String entryName) {
         Objects.requireNonNull(scheme);
-        String[] path = PATHS.computeIfAbsent(entryName, HID::toPath);
+        String[] path = PATH_CACHE.computeIfAbsent(entryName, HID::toPath);
         if (container != null) {
             // Copy the container
             String[][] segments = Arrays.copyOf(container.segments, container.segments.length + 1);
@@ -230,70 +246,41 @@ public final class HID {
         }
     }
 
-    @VisibleForTesting
-    int nesting() {
-        return segments.length - 1;
+    public static HID from(Path path) {
+        // NOTE: Paths have an independent root that is not part of their path segments. Rather then attempt to
+        // normalize the root and reconcile that, it is easier to just convert the Path into a URI and convert
+        // that into a HID. To URI conversion will normalize the root handling across platforms.
+        return from(path.toUri());
     }
 
-    @VisibleForTesting
-    int depth() {
-        return segments[nesting()].length;
+    public static HID from(String uri) {
+        // TODO How can we optimize this to not use a URI?
+        return from(URI.create(uri));
     }
 
     public static HID from(URI uri) {
-        checkArgument(uri.isAbsolute(), "URI must be absolute: '%s'", uri);
-        String scheme = uri.getScheme().toLowerCase();
+        checkArgument(uri.isAbsolute(), "URI must be absolute: %s", uri);
+        String scheme = Ascii.toLowerCase(uri.getScheme());
+        // NOTE: "jar" can be a hierarchical scheme if it has a fragment!
         if (uri.getFragment() != null
                 && (HIERARCHICAL_FRAGMENT_SCHEMES.contains(scheme) || uri.getFragment().startsWith("/"))) {
             // Hierarchical schemes use "<scheme>:<archiveUri>#<entryName>" for URIs
-            return fromHierarchicalFragmentUri(uri);
-        } else if (JAVA_SCHEMES.contains(scheme)) {
-            // Java schemes use "<scheme>:<archiveUri>!/<entryName>" for URIs
-            return fromJavaUri(uri);
+            HID container = from(URI.create(uri.getSchemeSpecificPart()));
+            return create(uri.getScheme(), null, container, uri.getFragment());
+        } else if (scheme.equals("jar")) {
+            // Java's JAR scheme uses "<scheme>:<archiveUri>!/<entryName>" for URIs
+            return fromJarUri(uri);
+        } else {
+            // For other URIs, we do not have any place to put non-path information
+            checkArgument(!isNullOrEmpty(uri.getPath()), "path must not be empty: %s", uri);
+            checkArgument(isNullOrEmpty(uri.getQuery()), "query must be empty: %s", uri);
+            checkArgument(isNullOrEmpty(uri.getFragment()), "fragment must be empty or start with '/': %s", uri);
+            return create(uri.getScheme(), uri.getAuthority(), null, uri.getPath());
         }
-
-        // For other URIs, we do not have any place to put non-path information
-        checkArgument(isNullOrEmpty(uri.getQuery()) && isNullOrEmpty(uri.getFragment()),
-                "cannot handle URIs with fragments or queries: %s", uri);
-
-        // We must have a non-empty path at this point
-        checkArgument(!isNullOrEmpty(uri.getPath()),
-                "URI must have a path: %s", uri);
-
-        return create(uri.getScheme(), uri.getAuthority(), null, uri.getPath());
     }
 
-    /**
-     * Returns an ordering that imposes a pre-order tree traversal.
-     * <p>
-     * For example, given the tree:
-     *
-     * <pre>
-     *          h
-     *        / | \
-     *       /  e  \
-     *      d       g
-     *     /|\      |
-     *    / | \     f
-     *   a  b  c
-     * </pre>
-     *
-     * Given a collection of unordered HID's, this ordering would produce {@code hdabcegf}.
-     */
-    public static Comparator<HID> preOrder() {
-        return PRE_ORDER;
-    }
-
-    // TODO postOrder? breadthFirstOrder?
-
-    private static HID fromHierarchicalFragmentUri(URI uri) {
-        // Recursively obtain the container HID from the SSP
-        HID container = from(URI.create(uri.getSchemeSpecificPart()));
-        return create(uri.getScheme(), null, container, uri.getFragment());
-    }
-
-    private static HID fromJavaUri(URI uri) {
-        // See JarURLConnection#parseSpecs
+    private static HID fromJarUri(URI uri) {
+        // See java.net.JarURLConnection#parseSpecs
         try {
             String spec = uri.toURL().getFile();
             int separator = spec.indexOf("!/");
@@ -314,11 +301,14 @@ public final class HID {
         }
     }
 
-    public static HID from(Path path) {
-        // NOTE: Paths have an independent root that is not part of their path segments. Rather then attempt to
-        // normalize the root and reconcile that, it is easier to just convert the Path into a URI and convert
-        // that into a HID. To URI conversion will normalize the root handling across platforms.
-        return from(path.toUri());
+    @VisibleForTesting
+    int nesting() {
+        return segments.length - 1;
+    }
+
+    @VisibleForTesting
+    int depth() {
+        return segments[nesting()].length;
     }
 
     /**
@@ -500,35 +490,27 @@ public final class HID {
     }
 
     /**
+     * Returns this HID as a URI string useful for serialization.
+     */
+    public String toUriString() {
+        StringBuilder buffer = new StringBuilder(128).append(schemes[0]).append("://").append(authorities[0]).append('/');
+        String result = PATH_JOINER.appendTo(buffer, Stream.of(segments[0]).map(UrlEscapers.urlPathSegmentEscaper()::escape).iterator()).toString();
+        for (int i = 1; i < segments.length; ++i) {
+            buffer.setLength(0);
+            result = buffer.append(schemes[i]).append(':')
+                    .append(UrlEscapers.urlPathSegmentEscaper().escape(result))
+                    .append("#/")
+                    .append(UrlEscapers.urlFragmentEscaper().escape(PATH_JOINER.join(segments[i])))
+                    .toString();
+        }
+        return result;
+    }
+
+    /**
      * Returns this HID as a URI useful for serialization.
      */
     public URI toUri() {
-        URI uri = this.uri;
-        if (uri == null) {
-            synchronized (this) {
-                if (this.uri == null) {
-                    // TODO Should we be using `URI.toASCIIString()` or `IDN.toASCII()`?
-                    String uriString = null;
-                    for (int i = 0; i < segments.length; ++i) {
-                        StringBuilder nested = new StringBuilder().append(schemes[i]).append(':');
-                        if (uriString != null) {
-                            // Build an opaque URI with a fragment
-                            nested.append(UrlEscapers.urlPathSegmentEscaper().escape(uriString))
-                                    .append("#/")
-                                    .append(UrlEscapers.urlFragmentEscaper().escape(PATH_JOINER.join(segments[i])));
-                        } else {
-                            // The base URI is a little different
-                            PATH_JOINER.appendTo(
-                                    nested.append("//").append(authorities[i]).append('/'),
-                                    Stream.of(segments[i]).map(UrlEscapers.urlPathSegmentEscaper()::escape).iterator());
-                        }
-                        uriString = nested.toString();
-                    }
-                    this.uri = uri = URI.create(uriString);
-                }
-            }
-        }
-        return uri;
+        return URI.create(toUriString());
     }
 
     /**
