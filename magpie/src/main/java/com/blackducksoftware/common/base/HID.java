@@ -35,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -65,14 +66,19 @@ public final class HID {
             "sevenz");
 
     /**
+     * The standardized path separator character.
+     */
+    private static final char PATH_SEPARATOR_CHAR = '/';
+
+    /**
      * The character used for joining paths.
      */
-    private static final Joiner PATH_JOINER = Joiner.on('/');
+    private static final Joiner PATH_JOINER = Joiner.on(PATH_SEPARATOR_CHAR);
 
     /**
      * The character used for splitting paths.
      */
-    private static final Splitter PATH_SPLITTER = Splitter.on('/').omitEmptyStrings();
+    private static final Splitter PATH_SPLITTER = Splitter.on(PATH_SEPARATOR_CHAR).omitEmptyStrings();
 
     /**
      * An empty path.
@@ -104,7 +110,7 @@ public final class HID {
         if (entryName.isEmpty()) {
             return EMPTY_PATH;
         }
-        boolean absolute = entryName.charAt(0) == '/';
+        boolean absolute = entryName.charAt(0) == PATH_SEPARATOR_CHAR;
         if (entryName.length() == 1 && (entryName.charAt(0) == '.' || absolute)) {
             return EMPTY_PATH;
         }
@@ -311,6 +317,16 @@ public final class HID {
         return segments[nesting()].length;
     }
 
+    private HID parent() {
+        assert depth() > 0;
+        return new HID(schemes, authorities, segments, nesting(), depth() - 1);
+    }
+
+    private HID container() {
+        assert nesting() > 0;
+        return new HID(schemes, authorities, segments, nesting() - 1, -1);
+    }
+
     /**
      * Returns the most specific scheme in this HID.
      */
@@ -329,7 +345,7 @@ public final class HID {
      * Returns the most specific path in this HID.
      */
     public String getPath() {
-        return PATH_JOINER.appendTo(new StringBuilder().append('/'), segments[nesting()]).toString();
+        return PATH_JOINER.appendTo(new StringBuilder().append(PATH_SEPARATOR_CHAR), segments[nesting()]).toString();
     }
 
     /**
@@ -392,7 +408,20 @@ public final class HID {
         if (isRoot()) {
             return getContainer();
         } else {
-            return new HID(schemes, authorities, segments, nesting(), depth() - 1);
+            return parent();
+        }
+    }
+
+    /**
+     * Returns the directory level parent identifier. This corresponds to the "directory" that contains this identifier.
+     * <p>
+     * Note that if this HID is a "{@linkplain #getRoot() root}", this method will return the container HID.
+     */
+    public Optional<HID> tryParent() {
+        if (isRoot()) {
+            return tryContainer();
+        } else {
+            return Optional.of(parent());
         }
     }
 
@@ -435,9 +464,20 @@ public final class HID {
     @Nullable
     public HID getContainer() {
         if (hasContainer()) {
-            return new HID(schemes, authorities, segments, nesting() - 1, -1);
+            return container();
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Returns the container identifier. This corresponds to the "archive" that contains this identifier.
+     */
+    public Optional<HID> tryContainer() {
+        if (hasContainer()) {
+            return Optional.of(container());
+        } else {
+            return Optional.empty();
         }
     }
 
