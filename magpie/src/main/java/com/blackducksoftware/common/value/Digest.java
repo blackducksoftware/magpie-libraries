@@ -77,6 +77,10 @@ public class Digest {
         return builder.build();
     }
 
+    public static Digest of(CharSequence algorithm, CharSequence value) {
+        return new Builder().algorithm(algorithm).value(value).build();
+    }
+
     public static class Builder {
 
         private static final CharMatcher ALGORITHM_CHARS = CharMatcher.inRange('A', 'Z')
