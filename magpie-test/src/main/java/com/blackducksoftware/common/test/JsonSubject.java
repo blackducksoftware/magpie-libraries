@@ -204,12 +204,25 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         }
     }
 
+    /**
+     * Fails if the subject does not have the specified name/value pair.
+     */
     public void containsPair(String name, @Nullable Object value) {
-        throw new UnsupportedOperationException();
+        // Just gives a more friendly message
+        containsName(name);
+        at(name).isEqualTo(value);
     }
 
+    /**
+     * Fails if the subject has the specified name/value pair.
+     */
     public void doesNotContainPair(String name, @Nullable Object value) {
-        throw new UnsupportedOperationException();
+        checkNotNull(name);
+        if (actual() == null || !actual().isObject()) {
+            fail("is an object");
+        } else if (actual().has(name)) {
+            at(name).isNotEqualTo(value);
+        }
     }
 
     /**
