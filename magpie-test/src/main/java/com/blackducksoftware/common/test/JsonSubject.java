@@ -28,9 +28,13 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.truth.DefaultSubject;
@@ -51,16 +55,42 @@ import com.google.common.truth.Truth;
  */
 public class JsonSubject extends Subject<JsonSubject, JsonNode> {
 
+    /**
+     * Jackson module used internally to initialize the object mapper.
+     */
+    private static class JsonSubjectDefaultModule extends Module {
+        private static final JsonSubjectDefaultModule INSTANCE = new JsonSubjectDefaultModule();
+
+        private boolean indentOutput;
+
+        @Override
+        public String getModuleName() {
+            return "JsonSubject.DEFAULT";
+        }
+
+        @Override
+        public Version version() {
+            return Version.unknownVersion();
+        }
+
+        @Override
+        public void setupModule(SetupContext context) {
+            // Not supposed to do this, but this is kind of an end-around anyway
+            ObjectMapper mapper = context.getOwner();
+            mapper.configure(SerializationFeature.INDENT_OUTPUT, indentOutput);
+        }
+    }
+
     public static class JsonSubjectFactory extends SubjectFactory<JsonSubject, JsonNode> {
 
         private final ObjectMapper objectMapper;
 
         private JsonSubjectFactory() {
             objectMapper = new ObjectMapper();
-
+            objectMapper.registerModule(JsonSubjectDefaultModule.INSTANCE);
         }
 
-        // TODO Register modules?
+        // TODO Register other modules via method calls?
 
         public JsonSubjectFactory configure(DeserializationFeature feature, boolean state) {
             objectMapper.configure(feature, state);
@@ -82,6 +112,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         }
 
         private JsonNode readTree(String content) {
+            // TODO Should this be cached?
             try {
                 return objectMapper.readTree(content);
             } catch (IOException e) {
@@ -102,6 +133,10 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         return json().assertThatJson(content);
     }
 
+    public static void prettyPrintSubjects() {
+        JsonSubjectDefaultModule.INSTANCE.indentOutput = true;
+    }
+
     /**
      * Test verb used to perform further assertions.
      */
@@ -116,6 +151,18 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         super(failureStrategy, actual);
         this.factory = Objects.requireNonNull(factory);
         this.assert_ = new TestVerb(failureStrategy);
+    }
+
+    /**
+     * When formatting the subject, use the factory object mapper.
+     */
+    @Override
+    protected String actualCustomStringRepresentation() {
+        try {
+            return factory.objectMapper.writeValueAsString(actual());
+        } catch (JsonProcessingException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -343,7 +390,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
 
     /**
      * Returns a subject conditionally around the unwrapped actual value. Basically, if we are comparing to another JSON
-     * node, w don't want to unwrap the actual value.
+     * node, we don't want to unwrap the actual value.
      */
     private Subject<DefaultSubject, Object> actualFor(Object other) {
         return assert_.that(other instanceof JsonNode ? actual() : JsonUtil.unwrap(actual()));
