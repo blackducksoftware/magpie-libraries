@@ -45,7 +45,6 @@ import com.google.common.truth.Platform;
 import com.google.common.truth.StringSubject;
 import com.google.common.truth.Subject;
 import com.google.common.truth.SubjectFactory;
-import com.google.common.truth.TestVerb;
 import com.google.common.truth.Truth;
 
 /**
@@ -104,7 +103,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
 
         @Override
         public JsonSubject getSubject(FailureStrategy fs, JsonNode that) {
-            return new JsonSubject(fs, this, that);
+            return new JsonSubject(fs, that, this);
         }
 
         public JsonSubject assertThatJson(String content) {
@@ -138,19 +137,13 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
     }
 
     /**
-     * Test verb used to perform further assertions.
-     */
-    private final TestVerb assert_;
-
-    /**
      * Factory that created this subject. Used to preserve parser settings and perform additional parsing if necessary.
      */
     private final JsonSubjectFactory factory;
 
-    private JsonSubject(FailureStrategy failureStrategy, JsonSubjectFactory factory, JsonNode actual) {
+    private JsonSubject(FailureStrategy failureStrategy, JsonNode actual, JsonSubjectFactory factory) {
         super(failureStrategy, actual);
         this.factory = Objects.requireNonNull(factory);
-        this.assert_ = new TestVerb(failureStrategy);
     }
 
     /**
@@ -198,7 +191,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         if (actual() == null || !actual().isArray()) {
             fail("is an array");
         }
-        return assert_.that((Iterable<?>) JsonUtil.unwrap(actual()));
+        return check().that((Iterable<?>) JsonUtil.unwrap(actual()));
     }
 
     public IterableSubject arrayAt(String pointer) {
@@ -209,7 +202,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         if (actual() == null || !actual().isTextual()) {
             fail("is textual");
         }
-        return assert_.that(actual().asText());
+        return check().that(actual().asText());
     }
 
     public StringSubject textAt(String pointer) {
@@ -220,7 +213,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         if (actual() == null || !actual().isInt()) {
             fail("is integer");
         }
-        return assert_.that(actual().intValue());
+        return check().that(actual().intValue());
     }
 
     public IntegerSubject integerAt(String pointer) {
@@ -393,7 +386,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
      * node, we don't want to unwrap the actual value.
      */
     private Subject<DefaultSubject, Object> actualFor(Object other) {
-        return assert_.that(other instanceof JsonNode ? actual() : JsonUtil.unwrap(actual()));
+        return check().that(other instanceof JsonNode ? actual() : JsonUtil.unwrap(actual()));
     }
 
 }
