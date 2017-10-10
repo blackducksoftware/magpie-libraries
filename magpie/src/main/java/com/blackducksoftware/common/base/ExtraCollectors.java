@@ -35,6 +35,7 @@ public final class ExtraCollectors {
      * stream is empty; if the stream has multiple elements then collection will fail with an
      * {@code IllegalStateException}.
      */
+    @Obsolete(value = "This functionality is available in Guava 21.0", see = "com.google.common.collect.MoreCollectors#onlyElement")
     public static <E> Collector<E, ?, Optional<E>> getOnly() {
         // https://plus.google.com/+LouisWasserman
         // http://stackoverflow.com/questions/22694884/filter-java-stream-to-1-and-only-1-element/22695424#22695424

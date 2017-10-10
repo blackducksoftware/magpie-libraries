@@ -17,7 +17,6 @@ package com.blackducksoftware.common.test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
