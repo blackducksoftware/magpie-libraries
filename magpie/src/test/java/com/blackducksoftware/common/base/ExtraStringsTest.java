@@ -174,6 +174,38 @@ public class ExtraStringsTest {
     }
 
     @Test
+    public void removePrefixNull() {
+        assertThat(ExtraStrings.removePrefix(null, "abc")).isNull();
+        assertThat(ExtraStrings.removePrefix("abc", null)).isEqualTo("abc");
+    }
+
+    @Test
+    public void removePrefixMatching() {
+        assertThat(ExtraStrings.removePrefix("wxyz", "wx")).isEqualTo("yz");
+    }
+
+    @Test
+    public void removePrefixNotMatching() {
+        assertThat(ExtraStrings.removePrefix("wxyz", "yz")).isEqualTo("wxyz");
+    }
+
+    @Test
+    public void removeSuffixNull() {
+        assertThat(ExtraStrings.removeSuffix(null, "abc")).isNull();
+        assertThat(ExtraStrings.removeSuffix("abc", null)).isEqualTo("abc");
+    }
+
+    @Test
+    public void removeSuffixMatching() {
+        assertThat(ExtraStrings.removeSuffix("wxyz", "yz")).isEqualTo("wx");
+    }
+
+    @Test
+    public void removeSuffixNotMatching() {
+        assertThat(ExtraStrings.removeSuffix("wxyz", "wx")).isEqualTo("wxyz");
+    }
+
+    @Test
     public void beforeLastMatching() {
         assertThat(ExtraStrings.beforeLast("wxyz", 'y')).isEqualTo("wx");
     }

@@ -98,6 +98,23 @@ public final class ExtraStrings {
     }
 
     /**
+     * Returns a string ensuring that it does not start with the specified prefix. For example,
+     * {@code removePrefix("foo.bar", "foo.").equals("bar")} and
+     * {@code removePrefix("gus.bar", "foo.").equals("gus.bar")}.
+     */
+    public static String removePrefix(@Nullable CharSequence value, @Nullable CharSequence prefix) {
+        if (value != null && prefix != null) {
+            if (startsWith(value, prefix, 0)) {
+                return value.subSequence(prefix.length(), value.length()).toString();
+            } else {
+                return value.toString();
+            }
+        } else {
+            return value != null ? value.toString() : null;
+        }
+    }
+
+    /**
      * Returns a string ensuring that it does not end with the specified suffix. For example,
      * {@code removeSuffix("foo.bar", ".bar").equals("foo")} and
      * {@code removeSuffix("foo.gus", ".bar").equals("foo.gus")}.
