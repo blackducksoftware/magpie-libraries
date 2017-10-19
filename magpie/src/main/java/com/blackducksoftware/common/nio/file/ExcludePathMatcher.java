@@ -31,9 +31,9 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,7 +49,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * A filtering mechanism based on Git conventions.
- * 
+ *
  * @author jgustie
  */
 public class ExcludePathMatcher implements PathMatcher {
@@ -336,11 +336,11 @@ public class ExcludePathMatcher implements PathMatcher {
 
         private Function<String, Stream<String>> patternNormalizer;
 
-        private final List<String> patterns = new LinkedList<>();
+        private final List<String> patterns = new ArrayList<>();
 
-        private final List<Path> files = new LinkedList<>();
+        private final List<Path> files = new ArrayList<>();
 
-        private final List<String> excludePerDirectoryNames = new LinkedList<>();
+        private final List<String> excludePerDirectoryNames = new ArrayList<>();
 
         public Builder() {
             top = Paths.get(USER_DIR.value());

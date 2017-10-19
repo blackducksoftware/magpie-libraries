@@ -51,12 +51,12 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPrivateKeySpec;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -522,7 +522,7 @@ public final class KeyPairStore {
                 line = line.trim();
                 if (line.startsWith("-----BEGIN ") && line.endsWith("-----")) {
                     // Pre-encapsulation boundary
-                    base64 = new LinkedList<>();
+                    base64 = new ArrayList<>();
                     label = line.substring(11, line.length() - 5);
                 } else if (base64 != null && line.equals("-----END " + label + "-----")) {
                     // Post-encapsulation boundary

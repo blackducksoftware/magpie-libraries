@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -49,7 +49,7 @@ public class FileSystemBuilder {
     /**
      * A list of directory paths to create.
      */
-    private final List<String> directories = new LinkedList<>();
+    private final List<String> directories = new ArrayList<>();
 
     /**
      * A map of file paths to contents (expressed as "lines").

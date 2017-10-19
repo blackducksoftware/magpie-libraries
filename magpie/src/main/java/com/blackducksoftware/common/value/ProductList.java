@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -96,7 +95,7 @@ public class ProductList implements Iterable<Product> {
         private List<Product> products;
 
         public Builder() {
-            products = new LinkedList<>();
+            products = new ArrayList<>();
         }
 
         public Builder addProduct(Product product) {

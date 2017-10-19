@@ -23,8 +23,8 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Test;
@@ -188,7 +188,7 @@ public class ExcludePathMatcherFilteringTest {
      * collect directory names, we are verifying this using a Git repository, and Git does not track directories.
      */
     private static class FileCollector extends SimpleFileVisitor<Path> implements Iterable<String> {
-        private final List<Path> files = new LinkedList<>();
+        private final List<Path> files = new ArrayList<>();
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
