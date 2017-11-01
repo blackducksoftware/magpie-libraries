@@ -24,11 +24,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.blackducksoftware.common.base.ExtraCollectors;
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MoreCollectors;
 
 /**
  * A content type as described in RFC2045, RFC2048, RFC4288 and RFC6838. Each content type consists of a top-level type,
@@ -112,7 +112,7 @@ public class ContentType {
         // Assume the content type supports the "charset" attribute
         return parameter(CHARSET_ATTRIBUTE)
                 .map(Charset::forName)
-                .collect(ExtraCollectors.getOnly())
+                .collect(MoreCollectors.toOptional())
                 .orElseGet(() -> {
                     if (is("text", "plain")) {
                         // RFC 6657 Section 4

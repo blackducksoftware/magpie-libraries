@@ -267,7 +267,7 @@ public class ExcludePathMatcher implements PathMatcher {
      */
     public static Stream<String> defaultPatternNormalizer(String line) {
         // Skip blank lines and comments
-        if (line == null || CharMatcher.WHITESPACE.matchesAllOf(line) || line.charAt(0) == '#') {
+        if (line == null || CharMatcher.whitespace().matchesAllOf(line) || line.charAt(0) == '#') {
             return Stream.empty();
         }
 

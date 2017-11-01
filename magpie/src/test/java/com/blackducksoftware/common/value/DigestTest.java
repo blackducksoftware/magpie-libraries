@@ -29,10 +29,10 @@ import com.google.common.hash.Hashing;
 public class DigestTest {
 
     @Test
-    public void parseSha1() {
-        Digest digest = Digest.parse("sha1:" + Hashing.sha1().hashInt(0));
-        assertThat(digest.algorithm()).isEqualTo("sha1");
-        assertThat(digest.value()).isEqualTo(Hashing.sha1().hashInt(0).toString());
+    public void parseSha256() {
+        Digest digest = Digest.parse("sha256:" + Hashing.sha256().hashInt(0));
+        assertThat(digest.algorithm()).isEqualTo("sha256");
+        assertThat(digest.value()).isEqualTo(Hashing.sha256().hashInt(0).toString());
     }
 
     @Test(expected = IllegalArgumentException.class)

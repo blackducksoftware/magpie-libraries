@@ -16,6 +16,7 @@
 package com.blackducksoftware.common.value;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,7 +26,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.blackducksoftware.common.base.ExtraCollectors;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -39,7 +39,7 @@ public class ProductList implements Iterable<Product> {
 
     private ProductList(Builder builder) {
         checkArgument(!builder.products.isEmpty(), "product list requires at least one product identifier");
-        products = builder.products.stream().distinct().collect(ExtraCollectors.toImmutableList());
+        products = builder.products.stream().distinct().collect(toImmutableList());
     }
 
     public Product primary() {

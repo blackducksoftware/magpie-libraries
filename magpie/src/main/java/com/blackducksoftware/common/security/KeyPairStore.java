@@ -77,6 +77,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
@@ -801,7 +802,9 @@ public final class KeyPairStore {
 
         byte[] secret = new byte[keySize / 8];
         byte[] encodedPassword = new String(password).getBytes(StandardCharsets.ISO_8859_1);
-        Hasher hasher = Hashing.md5().newHasher();
+        @SuppressWarnings("deprecation")
+        HashFunction md5 = Hashing.md5();
+        Hasher hasher = md5.newHasher();
         int pos = 0;
         while (pos < secret.length) {
             hasher.putBytes(encodedPassword);
@@ -812,7 +815,7 @@ public final class KeyPairStore {
             int len = Math.min(secret.length - pos, hash.length);
             System.arraycopy(hash, 0, secret, pos, len);
             pos += len;
-            hasher = Hashing.md5().newHasher();
+            hasher = md5.newHasher();
             hasher.putBytes(hash);
         }
 
