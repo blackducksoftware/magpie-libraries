@@ -24,13 +24,13 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
-import com.google.common.truth.FailureStrategy;
+import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 
 public class AbstractChannelSubject<S extends AbstractChannelSubject<S, C>, C extends Channel> extends Subject<S, C> {
 
-    protected AbstractChannelSubject(FailureStrategy failureStrategy, C actual) {
-        super(failureStrategy, actual);
+    protected AbstractChannelSubject(FailureMetadata metadata, C actual) {
+        super(metadata, actual);
     }
 
     /**
@@ -46,7 +46,7 @@ public class AbstractChannelSubject<S extends AbstractChannelSubject<S, C>, C ex
             try {
                 actual().close();
             } catch (Exception e) {
-                failureStrategy.fail("Closing a closed channel should not fail", e);
+                check().fail("Closing a closed channel should not fail");
             }
         }
     }
@@ -66,16 +66,14 @@ public class AbstractChannelSubject<S extends AbstractChannelSubject<S, C>, C ex
             try {
                 ((ReadableByteChannel) actual()).read(ByteBuffer.allocate(1));
                 failWithRawMessage("Expected reading a closed channel to fail");
-            } catch (ClosedChannelException e) {
-            }
+            } catch (ClosedChannelException e) {}
         }
 
         if (actual() instanceof WritableByteChannel) {
             try {
                 ((WritableByteChannel) actual()).write(ByteBuffer.wrap(new byte[] { 1 }));
                 failWithRawMessage("Expected writing a closed channel to fail");
-            } catch (ClosedChannelException e) {
-            }
+            } catch (ClosedChannelException e) {}
         }
     }
 

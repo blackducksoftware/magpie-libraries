@@ -38,13 +38,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.truth.DefaultSubject;
-import com.google.common.truth.FailureStrategy;
+import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.IntegerSubject;
 import com.google.common.truth.IterableSubject;
-import com.google.common.truth.Platform;
 import com.google.common.truth.StringSubject;
 import com.google.common.truth.Subject;
-import com.google.common.truth.SubjectFactory;
 import com.google.common.truth.Truth;
 
 /**
@@ -80,7 +78,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         }
     }
 
-    public static class JsonSubjectFactory extends SubjectFactory<JsonSubject, JsonNode> {
+    public static class JsonSubjectFactory implements Subject.Factory<JsonSubject, JsonNode> {
 
         private final ObjectMapper objectMapper;
 
@@ -102,8 +100,8 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         }
 
         @Override
-        public JsonSubject getSubject(FailureStrategy fs, JsonNode that) {
-            return new JsonSubject(fs, that, this);
+        public JsonSubject createSubject(FailureMetadata metadata, JsonNode actual) {
+            return new JsonSubject(metadata, actual, this);
         }
 
         public JsonSubject assertThatJson(String content) {
@@ -118,6 +116,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
                 throw new UncheckedIOException(e);
             }
         }
+
     }
 
     public static JsonSubjectFactory json() {
@@ -141,8 +140,8 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
      */
     private final JsonSubjectFactory factory;
 
-    private JsonSubject(FailureStrategy failureStrategy, JsonNode actual, JsonSubjectFactory factory) {
-        super(failureStrategy, actual);
+    private JsonSubject(FailureMetadata metadata, JsonNode actual, JsonSubjectFactory factory) {
+        super(metadata, actual);
         this.factory = Objects.requireNonNull(factory);
     }
 
@@ -182,7 +181,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         if (next.isMissingNode()) {
             fail("matches anything at pointer", pointer);
         }
-        return factory.getSubject(failureStrategy, next);
+        return check().about(factory).that(next);
     }
 
     // TODO Should we just pick one of these two forms ("isX", "xAt")?
@@ -335,7 +334,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
     @Override
     public void isInstanceOf(Class<?> clazz) {
         checkNotNull(clazz);
-        if (!Platform.isInstanceOfType(actual(), clazz) && !JsonUtil.isInstanceOfType(actual(), clazz)) {
+        if (!clazz.isInstance(actual()) && !JsonUtil.isInstanceOfType(actual(), clazz)) {
             if (actual() != null) {
                 failWithBadResults("is an instance of", clazz.getName(),
                         actual().isValueNode() ? "has a node type of" : "is an instance of", JsonUtil.typeName(actual()));
@@ -348,7 +347,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
     @Override
     public void isNotInstanceOf(Class<?> clazz) {
         checkNotNull(clazz);
-        if (actual() != null && (Platform.isInstanceOfType(actual(), clazz) || JsonUtil.isInstanceOfType(actual(), clazz))) {
+        if (actual() != null && (clazz.isInstance(actual()) || JsonUtil.isInstanceOfType(actual(), clazz))) {
             failWithRawMessage("%s expected not to be an instance of %s, but was.", actualAsString(), clazz.getName());
         }
     }

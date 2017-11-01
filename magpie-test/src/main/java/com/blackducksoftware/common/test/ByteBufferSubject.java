@@ -17,9 +17,8 @@ package com.blackducksoftware.common.test;
 
 import java.nio.ByteBuffer;
 
-import com.google.common.truth.FailureStrategy;
+import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
-import com.google.common.truth.SubjectFactory;
 import com.google.common.truth.Truth;
 
 /**
@@ -29,14 +28,14 @@ import com.google.common.truth.Truth;
  */
 public final class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuffer> {
 
-    private static final SubjectFactory<ByteBufferSubject, ByteBuffer> FACTORY = new SubjectFactory<ByteBufferSubject, ByteBuffer>() {
+    private static final Subject.Factory<ByteBufferSubject, ByteBuffer> FACTORY = new Subject.Factory<ByteBufferSubject, ByteBuffer>() {
         @Override
-        public ByteBufferSubject getSubject(FailureStrategy fs, ByteBuffer that) {
-            return new ByteBufferSubject(fs, that);
+        public ByteBufferSubject createSubject(FailureMetadata metadata, ByteBuffer actual) {
+            return new ByteBufferSubject(metadata, actual);
         }
     };
 
-    public static SubjectFactory<ByteBufferSubject, ByteBuffer> byteBuffers() {
+    public static Subject.Factory<ByteBufferSubject, ByteBuffer> byteBuffers() {
         return FACTORY;
     }
 
@@ -44,9 +43,9 @@ public final class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuff
         return Truth.assertAbout(byteBuffers()).that(target);
     }
 
-    private ByteBufferSubject(FailureStrategy failureStrategy, ByteBuffer actual) {
+    private ByteBufferSubject(FailureMetadata metadata, ByteBuffer actual) {
         // TODO Use slice so we don't mess with the actual buffer's state?
-        super(failureStrategy, actual);
+        super(metadata, actual);
     }
 
     @Override

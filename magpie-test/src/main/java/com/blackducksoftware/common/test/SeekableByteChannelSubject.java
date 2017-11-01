@@ -22,20 +22,20 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
 
-import com.google.common.truth.FailureStrategy;
-import com.google.common.truth.SubjectFactory;
+import com.google.common.truth.FailureMetadata;
+import com.google.common.truth.Subject;
 import com.google.common.truth.Truth;
 
 public final class SeekableByteChannelSubject extends AbstractChannelSubject<SeekableByteChannelSubject, SeekableByteChannel> {
 
-    private static final SubjectFactory<SeekableByteChannelSubject, SeekableByteChannel> FACTORY = new SubjectFactory<SeekableByteChannelSubject, SeekableByteChannel>() {
+    private static final Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel> FACTORY = new Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel>() {
         @Override
-        public SeekableByteChannelSubject getSubject(FailureStrategy fs, SeekableByteChannel that) {
-            return new SeekableByteChannelSubject(fs, that);
+        public SeekableByteChannelSubject createSubject(FailureMetadata metadata, SeekableByteChannel actual) {
+            return new SeekableByteChannelSubject(metadata, actual);
         }
     };
 
-    public static SubjectFactory<SeekableByteChannelSubject, SeekableByteChannel> seekableByteChannels() {
+    public static Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel> seekableByteChannels() {
         return FACTORY;
     }
 
@@ -43,8 +43,8 @@ public final class SeekableByteChannelSubject extends AbstractChannelSubject<See
         return Truth.assertAbout(seekableByteChannels()).that(target);
     }
 
-    private SeekableByteChannelSubject(FailureStrategy failureStrategy, SeekableByteChannel actual) {
-        super(failureStrategy, actual);
+    private SeekableByteChannelSubject(FailureMetadata metadata, SeekableByteChannel actual) {
+        super(metadata, actual);
     }
 
     /**
@@ -87,26 +87,22 @@ public final class SeekableByteChannelSubject extends AbstractChannelSubject<See
         try {
             actual().position();
             failWithRawMessage("Expected retrieving the position of a closed channel to fail");
-        } catch (ClosedChannelException e) {
-        }
+        } catch (ClosedChannelException e) {}
 
         try {
             actual().position(0L);
             failWithRawMessage("Expected positioning of a closed channel to fail");
-        } catch (ClosedChannelException e) {
-        }
+        } catch (ClosedChannelException e) {}
 
         try {
             actual().size();
             failWithRawMessage("Expected retrieving the size of a closed channel to fail");
-        } catch (ClosedChannelException e) {
-        }
+        } catch (ClosedChannelException e) {}
 
         try {
             actual().truncate(0L);
             failWithRawMessage("Expected retrieving the position of a closed channel to fail");
-        } catch (ClosedChannelException | NonWritableChannelException e) {
-        }
+        } catch (ClosedChannelException | NonWritableChannelException e) {}
     }
 
 }

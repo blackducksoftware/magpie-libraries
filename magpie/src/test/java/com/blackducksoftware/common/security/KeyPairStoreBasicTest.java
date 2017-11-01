@@ -65,7 +65,7 @@ public class KeyPairStoreBasicTest extends AbstractSecurityTest {
             fail();
         } catch (KeyStoreException e) {
             assertThat(e.getCause()).isInstanceOf(IllegalArgumentException.class);
-            assertThat(e.getCause()).hasMessage("Protection must be PasswordProtection or CallbackHandlerProtection");
+            assertThat(e.getCause()).hasMessageThat().isEqualTo("Protection must be PasswordProtection or CallbackHandlerProtection");
         }
     }
 

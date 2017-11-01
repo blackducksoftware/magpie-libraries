@@ -28,10 +28,10 @@ public class ExtraThrowablesTest {
 
     @Test
     public void format() {
-        assertThat(ExtraThrowables.illegalArgument("foobar").get()).hasMessage("foobar");
-        assertThat(ExtraThrowables.illegalState("%s", "foobar").get()).hasMessage("foobar");
-        assertThat(ExtraThrowables.noSuchElement("%s%s", "foo", "bar").get()).hasMessage("foobar");
-        assertThat(ExtraThrowables.nullPointer("%s%s%s", "fo", 0, "bar").get()).hasMessage("fo0bar");
+        assertThat(ExtraThrowables.illegalArgument("foobar").get()).hasMessageThat().isEqualTo("foobar");
+        assertThat(ExtraThrowables.illegalState("%s", "foobar").get()).hasMessageThat().isEqualTo("foobar");
+        assertThat(ExtraThrowables.noSuchElement("%s%s", "foo", "bar").get()).hasMessageThat().isEqualTo("foobar");
+        assertThat(ExtraThrowables.nullPointer("%s%s%s", "fo", 0, "bar").get()).hasMessageThat().isEqualTo("fo0bar");
     }
 
 }

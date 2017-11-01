@@ -168,7 +168,7 @@ public class KeyPairStoreTest extends AbstractSecurityTest {
             builder.getKeyStore();
             fail();
         } catch (KeyStoreException e) {
-            assertThat(e).hasMessage("No password provided");
+            assertThat(e).hasMessageThat().isEqualTo("No password provided");
         }
     }
 
