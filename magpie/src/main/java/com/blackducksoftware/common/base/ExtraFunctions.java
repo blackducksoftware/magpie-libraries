@@ -20,6 +20,8 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 /**
  * Extra function helpers.
  *
@@ -60,14 +62,16 @@ public class ExtraFunctions {
     /**
      * Returns a function which evaluates the bi-function with the supplied first argument.
      */
-    public static <T, U, R> Function<U, R> curry(T t, BiFunction<T, U, R> f) {
+    public static <T, U, R> Function<U, R> curry(@Nullable T t, BiFunction<T, U, R> f) {
+        Objects.requireNonNull(f);
         return u -> f.apply(t, u);
     }
 
     /**
      * Returns a function which evaluates the bi-function with the supplied second argument.
      */
-    public static <T, U, R> Function<T, R> curry(BiFunction<T, U, R> f, U u) {
+    public static <T, U, R> Function<T, R> curry(BiFunction<T, U, R> f, @Nullable U u) {
+        Objects.requireNonNull(f);
         return t -> f.apply(t, u);
     }
 

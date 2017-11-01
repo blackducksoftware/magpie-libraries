@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 import org.junit.Test;
 
@@ -56,11 +57,33 @@ public class ExtraFunctionsTest {
     }
 
     @Test
+    public void curryFirstNullValue() {
+        Function<String, String> f = ExtraFunctions.curry((Object) null, Objects::toString);
+        assertThat(f.apply("test")).isEqualTo("test");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void curryFirstNullFunction() {
+        ExtraFunctions.curry("test", null);
+    }
+
+    @Test
     public void currySecond() {
         Map<String, Integer> holder = new HashMap<>();
         holder.put("test", 1);
         assertThat(ExtraFunctions.curry(holder::put, 2).apply("test")).isEqualTo(1);
         assertThat(holder).containsEntry("test", 2);
+    }
+
+    @Test
+    public void currySecondNullValue() {
+        Function<Object, String> f = ExtraFunctions.curry(Objects::toString, (String) null);
+        assertThat(f.apply(null)).isNull();
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void currySecondNullFunction() {
+        ExtraFunctions.curry(null, "test");
     }
 
 }
