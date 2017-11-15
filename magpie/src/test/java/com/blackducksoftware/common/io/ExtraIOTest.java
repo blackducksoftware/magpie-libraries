@@ -16,11 +16,13 @@
 package com.blackducksoftware.common.io;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assert_;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -116,6 +118,36 @@ public class ExtraIOTest {
     public void bufferOutputStream_nullOutputStream() {
         OutputStream out = ByteStreams.nullOutputStream();
         assertThat(ExtraIO.buffer(out)).isSameAs(out);
+    }
+
+    @Test
+    public void ignoreCloseInput() throws IOException {
+        ExtraIO.ignoreClose(new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void close() throws IOException {
+                assert_().fail();
+            }
+        }).close();
+    }
+
+    @Test
+    public void ignoreCloseOutput() throws IOException {
+        ExtraIO.ignoreClose(new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void close() throws IOException {
+                assert_().fail();
+            }
+        }).close();
     }
 
 }

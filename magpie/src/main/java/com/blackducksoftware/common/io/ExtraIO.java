@@ -23,6 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayReader;
 import java.io.Closeable;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,6 +44,32 @@ import com.google.common.io.ByteStreams;
  * @author jgustie
  */
 public final class ExtraIO {
+
+    /**
+     * A filter input stream that does not delegate close requests.
+     */
+    private static final class UnclosableInputStream extends FilterInputStream {
+        private UnclosableInputStream(InputStream in) {
+            super(in);
+        }
+
+        @Override
+        public void close() {
+        }
+    }
+
+    /**
+     * A filter output stream that does not delegate close requests.
+     */
+    private static final class UnclosableOutputStream extends FilterOutputStream {
+        private UnclosableOutputStream(OutputStream out) {
+            super(out);
+        }
+
+        @Override
+        public void close() {
+        }
+    }
 
     /**
      * Creates a new {@link PrintWriter} using an explicit character encoding.
@@ -95,6 +123,20 @@ public final class ExtraIO {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /**
+     * Returns an input stream that ignores requests to be closed.
+     */
+    public static InputStream ignoreClose(InputStream in) {
+        return new UnclosableInputStream(Objects.requireNonNull(in));
+    }
+
+    /**
+     * Returns an output stream that ignores requests to be closed.
+     */
+    public static OutputStream ignoreClose(OutputStream out) {
+        return new UnclosableOutputStream(Objects.requireNonNull(out));
     }
 
     private ExtraIO() {
