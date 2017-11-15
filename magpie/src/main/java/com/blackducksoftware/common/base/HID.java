@@ -163,7 +163,7 @@ public final class HID {
      */
     // TODO Numeric/version smart sorting
     // TODO Case sensitivity?
-    // TODO Locale specific?
+    // TODO Locale specific (collate)?
     // TODO Work breaks?
     // TODO Share logic with version comparator?
     private static int comparePathSegments(String left, String right) {
@@ -190,6 +190,13 @@ public final class HID {
     public static Comparator<HID> preOrder() {
         // TODO Deprecate this method and make the other method public?
         return HID::preOrderTraversal;
+    }
+
+    /**
+     * Returns an ordering that ignores all path information and only considers the name.
+     */
+    public static Comparator<HID> ignorePathOrder() {
+        return Comparator.comparing(HID::getName, HID::comparePathSegments);
     }
 
     /**

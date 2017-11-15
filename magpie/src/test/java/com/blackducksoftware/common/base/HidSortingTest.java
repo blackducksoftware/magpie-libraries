@@ -109,4 +109,18 @@ public class HidSortingTest {
                         .isStrictlyOrdered(HID.preOrder());
     }
 
+    @Test
+    public void ignorePath() {
+        assertThat(Arrays.asList(
+                HID.from(Paths.get("/h/d/a")),
+                HID.from(Paths.get("/h/d/b")),
+                HID.from(Paths.get("/h/d/c")),
+                HID.from(Paths.get("/h/d")),
+                HID.from(Paths.get("/h/e")),
+                HID.from(Paths.get("/h/f")),
+                HID.from(Paths.get("/h/f/g")),
+                HID.from(Paths.get("/h"))))
+                        .isStrictlyOrdered(HID.ignorePathOrder());
+    }
+
 }
