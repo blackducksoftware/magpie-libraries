@@ -206,6 +206,21 @@ public class ExtraStringsTest {
     }
 
     @Test
+    public void beforeFirstMatching() {
+        assertThat(ExtraStrings.beforeFirst("wxyz", 'y')).isEqualTo("wx");
+    }
+
+    @Test
+    public void beforeFirstNotMatching() {
+        assertThat(ExtraStrings.beforeFirst("wxyz", 'a')).isEqualTo("wxyz");
+    }
+
+    @Test
+    public void beforeFirstNull() {
+        assertThat(ExtraStrings.beforeFirst(null, 'a')).isNull();
+    }
+
+    @Test
     public void beforeLastMatching() {
         assertThat(ExtraStrings.beforeLast("wxyz", 'y')).isEqualTo("wx");
     }
@@ -218,6 +233,21 @@ public class ExtraStringsTest {
     @Test
     public void beforeLastNull() {
         assertThat(ExtraStrings.beforeLast(null, 'a')).isNull();
+    }
+
+    @Test
+    public void afterFirstMatching() {
+        assertThat(ExtraStrings.afterFirst("wxyz", 'y')).isEqualTo("z");
+    }
+
+    @Test
+    public void afterFirstNotMatching() {
+        assertThat(ExtraStrings.afterFirst("wxyz", 'a')).isEqualTo("wxyz");
+    }
+
+    @Test
+    public void afterFirstNull() {
+        assertThat(ExtraStrings.afterFirst(null, 'a')).isNull();
     }
 
     @Test

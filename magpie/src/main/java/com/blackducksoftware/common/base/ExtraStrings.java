@@ -134,6 +134,23 @@ public final class ExtraStrings {
     }
 
     /**
+     * Returns a string of all the characters before the first occurrence of the specified character. For example,
+     * {@code beforeFirst("foobar", 'o').equals("f")} and {@code beforeFirst("foobar", 'x').equals("foobar")}.
+     */
+    public static String beforeFirst(@Nullable CharSequence value, char c) {
+        if (value != null) {
+            for (int i = 0; i < value.length(); ++i) {
+                if (value.charAt(i) == c) {
+                    return value.subSequence(0, i).toString();
+                }
+            }
+            return value.toString();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Returns a string of all the characters before the last occurrence of the specified character. For example,
      * {@code beforeLast("foobar", 'b').equals("foo")} and {@code beforeLast("foobar", 'x').equals("foobar")}.
      */
@@ -143,6 +160,23 @@ public final class ExtraStrings {
             for (int i = value.length() - 1; i >= 0; --i) {
                 if (value.charAt(i) == c) {
                     return value.subSequence(0, i).toString();
+                }
+            }
+            return value.toString();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a string of all the characters after the first occurrence of the specified character. For example,
+     * {@code afterFirst("foobar", 'o').equals("obar")} and {@code afterFirst("foobar", 'x').equals("foobar")}.
+     */
+    public static String afterFirst(@Nullable CharSequence value, char c) {
+        if (value != null) {
+            for (int i = 0; i < value.length(); ++i) {
+                if (value.charAt(i) == c) {
+                    return value.subSequence(i + 1, value.length()).toString();
                 }
             }
             return value.toString();
