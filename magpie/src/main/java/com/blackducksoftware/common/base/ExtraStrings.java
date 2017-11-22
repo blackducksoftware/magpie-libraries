@@ -152,7 +152,7 @@ public final class ExtraStrings {
 
     /**
      * Returns a string of all the characters before the last occurrence of the specified character. For example,
-     * {@code beforeLast("foobar", 'b').equals("foo")} and {@code beforeLast("foobar", 'x').equals("foobar")}.
+     * {@code beforeLast("foobar", 'o').equals("fo")} and {@code beforeLast("foobar", 'x').equals("foobar")}.
      */
     @Nullable
     public static String beforeLast(@Nullable CharSequence value, char c) {
@@ -187,7 +187,7 @@ public final class ExtraStrings {
 
     /**
      * Returns a string of all the characters after the last occurrence of the specified character. For example,
-     * {@code afterLast("foobar", 'b').equals("ar")} and {@code afterLast("foobar", 'x').equals("foobar")}.
+     * {@code afterLast("foobar", 'o').equals("bar")} and {@code afterLast("foobar", 'x').equals("foobar")}.
      */
     public static String afterLast(@Nullable CharSequence value, char c) {
         if (value != null) {

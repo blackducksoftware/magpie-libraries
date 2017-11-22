@@ -207,11 +207,13 @@ public class ExtraStringsTest {
 
     @Test
     public void beforeFirstMatching() {
+        assertThat(ExtraStrings.beforeFirst("foobar", 'o')).isEqualTo("f");
         assertThat(ExtraStrings.beforeFirst("wxyz", 'y')).isEqualTo("wx");
     }
 
     @Test
     public void beforeFirstNotMatching() {
+        assertThat(ExtraStrings.beforeFirst("foobar", 'x')).isEqualTo("foobar");
         assertThat(ExtraStrings.beforeFirst("wxyz", 'a')).isEqualTo("wxyz");
     }
 
@@ -222,11 +224,13 @@ public class ExtraStringsTest {
 
     @Test
     public void beforeLastMatching() {
+        assertThat(ExtraStrings.beforeLast("foobar", 'o')).isEqualTo("fo");
         assertThat(ExtraStrings.beforeLast("wxyz", 'y')).isEqualTo("wx");
     }
 
     @Test
     public void beforeLastNotMatching() {
+        assertThat(ExtraStrings.beforeLast("foobar", 'x')).isEqualTo("foobar");
         assertThat(ExtraStrings.beforeLast("wxyz", 'a')).isEqualTo("wxyz");
     }
 
@@ -237,11 +241,13 @@ public class ExtraStringsTest {
 
     @Test
     public void afterFirstMatching() {
+        assertThat(ExtraStrings.afterFirst("foobar", 'o')).isEqualTo("obar");
         assertThat(ExtraStrings.afterFirst("wxyz", 'y')).isEqualTo("z");
     }
 
     @Test
     public void afterFirstNotMatching() {
+        assertThat(ExtraStrings.afterFirst("foobar", 'x')).isEqualTo("foobar");
         assertThat(ExtraStrings.afterFirst("wxyz", 'a')).isEqualTo("wxyz");
     }
 
@@ -252,11 +258,13 @@ public class ExtraStringsTest {
 
     @Test
     public void afterLastMatching() {
+        assertThat(ExtraStrings.afterLast("foobar", 'o')).isEqualTo("bar");
         assertThat(ExtraStrings.afterLast("wxyz", 'y')).isEqualTo("z");
     }
 
     @Test
     public void afterLastNotMatching() {
+        assertThat(ExtraStrings.afterLast("foobar", 'x')).isEqualTo("foobar");
         assertThat(ExtraStrings.afterLast("wxyz", 'a')).isEqualTo("wxyz");
     }
 
