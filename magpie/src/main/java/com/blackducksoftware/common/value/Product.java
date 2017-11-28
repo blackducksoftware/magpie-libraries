@@ -143,6 +143,13 @@ public class Product {
             return this;
         }
 
+        /**
+         * Adds comment text. Using this method there is no need to wrap the comment in "()".
+         */
+        public Builder addCommentText(CharSequence comment, Object... args) {
+            return addComment(String.format("(" + comment + ")", args));
+        }
+
         public Builder simpleName(Class<?> type) {
             return name(type.getSimpleName());
         }

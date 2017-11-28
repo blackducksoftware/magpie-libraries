@@ -79,6 +79,11 @@ public class ProductTest {
     }
 
     @Test
+    public void commentText() {
+        assertThat(new Product.Builder().name("foo").addCommentText("bar %s", "gus").build().comments()).contains("(bar gus)");
+    }
+
+    @Test
     public void multipleNamesParseSingle() {
         thrown.expect(IllegalArgumentException.class);
         Product.parse("foo bar");
