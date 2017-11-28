@@ -90,6 +90,18 @@ public class ProductList implements Iterable<Product> {
         return new Builder().addProduct(product).build();
     }
 
+    public static ProductList from(Object obj) {
+        if (obj instanceof ProductList) {
+            return (ProductList) obj;
+        } else if (obj instanceof Product) {
+            return of((Product) obj);
+        } else if (obj instanceof CharSequence) {
+            return parse((CharSequence) obj);
+        } else {
+            throw new IllegalArgumentException("unexpected input: " + obj);
+        }
+    }
+
     public static class Builder {
 
         private List<Product> products;
