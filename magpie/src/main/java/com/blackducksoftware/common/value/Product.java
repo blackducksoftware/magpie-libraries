@@ -95,6 +95,10 @@ public class Product {
         return result.toString();
     }
 
+    public Builder newBuilder() {
+        return new Builder(this);
+    }
+
     public static Product parse(CharSequence input) {
         Builder builder = new Builder();
         builder.parse(input);
@@ -111,6 +115,12 @@ public class Product {
 
         public Builder() {
             comments = new ArrayList<>(1);
+        }
+
+        Builder(Product product) {
+            name = product.name;
+            version = product.version.orElse(null);
+            comments = new ArrayList<>(product.comments);
         }
 
         public Builder name(CharSequence name) {
