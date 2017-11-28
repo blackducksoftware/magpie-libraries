@@ -39,11 +39,29 @@ public class HeapOutputStream extends ByteArrayOutputStream {
         super(size);
     }
 
+    // TODO Should we also hide the exception on close?
+
+    @Override
+    public void write(byte[] b) {
+        // Since the super does not override this, it still throws an IOException
+        write(b, 0, b.length);
+    }
+
     /**
      * Checks to see if the capacity of this buffer is large enough to contain the supplied size.
      */
     public boolean hasCapacity(long size) {
         return size <= buf.length;
+    }
+
+    /**
+     * Transfers the bytes written to another heap output stream into this stream.
+     */
+    public HeapOutputStream transferFrom(HeapOutputStream other) {
+        synchronized (other) {
+            write(other.buf, 0, other.count);
+        }
+        return this;
     }
 
     /**

@@ -15,6 +15,7 @@
  */
 package com.blackducksoftware.common.io;
 
+import static com.blackducksoftware.common.test.ByteBufferSubject.assertThat;
 import static com.blackducksoftware.common.test.SeekableByteChannelSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -42,6 +43,20 @@ public class HeapOutputStreamTest {
             assertThat(out.hasCapacity(15)).isTrue();
             assertThat(out.hasCapacity(16)).isTrue();
             assertThat(out.hasCapacity(17)).isFalse();
+        }
+    }
+
+    @Test
+    public void transferFrom() throws IOException {
+        try (HeapOutputStream out1 = new HeapOutputStream()) {
+            try (HeapOutputStream out2 = new HeapOutputStream()) {
+                out1.write(1);
+                out1.write(2);
+                out2.write(3);
+                out2.write(4);
+                out1.transferFrom(out2);
+                assertThat(out1.toByteBuffer()).hasNextBytes((byte) 1, (byte) 2, (byte) 3, (byte) 4);
+            }
         }
     }
 
