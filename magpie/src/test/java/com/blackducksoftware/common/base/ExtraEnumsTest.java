@@ -16,6 +16,7 @@
 package com.blackducksoftware.common.base;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 
 import java.util.BitSet;
 
@@ -104,6 +105,26 @@ public class ExtraEnumsTest {
     @Test
     public void names_some() {
         assertThat(ExtraEnums.names(TestEnum.ENUM_1, TestEnum.ENUM_2)).containsExactly("ENUM_1", "ENUM_2");
+    }
+
+    @Test
+    public void tryByName_present() {
+        assertThat(ExtraEnums.tryByName(TestEnum.class, "ENUM_0")).hasValue(TestEnum.ENUM_0);
+    }
+
+    @Test
+    public void tryByName_empty() {
+        assertThat(ExtraEnums.tryByName(TestEnum.class, "ENUM_3")).isEmpty();
+    }
+
+    @Test
+    public void tryByToString_present() {
+        assertThat(ExtraEnums.tryByToString(TestEnum.class, "0")).hasValue(TestEnum.ENUM_0);
+    }
+
+    @Test
+    public void tryByToString_empty() {
+        assertThat(ExtraEnums.tryByToString(TestEnum.class, "3")).isEmpty();
     }
 
     @Test(expected = IllegalArgumentException.class)
