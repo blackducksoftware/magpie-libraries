@@ -149,18 +149,10 @@ public final class ExtraEnums {
     }
 
     /**
-     * Attempts to find an enumerated value by it's {@code toString} representation.
-     * <p>
-     * <em>WARNING:</em> if multiple enumerated values share a {@code toString} representation, this method makes no
-     * guarantee about which value will be returned.
+     * Attempts to find enumerated values by their {@code toString} representation.
      */
-    public static <E extends Enum<E>> Optional<E> tryByToString(Class<E> enumClass, String toStringValue) {
-        for (E e : enumClass.getEnumConstants()) {
-            if (Objects.equals(e.toString(), toStringValue)) {
-                return Optional.of(e);
-            }
-        }
-        return Optional.empty();
+    public static <E extends Enum<E>> Stream<E> tryByToString(Class<E> enumClass, String toStringValue) {
+        return stream(enumClass).filter(e -> Objects.equals(e.toString(), toStringValue));
     }
 
     /**

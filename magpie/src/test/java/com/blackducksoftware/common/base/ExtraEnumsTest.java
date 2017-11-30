@@ -119,7 +119,7 @@ public class ExtraEnumsTest {
 
     @Test
     public void tryByToString_present() {
-        assertThat(ExtraEnums.tryByToString(TestEnum.class, "0")).hasValue(TestEnum.ENUM_0);
+        assertThat(ExtraEnums.tryByToString(TestEnum.class, "0")).containsExactly(TestEnum.ENUM_0);
     }
 
     @Test
