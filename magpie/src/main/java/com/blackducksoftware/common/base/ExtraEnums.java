@@ -25,12 +25,15 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.Enums;
 
 /**
  * Extra enumeration helpers. Most of this functionality is generally "questionable", however as with most rules, there
