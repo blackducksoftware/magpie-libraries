@@ -139,6 +139,28 @@ public final class ExtraEnums {
     }
 
     /**
+     * Attempts to find an enumerated value using {@link Enum#valueOf(Class, String)}.
+     */
+    public <E extends Enum<E>> Optional<E> tryByName(Class<E> enumClass, String name) {
+        return Enums.getIfPresent(enumClass, name).toJavaUtil();
+    }
+
+    /**
+     * Attempts to find an enumerated value by it's {@code toString} representation.
+     * <p>
+     * <em>WARNING:</em> if multiple enumerated values share a {@code toString} representation, this method makes no
+     * guarantee about which value will be returned.
+     */
+    public <E extends Enum<E>> Optional<E> tryByToString(Class<E> enumClass, String toStringValue) {
+        for (E e : enumClass.getEnumConstants()) {
+            if (Objects.equals(e.toString(), toStringValue)) {
+                return Optional.of(e);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Returns a set of enum constants whose ordinals correspond to the set bit positions in the supplied integer value.
      * This requires that the enum constants be defined in a fixed, well-known order; before trying to use this method,
      * be sure that precautions are taken to ensure that enum declarations are stable.
