@@ -103,6 +103,7 @@ public final class ExtraStrings {
      * {@code removePrefix("foo.bar", "foo.").equals("bar")} and
      * {@code removePrefix("gus.bar", "foo.").equals("gus.bar")}.
      */
+    @Nullable
     public static String removePrefix(@Nullable CharSequence value, @Nullable CharSequence prefix) {
         if (value != null && prefix != null) {
             if (startsWith(value, prefix, 0)) {
@@ -138,6 +139,7 @@ public final class ExtraStrings {
      * Returns a string of all the characters before the first occurrence of the specified character. For example,
      * {@code beforeFirst("foobar", 'o').equals("f")} and {@code beforeFirst("foobar", 'x').equals("foobar")}.
      */
+    @Nullable
     public static String beforeFirst(@Nullable CharSequence value, char c) {
         if (value != null) {
             for (int i = 0; i < value.length(); ++i) {
@@ -173,6 +175,7 @@ public final class ExtraStrings {
      * Returns a string of all the characters after the first occurrence of the specified character. For example,
      * {@code afterFirst("foobar", 'o').equals("obar")} and {@code afterFirst("foobar", 'x').equals("foobar")}.
      */
+    @Nullable
     public static String afterFirst(@Nullable CharSequence value, char c) {
         if (value != null) {
             for (int i = 0; i < value.length(); ++i) {
@@ -190,6 +193,7 @@ public final class ExtraStrings {
      * Returns a string of all the characters after the last occurrence of the specified character. For example,
      * {@code afterLast("foobar", 'o').equals("bar")} and {@code afterLast("foobar", 'x').equals("foobar")}.
      */
+    @Nullable
     public static String afterLast(@Nullable CharSequence value, char c) {
         if (value != null) {
             for (int i = value.length() - 1; i >= 0; --i) {
