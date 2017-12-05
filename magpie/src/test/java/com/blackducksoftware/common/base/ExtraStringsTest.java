@@ -18,6 +18,9 @@ package com.blackducksoftware.common.base;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 
+import java.util.Objects;
+import java.util.StringJoiner;
+
 import org.junit.Test;
 
 /**
@@ -271,6 +274,46 @@ public class ExtraStringsTest {
     @Test
     public void afterLastNull() {
         assertThat(ExtraStrings.afterLast(null, 'a')).isNull();
+    }
+
+    @Test
+    public void splitOnFirstNull() {
+        assertThat(ExtraStrings.splitOnFirst(null, 'a', ExtraStringsTest::joinWithHash)).isNull();
+    }
+
+    @Test
+    public void splitOnFirstMatching() {
+        assertThat(ExtraStrings.splitOnFirst("foobar", 'f', ExtraStringsTest::joinWithHash)).isEqualTo("#oobar");
+        assertThat(ExtraStrings.splitOnFirst("foobar", 'o', ExtraStringsTest::joinWithHash)).isEqualTo("f#obar");
+        assertThat(ExtraStrings.splitOnFirst("foobar", 'r', ExtraStringsTest::joinWithHash)).isEqualTo("fooba#");
+    }
+
+    @Test
+    public void splitOnFirstNotMatching() {
+        assertThat(ExtraStrings.splitOnFirst("foobar", 'x', ExtraStringsTest::joinWithHash)).isEqualTo("foobar#");
+    }
+
+    @Test
+    public void splitOnLastNull() {
+        assertThat(ExtraStrings.splitOnLast(null, 'a', ExtraStringsTest::joinWithHash)).isNull();
+    }
+
+    @Test
+    public void splitOnLastMatching() {
+        assertThat(ExtraStrings.splitOnLast("foobar", 'f', ExtraStringsTest::joinWithHash)).isEqualTo("#oobar");
+        assertThat(ExtraStrings.splitOnLast("foobar", 'o', ExtraStringsTest::joinWithHash)).isEqualTo("fo#bar");
+        assertThat(ExtraStrings.splitOnLast("foobar", 'r', ExtraStringsTest::joinWithHash)).isEqualTo("fooba#");
+    }
+
+    @Test
+    public void splitOnLastNotMatching() {
+        assertThat(ExtraStrings.splitOnLast("foobar", 'x', ExtraStringsTest::joinWithHash)).isEqualTo("#foobar");
+    }
+
+    private static String joinWithHash(CharSequence a, CharSequence b) {
+        Objects.requireNonNull(a);
+        Objects.requireNonNull(b);
+        return new StringJoiner("#").add(a).add(b).toString();
     }
 
 }

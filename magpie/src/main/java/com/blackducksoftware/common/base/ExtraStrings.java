@@ -17,6 +17,7 @@ package com.blackducksoftware.common.base;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
 
@@ -197,6 +198,45 @@ public final class ExtraStrings {
                 }
             }
             return value.toString();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Split the input on the first occurrence of the specified character and return the result of applying a function
+     * to the parts.
+     */
+    @Nullable
+    public static <R> R splitOnFirst(@Nullable CharSequence value, char c, BiFunction<CharSequence, CharSequence, R> joiner) {
+        Objects.requireNonNull(joiner);
+        if (value != null) {
+            for (int i = 0; i < value.length(); ++i) {
+                if (value.charAt(i) == c) {
+                    return joiner.apply(value.subSequence(0, i), value.subSequence(i + 1, value.length()));
+                }
+            }
+            return joiner.apply(value, "");
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Split the input on the last occurrence of the specified character and return the result of applying a function to
+     * the parts.
+     */
+    @Nullable
+    public static <R> R splitOnLast(@Nullable CharSequence value, char c, BiFunction<CharSequence, CharSequence, R> joiner) {
+        Objects.requireNonNull(joiner);
+        if (value != null) {
+            for (int i = value.length() - 1; i >= 0; --i) {
+                if (value.charAt(i) == c) {
+                    return joiner.apply(value.subSequence(0, i), value.subSequence(i + 1, value.length()));
+                }
+            }
+            // TODO Should this use the same order as splitOnFirst?
+            return joiner.apply("", value);
         } else {
             return null;
         }
