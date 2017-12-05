@@ -212,15 +212,15 @@ public final class ExtraStrings {
      * to the parts.
      */
     @Nullable
-    public static <R> R splitOnFirst(@Nullable CharSequence value, char c, BiFunction<CharSequence, CharSequence, R> joiner) {
+    public static <R> R splitOnFirst(@Nullable CharSequence value, char c, BiFunction<String, String, R> joiner) {
         Objects.requireNonNull(joiner);
         if (value != null) {
             for (int i = 0; i < value.length(); ++i) {
                 if (value.charAt(i) == c) {
-                    return joiner.apply(value.subSequence(0, i), value.subSequence(i + 1, value.length()));
+                    return joiner.apply(value.subSequence(0, i).toString(), value.subSequence(i + 1, value.length()).toString());
                 }
             }
-            return joiner.apply(value, "");
+            return joiner.apply(value.toString(), "");
         } else {
             return null;
         }
@@ -231,16 +231,16 @@ public final class ExtraStrings {
      * the parts.
      */
     @Nullable
-    public static <R> R splitOnLast(@Nullable CharSequence value, char c, BiFunction<CharSequence, CharSequence, R> joiner) {
+    public static <R> R splitOnLast(@Nullable CharSequence value, char c, BiFunction<String, String, R> joiner) {
         Objects.requireNonNull(joiner);
         if (value != null) {
             for (int i = value.length() - 1; i >= 0; --i) {
                 if (value.charAt(i) == c) {
-                    return joiner.apply(value.subSequence(0, i), value.subSequence(i + 1, value.length()));
+                    return joiner.apply(value.subSequence(0, i).toString(), value.subSequence(i + 1, value.length()).toString());
                 }
             }
             // TODO Should this use the same order as splitOnFirst?
-            return joiner.apply("", value);
+            return joiner.apply("", value.toString());
         } else {
             return null;
         }
