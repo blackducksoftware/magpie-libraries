@@ -21,6 +21,7 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
@@ -156,6 +157,21 @@ public final class ExtraOptionals {
             return combiner.andThen(Optional::ofNullable).apply(a.get(), b.get());
         } else {
             return Optional.empty();
+        }
+    }
+
+    /**
+     * If both values are present, combines them using the supplied operator, if the result is non-null, return an
+     * {@code Optional} describing the result. If only one value is present, it is returned. Otherwise return an empty
+     * {@code Optional}.
+     */
+    public static <T> Optional<T> merge(Optional<T> a, Optional<T> b, BinaryOperator<T> combiner) {
+        Objects.requireNonNull(combiner);
+        Objects.requireNonNull(b);
+        if (a.isPresent() && b.isPresent()) {
+            return combiner.andThen(Optional::ofNullable).apply(a.get(), b.get());
+        } else {
+            return a.isPresent() ? a : b;
         }
     }
 

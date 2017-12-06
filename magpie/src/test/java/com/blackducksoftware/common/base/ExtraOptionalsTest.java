@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -59,7 +59,7 @@ public class ExtraOptionalsTest {
     private Function<String, String> function;
 
     @Mock
-    private BiFunction<String, String, String> combiner;
+    private BinaryOperator<String> combiner;
 
     @Before
     public void setup() {
@@ -189,21 +189,18 @@ public class ExtraOptionalsTest {
     @Test
     public void and_nullA() {
         thrown.expect(NullPointerException.class);
-
         ExtraOptionals.and(null, Optional.empty(), combiner);
     }
 
     @Test
     public void and_nullB() {
         thrown.expect(NullPointerException.class);
-
         ExtraOptionals.and(Optional.empty(), null, combiner);
     }
 
     @Test
     public void and_nullCombiner() {
         thrown.expect(NullPointerException.class);
-
         ExtraOptionals.and(Optional.empty(), Optional.empty(), null);
     }
 
@@ -230,6 +227,49 @@ public class ExtraOptionalsTest {
         when(combiner.apply("a", "b")).thenReturn("c");
         // Using the method reference to the mock ensures default implementations work
         assertThat(ExtraOptionals.and(Optional.of("a"), Optional.of("b"), combiner::apply)).hasValue("c");
+    }
+
+    @Test
+    public void merge_nullA() {
+        thrown.expect(NullPointerException.class);
+        ExtraOptionals.merge(null, Optional.empty(), combiner);
+    }
+
+    @Test
+    public void merge_nullB() {
+        thrown.expect(NullPointerException.class);
+        ExtraOptionals.merge(Optional.empty(), null, combiner);
+    }
+
+    @Test
+    public void merge_nullCombiner() {
+        thrown.expect(NullPointerException.class);
+        ExtraOptionals.merge(Optional.empty(), Optional.empty(), null);
+    }
+
+    @Test
+    public void merge_emptyA() {
+        assertThat(ExtraOptionals.merge(Optional.empty(), Optional.of("test"), combiner)).hasValue("test");
+        verify(combiner, never()).apply(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    public void merge_emptyB() {
+        assertThat(ExtraOptionals.merge(Optional.of("test"), Optional.empty(), combiner)).hasValue("test");
+        verify(combiner, never()).apply(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    public void merge_emptyA_emptyB() {
+        assertThat(ExtraOptionals.merge(Optional.empty(), Optional.empty(), combiner)).isEmpty();
+        verify(combiner, never()).apply(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    public void merge() {
+        when(combiner.apply("a", "b")).thenReturn("c");
+        // Using the method reference to the mock ensures default implementations work
+        assertThat(ExtraOptionals.merge(Optional.of("a"), Optional.of("b"), combiner::apply)).hasValue("c");
     }
 
     @Test
