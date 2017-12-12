@@ -80,6 +80,10 @@ public class ProductList implements Iterable<Product> {
         return products.stream().map(Product::toString).collect(Collectors.joining(" "));
     }
 
+    public Builder newBuilder() {
+        return new Builder(this);
+    }
+
     public static ProductList parse(CharSequence input) {
         Builder builder = new Builder();
         builder.parse(input);
@@ -108,6 +112,10 @@ public class ProductList implements Iterable<Product> {
 
         public Builder() {
             products = new ArrayList<>();
+        }
+
+        private Builder(ProductList productList) {
+            products = new ArrayList<>(productList.products);
         }
 
         public Builder addProduct(Product product) {
