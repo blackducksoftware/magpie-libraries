@@ -188,6 +188,25 @@ public class ExtraOptionalsTest {
     }
 
     @Test
+    public void isOptionalEquals_null() {
+        assertThat(ExtraOptionals.isOptionalEqual(null).test(Optional.ofNullable(null))).isTrue();
+        assertThat(ExtraOptionals.isOptionalEqual(null).test(Optional.ofNullable("test"))).isFalse();
+    }
+
+    @Test
+    public void isOptionalEquals_present() {
+        assertThat(ExtraOptionals.isOptionalEqual("test").test(Optional.ofNullable(null))).isFalse();
+        assertThat(ExtraOptionals.isOptionalEqual("test").test(Optional.ofNullable("test"))).isTrue();
+        assertThat(ExtraOptionals.isOptionalEqual("test").test(Optional.ofNullable("foobar"))).isFalse();
+    }
+
+    @Test
+    public void isEmpty() {
+        assertThat(ExtraOptionals.isEmpty().test(Optional.empty())).isTrue();
+        assertThat(ExtraOptionals.isEmpty().test(Optional.of("test"))).isFalse();
+    }
+
+    @Test
     public void and_nullA() {
         thrown.expect(NullPointerException.class);
         ExtraOptionals.and(null, Optional.empty(), combiner);

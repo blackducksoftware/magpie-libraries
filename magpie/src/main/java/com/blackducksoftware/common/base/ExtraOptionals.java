@@ -27,8 +27,11 @@ import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.LongFunction;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import com.blackducksoftware.common.annotations.Obsolete;
 
@@ -144,6 +147,25 @@ public final class ExtraOptionals {
     public static <T> Function<Object, Optional<T>> ofType(Class<T> type) {
         Objects.requireNonNull(type);
         return obj -> type.isInstance(obj) ? Optional.of(type.cast(obj)) : Optional.empty();
+    }
+
+    /**
+     * Returns a predicate that tests if an optional is equal to a (possibly {@code null}) supplied value.
+     * <p>
+     * If the supplied target value is {@code null}, the resulting predicate only accepts empty optionals, you can apply
+     * further refinement if you are only interested in present values (e.g.
+     * {@code isOptionalEqual(target).and(Optional::isPresent)}).
+     */
+    public static <T> Predicate<Optional<T>> isOptionalEqual(@Nullable T target) {
+        return target != null ? o -> o.isPresent() && o.get().equals(target) : isEmpty();
+    }
+
+    /**
+     * Convenience method for {@code o -> !o.isPresent()}.
+     */
+    public static <T> Predicate<Optional<T>> isEmpty() {
+        // TODO Make this a constant?
+        return o -> !o.isPresent();
     }
 
     /**
