@@ -189,6 +189,14 @@ public final class ExtraOptionals {
     }
 
     /**
+     * If a value is present, apply the provided mapping function to return zero or more results, otherwise return an
+     * empty {@code Stream}.
+     */
+    public static <T, R> Stream<R> flatMapMany(Optional<T> self, Function<? super T, ? extends Stream<? extends R>> mapper) {
+        return stream(self).flatMap(mapper);
+    }
+
+    /**
      * If both values are present, performs the given action using both values.
      */
     // TODO Name?

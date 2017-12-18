@@ -27,6 +27,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -286,6 +287,35 @@ public class ExtraOptionalsTest {
     @Test
     public void flatMapNullable_functionReturnsNull() {
         assertThat(ExtraOptionals.flatMapNullable(Optional.of("test"), x -> null)).isEmpty();
+    }
+
+    @Test
+    public void flatMapMany_null() {
+        thrown.expect(NullPointerException.class);
+        ExtraOptionals.flatMapMany(null, Stream::of);
+    }
+
+    @Test
+    public void flatMapMany_nullFunction() {
+        thrown.expect(NullPointerException.class);
+        ExtraOptionals.flatMapMany(Optional.empty(), null);
+    }
+
+    @Test
+    public void flatMapMany_empty() {
+        assertThat(ExtraOptionals.flatMapMany(Optional.empty(), Stream::of)).isEmpty();
+    }
+
+    @Test
+    public void flatMapMany_present() {
+        assertThat(ExtraOptionals.flatMapMany(Optional.of("test"), Stream::of)).containsExactly("test");
+    }
+
+    @Test
+    public void flatMapMany_multiple() {
+        assertThat(ExtraOptionals.flatMapMany(Optional.of("test"),
+                t -> t.chars().mapToObj(cp -> String.valueOf(Character.toChars(cp)))))
+                        .containsExactly("t", "e", "s", "t").inOrder();
     }
 
 }
