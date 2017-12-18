@@ -15,6 +15,7 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.google.common.base.Ascii.toLowerCase;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.nullToEmpty;
@@ -22,7 +23,6 @@ import static com.google.common.base.Strings.nullToEmpty;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Path;
@@ -89,6 +89,8 @@ public final class HID {
      * Static cache so the path arrays are re-used (i.e. this is more for memory then CPU savings).
      */
     private static final Map<String, String[]> PATH_CACHE = new LinkedHashMap<String, String[]>() {
+        private static final long serialVersionUID = 1L;
+
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, String[]> eldest) {
             return size() > 1000;
@@ -188,7 +190,6 @@ public final class HID {
      * Given a collection of unordered HID's, this ordering would produce {@code hdabcegf}.
      */
     public static Comparator<HID> preOrder() {
-        // TODO Deprecate this method and make the other method public?
         return HID::preOrderTraversal;
     }
 
@@ -247,7 +248,7 @@ public final class HID {
             segments[segments.length - 1] = path;
 
             String[] schemes = Arrays.copyOf(container.schemes, container.schemes.length + 1);
-            schemes[schemes.length - 1] = scheme;
+            schemes[schemes.length - 1] = toLowerCase(scheme);
 
             String[] authorities = Arrays.copyOf(container.authorities, container.authorities.length + 1);
             authorities[authorities.length - 1] = nullToEmpty(authority);
@@ -255,23 +256,30 @@ public final class HID {
             return new HID(schemes, authorities, segments, segments.length - 1, -1);
         } else {
             // No container, this is a base HID
-            return new HID(new String[] { scheme }, new String[] { nullToEmpty(authority) }, new String[][] { path }, 0, -1);
+            return new HID(new String[] { toLowerCase(scheme) }, new String[] { nullToEmpty(authority) }, new String[][] { path }, 0, -1);
         }
     }
 
-    public static HID from(Path path) {
-        // NOTE: Paths have an independent root that is not part of their path segments. Rather then attempt to
-        // normalize the root and reconcile that, it is easier to just convert the Path into a URI and convert
-        // that into a HID. To URI conversion will normalize the root handling across platforms.
-        return from(path.toUri());
-    }
+    /**
+     * Creates a new HID from a non-null supported object. A HID can be created from a {@code String}, {@code URI} or
+     * {@code Path} instance.
+     */
+    public static HID from(Object obj) {
+        // TODO How can we implement this to not use a URI? For performance and RFC 3986...
+        URI uri;
+        if (obj instanceof URI) {
+            uri = (URI) obj;
+        } else if (obj instanceof Path) {
+            // NOTE: Paths have an independent root that is not part of their path segments. Rather then attempt to
+            // normalize the root and reconcile that, it is easier to just convert the Path into a URI and convert
+            // that into a HID. To URI conversion will normalize the root handling across platforms.
+            uri = ((Path) obj).toUri();
+        } else if (obj instanceof String) {
+            uri = URI.create((String) obj);
+        } else {
+            throw new IllegalArgumentException("unexpected input: " + obj);
+        }
 
-    public static HID from(String uri) {
-        // TODO How can we optimize this to not use a URI?
-        return from(URI.create(uri));
-    }
-
-    public static HID from(URI uri) {
         checkArgument(uri.isAbsolute(), "URI must be absolute: %s", uri);
         String scheme = Ascii.toLowerCase(uri.getScheme());
         // NOTE: "jar" can be a hierarchical scheme if it has a fragment!
@@ -281,8 +289,8 @@ public final class HID {
             HID container = from(URI.create(uri.getSchemeSpecificPart()));
             return create(uri.getScheme(), null, container, uri.getFragment());
         } else if (scheme.equals("jar")) {
-            // Java's JAR scheme uses "<scheme>:<archiveUri>!/<entryName>" for URIs
-            return fromJarUri(uri);
+            // Java's JAR scheme uses "<scheme>:<archiveUri>!/<entryName>" for URLs
+            return fromJarUrl(uri.toString());
         } else {
             // For other URIs, we do not have any place to put non-path information
             checkArgument(!isNullOrEmpty(uri.getPath()), "path must not be empty: %s", uri);
@@ -292,25 +300,25 @@ public final class HID {
         }
     }
 
-    private static HID fromJarUri(URI uri) {
+    private static HID fromJarUrl(String url) {
         // See java.net.JarURLConnection#parseSpecs
         try {
-            String spec = uri.toURL().getFile();
+            String spec = new URL(url).getFile();
             int separator = spec.indexOf("!/");
             if (separator == -1) {
                 throw new MalformedURLException("no !/ found in url spec:" + spec);
             }
 
-            HID container = from(new URL(spec.substring(0, separator++)).toURI());
+            HID container = from(new URL(spec.substring(0, separator++)).toString());
             String entryName = null;
             if (++separator != spec.length()) {
                 entryName = spec.substring(separator, spec.length());
-                entryName = URLDecoder.decode(entryName, "UTF-8"); // TODO Not quite right...
+                entryName = URLDecoder.decode(entryName, "UTF-8");
             }
 
-            return create(uri.getScheme(), null, container, entryName);
-        } catch (MalformedURLException | URISyntaxException | UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("bad URL", e);
+            return create("jar", null, container, entryName);
+        } catch (MalformedURLException | UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("bad JAR URL", e);
         }
     }
 
@@ -443,6 +451,7 @@ public final class HID {
      */
     @Deprecated
     public boolean hasParent() {
+        // Note that there is no intention on removing this, this method serves as documentation
         return !isRoot();
     }
 
@@ -555,7 +564,12 @@ public final class HID {
 
     /**
      * Returns this HID as a URI useful for serialization.
+     * <p>
+     * <em>WARNING</em> This method will fail for non-RFC 2396 URIs.
+     *
+     * @deprecated Use {@link #toUriString()} instead. This method will be removed in a future release.
      */
+    @Deprecated
     public URI toUri() {
         return URI.create(toUriString());
     }

@@ -17,7 +17,6 @@ package com.blackducksoftware.common.value;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import java.net.URI;
 import java.nio.file.Paths;
 
 import org.junit.Test;
@@ -32,77 +31,83 @@ public class HidNormalizationTest {
     @Test
     public void emptyPath() {
         // Here are a bunch of strange ways to create "empty" paths
-        assertThat(HID.from(URI.create("file:///")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:///.")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/.")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/./")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/..")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/../")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/../..")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/../../")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("zip:file:%2F#")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("zip:file:%2F#.")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("zip:file:%2F#/")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("zip:file:%2F#/.")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("zip:file:%2F#/./")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("zip:file:%2F#/../")).getPath()).isEqualTo("/");
+        assertThat(HID.from("file:///").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:///.").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/.").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/./").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/..").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/../").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/../..").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/../../").getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#").getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#.").getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#/").getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#/.").getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#/./").getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#/../").getPath()).isEqualTo("/");
         assertThat(HID.from(Paths.get("/")).getPath()).isEqualTo("/");
         assertThat(HID.from(Paths.get("/.")).getPath()).isEqualTo("/");
     }
 
     @Test
     public void oneSegmentPath() {
-        assertThat(HID.from(URI.create("file:/a")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("file:/./a")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("file:/a/")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("zip:file:%2F#a")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("zip:file:%2F#/a")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("zip:file:%2F#./a")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("zip:file:%2F#/./a")).getPath()).isEqualTo("/a");
+        assertThat(HID.from("file:/a").getPath()).isEqualTo("/a");
+        assertThat(HID.from("file:/./a").getPath()).isEqualTo("/a");
+        assertThat(HID.from("file:/a/").getPath()).isEqualTo("/a");
+        assertThat(HID.from("zip:file:%2F#a").getPath()).isEqualTo("/a");
+        assertThat(HID.from("zip:file:%2F#/a").getPath()).isEqualTo("/a");
+        assertThat(HID.from("zip:file:%2F#./a").getPath()).isEqualTo("/a");
+        assertThat(HID.from("zip:file:%2F#/./a").getPath()).isEqualTo("/a");
         assertThat(HID.from(Paths.get("/a")).getPath()).isEqualTo("/a");
     }
 
     @Test
     public void dotNormalization() {
-        assertThat(HID.from(URI.create("file:/..")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/../..")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/a/..")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/a/b/..")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("file:/a/b/../..")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:/a/b/../../..")).getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/..").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/../..").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/a/..").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/a/b/..").getPath()).isEqualTo("/a");
+        assertThat(HID.from("file:/a/b/../..").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/a/b/../../..").getPath()).isEqualTo("/");
 
         // TODO This is strange case
-        assertThat(HID.from(URI.create("zip:file:%2F#..")).getPath()).isEqualTo("/..");
-        assertThat(HID.from(URI.create("zip:file:%2F#../")).getPath()).isEqualTo("/..");
+        assertThat(HID.from("zip:file:%2F#..").getPath()).isEqualTo("/..");
+        assertThat(HID.from("zip:file:%2F#../").getPath()).isEqualTo("/..");
     }
 
     @Test
     public void slashes() {
-        assertThat(HID.from(URI.create("file:/")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:///")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file:////")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file://///")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("file://////")).getPath()).isEqualTo("/");
+        assertThat(HID.from("file:/").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:///").getPath()).isEqualTo("/");
+        assertThat(HID.from("file:////").getPath()).isEqualTo("/");
+        assertThat(HID.from("file://///").getPath()).isEqualTo("/");
+        assertThat(HID.from("file://////").getPath()).isEqualTo("/");
 
-        assertThat(HID.from(URI.create("zip:file:%2F#")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("zip:file:%2F#/")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("zip:file:%2F#//")).getPath()).isEqualTo("/");
-        assertThat(HID.from(URI.create("zip:file:%2F#///")).getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#").getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#/").getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#//").getPath()).isEqualTo("/");
+        assertThat(HID.from("zip:file:%2F#///").getPath()).isEqualTo("/");
 
-        assertThat(HID.from(URI.create("zip:file:%2F#a")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("zip:file:%2F#/a")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("zip:file:%2F#/a/")).getPath()).isEqualTo("/a");
-        assertThat(HID.from(URI.create("zip:file:%2F#a/")).getPath()).isEqualTo("/a");
+        assertThat(HID.from("zip:file:%2F#a").getPath()).isEqualTo("/a");
+        assertThat(HID.from("zip:file:%2F#/a").getPath()).isEqualTo("/a");
+        assertThat(HID.from("zip:file:%2F#/a/").getPath()).isEqualTo("/a");
+        assertThat(HID.from("zip:file:%2F#a/").getPath()).isEqualTo("/a");
     }
 
     @Test
     public void combiningCharacter() {
-        HID nfc = HID.from(URI.create("file:/f%C3%B6%C3%B6"));
-        HID nfd = HID.from(URI.create("file:/fo%CC%88o%CC%88"));
+        HID nfc = HID.from("file:/f%C3%B6%C3%B6");
+        HID nfd = HID.from("file:/fo%CC%88o%CC%88");
 
         assertThat(nfc.getPath()).isEqualTo("/f\u00F6\u00F6");
         assertThat(nfd.getPath()).isEqualTo("/f\u00F6\u00F6");
         assertThat(nfc).isEqualTo(nfd);
+    }
+
+    @Test
+    public void lowerCaseScheme() {
+        assertThat(HID.from("file:/").getScheme()).isEqualTo("file");
+        assertThat(HID.from("FILE:/").getScheme()).isEqualTo("file");
     }
 
 }

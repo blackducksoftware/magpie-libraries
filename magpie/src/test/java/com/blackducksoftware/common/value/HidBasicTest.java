@@ -38,16 +38,17 @@ import com.google.common.jimfs.Jimfs;
 public class HidBasicTest {
 
     @Test
-    public void toUri() {
-        URI originalUri = URI.create("file:///foo/bar/gus.txt");
+    public void toUriString() {
+        String originalUri = "file:///foo/bar/gus.txt";
         HID hid = HID.from(originalUri);
-        URI firstUri = hid.toUri();
+        String firstUri = hid.toUriString();
 
         assertThat(firstUri).isNotSameAs(originalUri);
         assertThat(firstUri).isEqualTo(originalUri);
     }
 
     @Test
+    @SuppressWarnings("deprecation") // Uses "toUri" to get at individual pieces of the URI
     public void toUriNested() {
         URI uri = URI.create("tar:file:%2F%2F%2Ffoo%2Fbar.tar#/test.txt");
         HID hid = HID.from(uri);
@@ -97,7 +98,7 @@ public class HidBasicTest {
 
     @Test
     public void fromUriNesting0Depth0() {
-        URI uri = URI.create("file:///");
+        String uri = "file:///";
         HID nesting0Depth0 = HID.from(uri);
 
         // Nesting and depth
@@ -105,7 +106,7 @@ public class HidBasicTest {
         assertThat(nesting0Depth0.depth()).isEqualTo(0);
 
         // Round trip back to URI
-        assertThat(nesting0Depth0.toUri()).isEqualTo(uri);
+        assertThat(nesting0Depth0.toUriString()).isEqualTo(uri);
 
         // At depth == 0 the root should be us
         assertThat(nesting0Depth0.isRoot()).isTrue();
@@ -130,7 +131,7 @@ public class HidBasicTest {
 
     @Test
     public void fromUriNesting0Depth3() {
-        URI uri = URI.create("file:///foo/bar/gus.txt");
+        String uri = "file:///foo/bar/gus.txt";
         HID nesting0Depth3 = HID.from(uri);
 
         // Nesting and depth
@@ -138,7 +139,7 @@ public class HidBasicTest {
         assertThat(nesting0Depth3.depth()).isEqualTo(3);
 
         // Round trip back to URI
-        assertThat(nesting0Depth3.toUri()).isEqualTo(uri);
+        assertThat(nesting0Depth3.toUriString()).isEqualTo(uri);
 
         // At nesting == 0 the root is just first ancestor
         assertThat(nesting0Depth3.isRoot()).isFalse();
@@ -163,7 +164,7 @@ public class HidBasicTest {
 
     @Test
     public void fromUriNesting1Depth0() {
-        URI uri = URI.create("tar:file:%2F%2F%2Ffoo%2Fbar.tar#/");
+        String uri = "tar:file:%2F%2F%2Ffoo%2Fbar.tar#/";
         HID nesting1Depth0 = HID.from(uri);
 
         // Nesting and depth
@@ -171,7 +172,7 @@ public class HidBasicTest {
         assertThat(nesting1Depth0.depth()).isEqualTo(0);
 
         // Round trip back to URI
-        assertThat(nesting1Depth0.toUri()).isEqualTo(uri);
+        assertThat(nesting1Depth0.toUriString()).isEqualTo(uri);
 
         // At depth == 0 the root should be us
         assertThat(nesting1Depth0.isRoot()).isTrue();
@@ -196,7 +197,7 @@ public class HidBasicTest {
 
     @Test
     public void fromUriNesting1Depth3() {
-        URI uri = URI.create("tar:file:%2F%2F%2Ffoo%2Fbar.tar#/abc/def/ghi.txt");
+        String uri = "tar:file:%2F%2F%2Ffoo%2Fbar.tar#/abc/def/ghi.txt";
         HID nesting1Depth3 = HID.from(uri);
 
         // Nesting and depth
@@ -204,7 +205,7 @@ public class HidBasicTest {
         assertThat(nesting1Depth3.depth()).isEqualTo(3);
 
         // Round trip back to URI
-        assertThat(nesting1Depth3.toUri()).isEqualTo(uri);
+        assertThat(nesting1Depth3.toUriString()).isEqualTo(uri);
 
         // At nesting == 1 the root is still in the archive
         assertThat(nesting1Depth3.isRoot()).isFalse();
@@ -343,11 +344,15 @@ public class HidBasicTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation") // Uses "toUri" to get at individual pieces of the URI
     public void fromHttpUrl() {
-        // HIDs preserve the authority but don't otherwise expose it (much like the scheme)
+        // HIDs preserve the authority but don't otherwise expose it
         HID hid = HID.from(URI.create("http://example.com/foo/bar"));
         assertThat(hid.toString()).contains("example.com");
+        assertThat(hid.toUriString()).contains("example.com");
         assertThat(hid.toUri().getHost()).isEqualTo("example.com");
+
+        // Make sure the authority did not leak into the path
         while (hid != null) {
             assertThat(hid.getName()).doesNotContain("example.com");
             hid = hid.getParent();
