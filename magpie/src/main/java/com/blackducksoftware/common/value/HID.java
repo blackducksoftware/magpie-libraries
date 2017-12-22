@@ -520,17 +520,18 @@ public final class HID {
      * Determines if the supplied HID is an ancestor of this HID.
      */
     public boolean isAncestor(HID other) {
-        // Compare all but the last segment (which is allowed to be different)
         int otherNesting = other.nesting();
+
+        // If we are at a lower nesting level, the other one cannot be an ancestor
+        if (nesting() < otherNesting || segments[otherNesting].length < other.segments[otherNesting].length) {
+            return false;
+        }
+
+        // Compare all but the last segment (which is allowed to be different)
         for (int i = 0; i < otherNesting; ++i) {
             if (!Arrays.equals(segments[i], other.segments[i])) {
                 return false;
             }
-        }
-
-        // If we are at a lower nesting level, the other one cannot be an ancestor
-        if (nesting() < other.nesting() || segments[otherNesting].length < other.segments[otherNesting].length) {
-            return false;
         }
 
         // Compare all segments at the other nesting level

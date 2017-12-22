@@ -312,6 +312,15 @@ public class HidBasicTest {
     }
 
     @Test
+    public void isAnscestorNesting2() {
+        HID a = HID.from("file:/a");
+        HID c = HID.from("zip:tar:file:%252Fa%23%2Fb#/c");
+
+        assertThat(a.isAncestor(c)).isFalse();
+        assertThat(c.isAncestor(a)).isTrue();
+    }
+
+    @Test
     public void relativizedPath() {
         HID z = HID.from(URI.create("file:/z"));
         HID x = HID.from(URI.create("file:/z/y/x"));
