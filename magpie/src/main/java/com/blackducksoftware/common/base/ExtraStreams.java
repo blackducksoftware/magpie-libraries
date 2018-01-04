@@ -15,9 +15,16 @@
  */
 package com.blackducksoftware.common.base;
 
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Streams;
 
 /**
  * Extra stream helpers.
@@ -53,6 +60,28 @@ public final class ExtraStreams {
     public static <T> Function<Object, Stream<T>> ofType(Class<T> type) {
         Objects.requireNonNull(type);
         return obj -> type.isInstance(obj) ? Stream.of(type.cast(obj)) : Stream.empty();
+    }
+
+    /**
+     * Returns a sequential {@link Stream} of the remaining contents of {@code enumeration}. Do not use
+     * {@code enumeration} directly after passing it to this method.
+     */
+    public static <T> Stream<T> stream(Enumeration<T> enumeration) {
+        return Streams.stream(Iterators.forEnumeration(enumeration));
+    }
+
+    /**
+     * Returns a sequential {@link Stream} of enumeration constants for the specified class.
+     */
+    public static <E extends Enum<E>> Stream<E> stream(Class<E> enumClass) {
+        return Arrays.stream(enumClass.getEnumConstants());
+    }
+
+    /**
+     * Returns a stream from a potentially {@code null} source.
+     */
+    public static <T> Stream<T> streamNullable(@Nullable Iterable<T> iterable) {
+        return iterable != null ? Streams.stream(iterable) : Stream.empty();
     }
 
     private ExtraStreams() {

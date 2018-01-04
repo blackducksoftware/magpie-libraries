@@ -70,16 +70,19 @@ public final class ExtraEnums {
 
     /**
      * Returns a stream of enumeration constants.
+     *
+     * @deprecated Use {@link ExtraStreams#stream(Class)} instead.
      */
+    @Deprecated
     public static <E extends Enum<E>> Stream<E> stream(Class<E> enumClass) {
-        return Stream.of(enumClass.getEnumConstants());
+        return ExtraStreams.stream(enumClass);
     }
 
     /**
      * Returns all of the string representations for an enumerated type.
      */
     public static <E extends Enum<E>> List<String> stringValues(Class<E> enumClass) {
-        return stream(enumClass).collect(EnumCollectors.stringValues());
+        return ExtraStreams.stream(enumClass).collect(EnumCollectors.stringValues());
     }
 
     /**
@@ -101,7 +104,7 @@ public final class ExtraEnums {
      * Returns the unique string representations for an enumerated type.
      */
     public static <E extends Enum<E>> Set<String> uniqueStringValues(Class<E> enumClass) {
-        return stream(enumClass).collect(EnumCollectors.uniqueStringValues());
+        return ExtraStreams.stream(enumClass).collect(EnumCollectors.uniqueStringValues());
     }
 
     /**
@@ -123,7 +126,7 @@ public final class ExtraEnums {
      * Returns all of names for an enumerated type.
      */
     public static <E extends Enum<E>> Set<String> names(Class<E> enumClass) {
-        return stream(enumClass).collect(EnumCollectors.names());
+        return ExtraStreams.stream(enumClass).collect(EnumCollectors.names());
     }
 
     /**
@@ -152,7 +155,7 @@ public final class ExtraEnums {
      * Attempts to find enumerated values by their {@code toString} representation.
      */
     public static <E extends Enum<E>> Stream<E> tryByToString(Class<E> enumClass, String toStringValue) {
-        return stream(enumClass).filter(e -> Objects.equals(e.toString(), toStringValue));
+        return ExtraStreams.stream(enumClass).filter(e -> Objects.equals(e.toString(), toStringValue));
     }
 
     /**
