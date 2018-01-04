@@ -17,7 +17,6 @@ package com.blackducksoftware.common.base;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
-import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -150,25 +149,6 @@ public class ExtraOptionalsTest {
         ExtraOptionals.or(Optional.of("test"), supplier);
 
         verify(supplier, never()).get();
-    }
-
-    @Test
-    public void stream_null() {
-        thrown.expect(NullPointerException.class);
-
-        ExtraOptionals.stream(null);
-    }
-
-    @Test
-    public void stream_empty() {
-        // TODO Use Truth8 in 0.32
-        assertThat(ExtraOptionals.stream(Optional.empty()).collect(toList())).isEmpty();
-    }
-
-    @Test
-    public void stream_present() {
-        // TODO Use Truth8 in 0.32
-        assertThat(ExtraOptionals.stream(Optional.of("test")).collect(toList())).containsExactly("test");
     }
 
     // TODO mapToObj

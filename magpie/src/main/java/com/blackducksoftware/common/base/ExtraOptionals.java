@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.blackducksoftware.common.annotations.Obsolete;
+import com.google.common.collect.Streams;
 
 /**
  * Extra optional helpers.
@@ -68,20 +69,6 @@ public final class ExtraOptionals {
             @SuppressWarnings("unchecked")
             Optional<T> r = (Optional<T>) supplier.get();
             return Objects.requireNonNull(r);
-        }
-    }
-
-    /**
-     * If a value is present, returns a sequential {@link Stream} containing only that value, otherwise returns an empty
-     * {@code Stream}.
-     */
-    @Obsolete(value = "Added in Java 9", see = "java.util.Optional#stream")
-    public static <T> Stream<T> stream(Optional<T> self) {
-        if (!self.isPresent()) {
-            return Stream.empty();
-        } else {
-            T value = self.get();
-            return Stream.of(value);
         }
     }
 
@@ -215,7 +202,8 @@ public final class ExtraOptionals {
      * empty {@code Stream}.
      */
     public static <T, R> Stream<R> flatMapMany(Optional<T> self, Function<? super T, ? extends Stream<? extends R>> mapper) {
-        return stream(self).flatMap(mapper);
+        // TODO Use the Java 9 version when available
+        return Streams.stream(self).flatMap(mapper);
     }
 
     /**
