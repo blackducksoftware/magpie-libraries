@@ -127,20 +127,42 @@ public class ExtraEnumsTest {
         assertThat(ExtraEnums.tryByToString(TestEnum.class, "3")).isEmpty();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void fromBitSet_jumboLong() {
-        ExtraEnums.fromBitSet(TestJumboEnum.class, 0L);
-    }
-
     @Test
     public void fromBitSet_long() {
-        assertThat(ExtraEnums.fromBitSet(TestEnum.class, 0x05)).containsAllOf(TestEnum.ENUM_0, TestEnum.ENUM_2);
+        assertThat(ExtraEnums.fromBitSet(TestEnum.class, 0x05)).containsExactly(TestEnum.ENUM_0, TestEnum.ENUM_2);
     }
 
     @Test
-    public void fromBitSet_bitSet() {
-        assertThat(ExtraEnums.fromBitSet(TestJumboEnum.class, BitSet.valueOf(new byte[] { 0x0D })))
-                .containsAllOf(TestJumboEnum.ENUM_00, TestJumboEnum.ENUM_02, TestJumboEnum.ENUM_03);
+    public void fromBitSet_jumboLong() {
+        assertThat(ExtraEnums.fromBitSet(TestJumboEnum.class, Long.MIN_VALUE)).containsExactly(TestJumboEnum.ENUM_3F);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromBitSet_longOverflowTestEnum() {
+        ExtraEnums.fromBitSet(TestEnum.class, 0x08);
+    }
+
+    @Test
+    public void fromBitSet_jumboBitSet() {
+        assertThat(ExtraEnums.fromBitSet(TestJumboEnum.class, BitSet.valueOf(new long[] { 0x0D })))
+                .containsExactly(TestJumboEnum.ENUM_00, TestJumboEnum.ENUM_02, TestJumboEnum.ENUM_03);
+    }
+
+    @Test
+    public void fromBitSet_jumboBitSetForHumans() {
+        BitSet bitSet = new BitSet();
+        bitSet.set(TestJumboEnum.ENUM_00.ordinal());
+        bitSet.set(TestJumboEnum.ENUM_3F.ordinal());
+        bitSet.set(TestJumboEnum.ENUM_40.ordinal());
+        bitSet.set(TestJumboEnum.ENUM_4F.ordinal());
+        assertThat(ExtraEnums.fromBitSet(TestJumboEnum.class, bitSet))
+                .containsExactly(TestJumboEnum.ENUM_00, TestJumboEnum.ENUM_3F, TestJumboEnum.ENUM_40, TestJumboEnum.ENUM_4F);
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromBitSet_bitSetOverflowTestJumboEnum() {
+        ExtraEnums.fromBitSet(TestJumboEnum.class, BitSet.valueOf(new long[] { 0, 0x10000 }));
     }
 
 }

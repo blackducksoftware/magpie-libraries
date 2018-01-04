@@ -163,15 +163,13 @@ public final class ExtraEnums {
      * This requires that the enum constants be defined in a fixed, well-known order; before trying to use this method,
      * be sure that precautions are taken to ensure that enum declarations are stable.
      * <p>
-     * This method only works for enums with no more then 64 constants, for larger enums use
-     * {@link #fromBitSet(Class, BitSet)}.
+     * This method only works for the first 64 fields of the enumeration, to access fields beyond the limit of a
+     * {@code long}, use {@link #fromBitSet(Class, BitSet)} instead.
      */
     @Beta
     public static <E extends Enum<E>> EnumSet<E> fromBitSet(Class<E> enumClass, long bitSet) {
         E[] enumConstants = enumClass.getEnumConstants();
-        checkArgument(enumConstants.length <= 64, "jumbo enum, use BitSet instead long: %s", enumClass.getName());
-        // TODO Check position of leftmost bit compared to the length?
-
+        checkArgument((bitSet & Long.MAX_VALUE) >>> enumConstants.length == 0, "bit set overflows enum: %s", enumClass.getName());
         EnumSet<E> result = EnumSet.noneOf(enumClass);
         for (E value : enumConstants) {
             if ((bitSet & (1L << value.ordinal())) != 0) {
@@ -188,8 +186,10 @@ public final class ExtraEnums {
      */
     @Beta
     public static <E extends Enum<E>> EnumSet<E> fromBitSet(Class<E> enumClass, BitSet bitSet) {
+        E[] enumConstants = enumClass.getEnumConstants();
+        checkArgument(bitSet.length() <= enumConstants.length, "bit set overflows enum: %s", enumClass.getName());
         EnumSet<E> result = EnumSet.noneOf(enumClass);
-        for (E value : enumClass.getEnumConstants()) {
+        for (E value : enumConstants) {
             if (bitSet.get(value.ordinal())) {
                 result.add(value);
             }
