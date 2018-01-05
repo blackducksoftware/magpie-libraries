@@ -117,6 +117,51 @@ public class ExtraStringsTest {
     }
 
     @Test(expected = NullPointerException.class)
+    public void ensureSuffixNullSuffix() {
+        ExtraStrings.ensureSuffix("", null);
+    }
+
+    @Test
+    public void ensureSuffixNullValue() {
+        assertThat(ExtraStrings.ensureSuffix(null, "x")).isNull();
+    }
+
+    @Test
+    public void ensureSuffixEmptySuffix() {
+        assertThat(ExtraStrings.ensureSuffix("x", "")).isEqualTo("x");
+    }
+
+    @Test
+    public void ensureSuffixEmptyValue() {
+        assertThat(ExtraStrings.ensureSuffix("", "x")).isEqualTo("x");
+    }
+
+    @Test
+    public void ensureSuffixEmptySuffixAndValue() {
+        assertThat(ExtraStrings.ensureSuffix("", "")).isEmpty();
+    }
+
+    @Test
+    public void ensureSuffixWithoutSuffix() {
+        assertThat(ExtraStrings.ensureSuffix("x", "y")).isEqualTo("xy");
+    }
+
+    @Test
+    public void ensureSuffixWithSuffix() {
+        assertThat(ExtraStrings.ensureSuffix("xy", "y")).isEqualTo("xy");
+    }
+
+    @Test
+    public void ensureSuffixWithoutMultiCharSuffix() {
+        assertThat(ExtraStrings.ensureSuffix("x", "yz")).isEqualTo("xyz");
+    }
+
+    @Test
+    public void ensureSuffixWithMultiCharSuffix() {
+        assertThat(ExtraStrings.ensureSuffix("xyz", "yz")).isEqualTo("xyz");
+    }
+
+    @Test(expected = NullPointerException.class)
     public void ensureDelimiterNullDelimiter() {
         ExtraStrings.ensureDelimiter("", null, "");
     }

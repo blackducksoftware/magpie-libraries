@@ -63,6 +63,22 @@ public final class ExtraStrings {
     }
 
     /**
+     * Returns a string ensuring that it ends with the specified suffix. For example,
+     * {@code ensureSuffix("foo/", "/").equals("foo/")} and {@code ensureSuffix("foo", "/").equals("foo/")}.
+     */
+    @Nullable
+    public static String ensureSuffix(@Nullable CharSequence value, CharSequence suffix) {
+        Objects.requireNonNull(suffix);
+        if (value == null) {
+            return null;
+        } else if (startsWith(value, suffix, value.length() - suffix.length())) {
+            return value.toString();
+        } else {
+            return new StringBuilder(value.length() + suffix.length()).append(value).append(suffix).toString();
+        }
+    }
+
+    /**
      * Ensures that two strings are joined by with the specified delimiter. For example,
      * {@code ensureDelimiter("foo", "/", "bar").equals("foo/bar")} as does
      * {@code ensureDelimiter("foo/", "/", "bar").equals("foo/bar")} and
