@@ -81,6 +81,16 @@ public class Digest {
         return new Builder().algorithm(algorithm).value(value).build();
     }
 
+    public static Digest from(Object obj) {
+        if (obj instanceof Digest) {
+            return (Digest) obj;
+        } else if (obj instanceof CharSequence) {
+            return parse((CharSequence) obj);
+        } else {
+            throw new IllegalArgumentException("unexpected input: " + obj);
+        }
+    }
+
     public static class Builder {
 
         private static final CharMatcher ALGORITHM_CHARS = CharMatcher.inRange('A', 'Z')
