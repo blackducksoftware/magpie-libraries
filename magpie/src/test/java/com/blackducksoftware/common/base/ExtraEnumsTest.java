@@ -22,8 +22,6 @@ import java.util.BitSet;
 
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * Tests for {@code ExtraEnums}.
  *
@@ -40,15 +38,6 @@ public class ExtraEnumsTest {
         }
     }
 
-    public enum TestNonuniqueEnum {
-        ENUM_0, ENUM_1, ENUM_2;
-
-        @Override
-        public String toString() {
-            return this == ENUM_0 ? "0" : "1+";
-        }
-    }
-
     public enum TestJumboEnum {
         ENUM_00, ENUM_01, ENUM_02, ENUM_03, ENUM_04, ENUM_05, ENUM_06, ENUM_07,
         ENUM_08, ENUM_09, ENUM_0A, ENUM_0B, ENUM_0C, ENUM_0D, ENUM_0E, ENUM_0F,
@@ -60,51 +49,6 @@ public class ExtraEnumsTest {
         ENUM_38, ENUM_39, ENUM_3A, ENUM_3B, ENUM_3C, ENUM_3D, ENUM_3E, ENUM_3F,
         ENUM_40, ENUM_41, ENUM_42, ENUM_43, ENUM_44, ENUM_45, ENUM_46, ENUM_47,
         ENUM_48, ENUM_49, ENUM_4A, ENUM_4B, ENUM_4C, ENUM_4D, ENUM_4E, ENUM_4F;
-    }
-
-    @Test
-    public void stringValues_all() {
-        assertThat(ExtraEnums.stringValues(TestEnum.class)).containsExactly("0", "1", "2").inOrder();
-    }
-
-    @Test
-    public void stringValues_iterable() {
-        assertThat(ExtraEnums.stringValues(ImmutableList.of(TestEnum.ENUM_1, TestEnum.ENUM_0))).containsExactly("1", "0").inOrder();
-    }
-
-    @Test
-    public void stringValues_some() {
-        assertThat(ExtraEnums.stringValues(TestEnum.ENUM_1, TestEnum.ENUM_2)).containsExactly("1", "2").inOrder();
-    }
-
-    @Test
-    public void uniqueStringValues_all() {
-        assertThat(ExtraEnums.uniqueStringValues(TestNonuniqueEnum.class)).containsExactly("0", "1+");
-    }
-
-    @Test
-    public void uniqueStringValues_iterable() {
-        assertThat(ExtraEnums.uniqueStringValues(ImmutableList.of(TestNonuniqueEnum.ENUM_1, TestNonuniqueEnum.ENUM_0))).containsExactly("1+", "0");
-    }
-
-    @Test
-    public void uniqueStringValues_some() {
-        assertThat(ExtraEnums.uniqueStringValues(TestNonuniqueEnum.ENUM_1, TestNonuniqueEnum.ENUM_2)).containsExactly("1+");
-    }
-
-    @Test
-    public void names_all() {
-        assertThat(ExtraEnums.names(TestEnum.class)).containsExactly("ENUM_0", "ENUM_1", "ENUM_2");
-    }
-
-    @Test
-    public void names_iterable() {
-        assertThat(ExtraEnums.names(ImmutableList.of(TestEnum.ENUM_1, TestEnum.ENUM_0))).containsExactly("ENUM_1", "ENUM_0");
-    }
-
-    @Test
-    public void names_some() {
-        assertThat(ExtraEnums.names(TestEnum.ENUM_1, TestEnum.ENUM_2)).containsExactly("ENUM_1", "ENUM_2");
     }
 
     @Test

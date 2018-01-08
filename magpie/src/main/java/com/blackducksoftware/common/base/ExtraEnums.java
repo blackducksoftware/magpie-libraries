@@ -48,12 +48,6 @@ public final class ExtraEnums {
      */
     private static final class EnumCollectors {
 
-        // TODO Should we just expose these publicly and call it a day?
-
-        // TODO Should we also have the inverse (e.g. Collector<String, ?, EnumSet<E>> fromStringValues())?
-
-        // TODO What about Collector<E, ?, EnumSet<E>> toEnumSet()? Or does that belong on ExtraCollectors?
-
         private static <E extends Enum<E>> Collector<E, ?, List<String>> stringValues() {
             return mapping(E::toString, collectingAndThen(toList(), Collections::unmodifiableList));
         }
@@ -80,14 +74,20 @@ public final class ExtraEnums {
 
     /**
      * Returns all of the string representations for an enumerated type.
+     *
+     * @deprecated Use {@link ExtraCollectors#enumStrings()} instead.
      */
+    @Deprecated
     public static <E extends Enum<E>> List<String> stringValues(Class<E> enumClass) {
         return ExtraStreams.stream(enumClass).collect(EnumCollectors.stringValues());
     }
 
     /**
      * Returns the string representations for the supplied enumerated values.
+     *
+     * @deprecated Use {@link ExtraCollectors#enumStrings()} instead.
      */
+    @Deprecated
     @SafeVarargs
     public static <E extends Enum<E>> List<String> stringValues(E enumValue, E... enumValues) {
         return Stream.concat(Stream.of(enumValue), Stream.of(enumValues)).collect(EnumCollectors.stringValues());
@@ -95,21 +95,30 @@ public final class ExtraEnums {
 
     /**
      * Returns the string representations for the supplied enumerated values.
+     *
+     * @deprecated Use {@link ExtraCollectors#enumStrings()} instead.
      */
+    @Deprecated
     public static <E extends Enum<E>> List<String> stringValues(Iterable<E> enumValues) {
         return StreamSupport.stream(enumValues.spliterator(), false).collect(EnumCollectors.stringValues());
     }
 
     /**
      * Returns the unique string representations for an enumerated type.
+     *
+     * @deprecated Use {@link ExtraCollectors#uniqueEnumStrings()} instead.
      */
+    @Deprecated
     public static <E extends Enum<E>> Set<String> uniqueStringValues(Class<E> enumClass) {
         return ExtraStreams.stream(enumClass).collect(EnumCollectors.uniqueStringValues());
     }
 
     /**
      * Returns the unique string representations for the supplied enumerated values.
+     *
+     * @deprecated Use {@link ExtraCollectors#uniqueEnumStrings()} instead.
      */
+    @Deprecated
     @SafeVarargs
     public static <E extends Enum<E>> Set<String> uniqueStringValues(E enumValue, E... enumValues) {
         return Stream.concat(Stream.of(enumValue), Stream.of(enumValues)).collect(EnumCollectors.uniqueStringValues());
@@ -117,21 +126,30 @@ public final class ExtraEnums {
 
     /**
      * Returns the unique string representations for the supplied enumerated values.
+     *
+     * @deprecated Use {@link ExtraCollectors#uniqueEnumStrings()} instead.
      */
+    @Deprecated
     public static <E extends Enum<E>> Set<String> uniqueStringValues(Iterable<E> enumValues) {
         return StreamSupport.stream(enumValues.spliterator(), false).collect(EnumCollectors.uniqueStringValues());
     }
 
     /**
      * Returns all of names for an enumerated type.
+     *
+     * @deprecated Use {@link ExtraCollectors#enumNames()} instead.
      */
+    @Deprecated
     public static <E extends Enum<E>> Set<String> names(Class<E> enumClass) {
         return ExtraStreams.stream(enumClass).collect(EnumCollectors.names());
     }
 
     /**
      * Returns the names for the supplied enumerated values.
+     *
+     * @deprecated Use {@link ExtraCollectors#enumNames()} instead.
      */
+    @Deprecated
     @SafeVarargs
     public static <E extends Enum<E>> Set<String> names(E enumValue, E... enumValues) {
         return Stream.concat(Stream.of(enumValue), Stream.of(enumValues)).collect(EnumCollectors.names());
@@ -139,7 +157,10 @@ public final class ExtraEnums {
 
     /**
      * Returns the names for the supplied enumerated values.
+     *
+     * @deprecated Use {@link ExtraCollectors#enumNames()} instead.
      */
+    @Deprecated
     public static <E extends Enum<E>> Set<String> names(Iterable<E> enumValues) {
         return StreamSupport.stream(enumValues.spliterator(), false).collect(EnumCollectors.names());
     }
