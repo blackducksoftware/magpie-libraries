@@ -265,6 +265,7 @@ public class ExcludePathMatcher implements PathMatcher {
      * This method will apply escapes, e.g. if this function returns a pattern that starts with a "#" or has trailing
      * spaces, it is because they were escaped in the input.
      */
+    // TODO Consider something like Iterator<String> so we are not returning a stream in the public API
     public static Stream<String> defaultPatternNormalizer(String line) {
         // Skip blank lines and comments
         if (line == null || CharMatcher.whitespace().matchesAllOf(line) || line.charAt(0) == '#') {
@@ -298,6 +299,7 @@ public class ExcludePathMatcher implements PathMatcher {
     /**
      * Generic helper to filter a path based file visitor using a path matcher.
      */
+    // TODO Move this to ExtraPathMatchers as it is not specific to the exclude path matcher
     public static FileVisitor<Path> filterVisitor(FileVisitor<Path> visitor, PathMatcher pathMatcher) {
         return new FileVisitor<Path>() {
             @Override
@@ -352,6 +354,7 @@ public class ExcludePathMatcher implements PathMatcher {
             return this;
         }
 
+        // TODO Consider Function<String, Iterable|Iterator<String>> so we are not forcing stream as a return type
         public Builder normalizingPatterns(Function<String, Stream<String>> patternNormalizer) {
             this.patternNormalizer = Objects.requireNonNull(patternNormalizer);
             return this;
@@ -370,23 +373,6 @@ public class ExcludePathMatcher implements PathMatcher {
         public Builder excludePerDirectory(String name) {
             excludePerDirectoryNames.add(Objects.requireNonNull(name));
             return this;
-        }
-
-        /**
-         * Walks the file tree from the root directory of this filter. This filter is applied during the walk so
-         * excluded files are not in the sequence.
-         */
-        public Stream<Path> walk() throws IOException {
-            return Files.walk(top).filter(build()::matches);
-        }
-
-        /**
-         * Walks the file tree from the root directory of this filter. This filter is applied during the walk so
-         * excluded files will not be seen by the supplied visitor.
-         */
-        public Path walkFileTree(FileVisitor<Path> visitor) throws IOException {
-            ExcludePathMatcher pathMatcher = build();
-            return Files.walkFileTree(pathMatcher.top, filterVisitor(visitor, pathMatcher));
         }
 
         /**
