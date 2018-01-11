@@ -23,14 +23,11 @@ import static java.util.stream.Collectors.toList;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -294,42 +291,6 @@ public class ExcludePathMatcher implements PathMatcher {
         }
 
         return Stream.of(pattern);
-    }
-
-    /**
-     * Generic helper to filter a path based file visitor using a path matcher.
-     */
-    // TODO Move this to ExtraPathMatchers as it is not specific to the exclude path matcher
-    public static FileVisitor<Path> filterVisitor(FileVisitor<Path> visitor, PathMatcher pathMatcher) {
-        return new FileVisitor<Path>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                if (pathMatcher.matches(dir)) {
-                    return visitor.preVisitDirectory(dir, attrs);
-                } else {
-                    return FileVisitResult.SKIP_SUBTREE;
-                }
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                if (pathMatcher.matches(file)) {
-                    return visitor.visitFile(file, attrs);
-                } else {
-                    return FileVisitResult.CONTINUE;
-                }
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                return visitor.visitFileFailed(file, exc);
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                return visitor.postVisitDirectory(dir, exc);
-            }
-        };
     }
 
     public static class Builder {
