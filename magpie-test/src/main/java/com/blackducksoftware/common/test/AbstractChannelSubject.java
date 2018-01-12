@@ -46,7 +46,7 @@ public class AbstractChannelSubject<S extends AbstractChannelSubject<S, C>, C ex
             try {
                 actual().close();
             } catch (Exception e) {
-                check().fail("Closing a closed channel should not fail");
+                throw new AssertionError("Closing a closed channel should not fail", e);
             }
         }
     }
