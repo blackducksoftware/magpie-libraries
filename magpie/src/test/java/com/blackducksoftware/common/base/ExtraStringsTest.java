@@ -295,8 +295,8 @@ public class ExtraStringsTest {
 
     @Test
     public void afterFirstNotMatching() {
-        assertThat(ExtraStrings.afterFirst("foobar", 'x')).isEqualTo("foobar");
-        assertThat(ExtraStrings.afterFirst("wxyz", 'a')).isEqualTo("wxyz");
+        assertThat(ExtraStrings.afterFirst("foobar", 'x')).isEqualTo("");
+        assertThat(ExtraStrings.afterFirst("wxyz", 'a')).isEqualTo("");
     }
 
     @Test
@@ -312,8 +312,8 @@ public class ExtraStringsTest {
 
     @Test
     public void afterLastNotMatching() {
-        assertThat(ExtraStrings.afterLast("foobar", 'x')).isEqualTo("foobar");
-        assertThat(ExtraStrings.afterLast("wxyz", 'a')).isEqualTo("wxyz");
+        assertThat(ExtraStrings.afterLast("foobar", 'x')).isEqualTo("");
+        assertThat(ExtraStrings.afterLast("wxyz", 'a')).isEqualTo("");
     }
 
     @Test

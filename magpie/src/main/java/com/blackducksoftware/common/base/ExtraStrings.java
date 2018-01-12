@@ -189,7 +189,7 @@ public final class ExtraStrings {
 
     /**
      * Returns a string of all the characters after the first occurrence of the specified character. For example,
-     * {@code afterFirst("foobar", 'o').equals("obar")} and {@code afterFirst("foobar", 'x').equals("foobar")}.
+     * {@code afterFirst("foobar", 'o').equals("obar")} and {@code afterFirst("foobar", 'x').equals("")}.
      */
     @Nullable
     public static String afterFirst(@Nullable CharSequence value, char c) {
@@ -199,7 +199,7 @@ public final class ExtraStrings {
                     return value.subSequence(i + 1, value.length()).toString();
                 }
             }
-            return value.toString();
+            return "";
         } else {
             return null;
         }
@@ -207,7 +207,7 @@ public final class ExtraStrings {
 
     /**
      * Returns a string of all the characters after the last occurrence of the specified character. For example,
-     * {@code afterLast("foobar", 'o').equals("bar")} and {@code afterLast("foobar", 'x').equals("foobar")}.
+     * {@code afterLast("foobar", 'o').equals("bar")} and {@code afterLast("foobar", 'x').equals("")}.
      */
     @Nullable
     public static String afterLast(@Nullable CharSequence value, char c) {
@@ -217,7 +217,7 @@ public final class ExtraStrings {
                     return value.subSequence(i + 1, value.length()).toString();
                 }
             }
-            return value.toString();
+            return "";
         } else {
             return null;
         }
