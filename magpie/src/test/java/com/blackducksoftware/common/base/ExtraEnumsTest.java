@@ -72,6 +72,35 @@ public class ExtraEnumsTest {
     }
 
     @Test
+    public void previous_first() {
+        assertThat(ExtraEnums.previous(TestEnum.ENUM_0)).isEmpty();
+    }
+
+    @Test
+    public void previous_middle() {
+        assertThat(ExtraEnums.previous(TestEnum.ENUM_1)).hasValue(TestEnum.ENUM_0);
+    }
+
+    @Test
+    public void previous_last() {
+        assertThat(ExtraEnums.previous(TestEnum.ENUM_2)).hasValue(TestEnum.ENUM_1);
+    }
+
+    @Test
+    public void next_first() {
+        assertThat(ExtraEnums.next(TestEnum.ENUM_0)).hasValue(TestEnum.ENUM_1);
+    }
+
+    @Test
+    public void next_middle() {
+        assertThat(ExtraEnums.next(TestEnum.ENUM_1)).hasValue(TestEnum.ENUM_2);
+    }
+
+    public void next_last() {
+        assertThat(ExtraEnums.next(TestEnum.ENUM_2)).isEmpty();
+    }
+
+    @Test
     public void fromBitSet_long() {
         assertThat(ExtraEnums.fromBitSet(TestEnum.class, 0x05)).containsExactly(TestEnum.ENUM_0, TestEnum.ENUM_2);
     }

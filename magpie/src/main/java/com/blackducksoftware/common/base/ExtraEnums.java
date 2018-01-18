@@ -180,6 +180,29 @@ public final class ExtraEnums {
     }
 
     /**
+     * Returns the enum value declared before the supplied value or empty if the supplied value is first.
+     */
+    public static <E extends Enum<E>> Optional<E> previous(E enumValue) {
+        if (enumValue.ordinal() > 0) {
+            return Optional.of(enumValue.getDeclaringClass().getEnumConstants()[enumValue.ordinal() - 1]);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Returns the enum value declared after the supplied value or empty if the supplied value is last.
+     */
+    public static <E extends Enum<E>> Optional<E> next(E enumValue) {
+        E[] enumConstants = enumValue.getDeclaringClass().getEnumConstants();
+        if (enumValue.ordinal() < enumConstants.length) {
+            return Optional.of(enumConstants[enumValue.ordinal() + 1]);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Returns a set of enum constants whose ordinals correspond to the set bit positions in the supplied integer value.
      * This requires that the enum constants be defined in a fixed, well-known order; before trying to use this method,
      * be sure that precautions are taken to ensure that enum declarations are stable.
