@@ -195,7 +195,7 @@ public final class ExtraEnums {
      */
     public static <E extends Enum<E>> Optional<E> next(E enumValue) {
         E[] enumConstants = enumValue.getDeclaringClass().getEnumConstants();
-        if (enumValue.ordinal() < enumConstants.length) {
+        if (enumValue.ordinal() + 1 < enumConstants.length) {
             return Optional.of(enumConstants[enumValue.ordinal() + 1]);
         } else {
             return Optional.empty();

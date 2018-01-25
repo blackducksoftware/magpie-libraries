@@ -96,6 +96,7 @@ public class ExtraEnumsTest {
         assertThat(ExtraEnums.next(TestEnum.ENUM_1)).hasValue(TestEnum.ENUM_2);
     }
 
+    @Test
     public void next_last() {
         assertThat(ExtraEnums.next(TestEnum.ENUM_2)).isEmpty();
     }
