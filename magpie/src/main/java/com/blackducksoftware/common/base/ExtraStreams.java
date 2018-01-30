@@ -18,6 +18,7 @@ package com.blackducksoftware.common.base;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -63,6 +64,24 @@ public final class ExtraStreams {
     }
 
     /**
+     * A function for streaming optional returning functions. For example:
+     *
+     * <pre>
+     * foos.stream().flatMap(fromOptional(Foo::tryName))...
+     * </pre>
+     *
+     * Is another way of doing:
+     *
+     * <pre>
+     * foos.stream().flatMap(((Function&lt;Foo, Optional&lt;String&gt;&gt;) Foo::tryName).andThen(Optional::stream))...
+     * </pre>
+     */
+    public static <T, R> Function<T, Stream<R>> fromOptional(Function<T, Optional<R>> function) {
+        Objects.requireNonNull(function);
+        return t -> Streams.stream(function.apply(t));
+    }
+
+    /**
      * Returns a sequential {@link Stream} of the remaining contents of {@code enumeration}. Do not use
      * {@code enumeration} directly after passing it to this method.
      */
@@ -82,6 +101,13 @@ public final class ExtraStreams {
      */
     public static <T> Stream<T> streamNullable(@Nullable Iterable<T> iterable) {
         return iterable != null ? Streams.stream(iterable) : Stream.empty();
+    }
+
+    /**
+     * Returns a stream from a potentially {@code null} element.
+     */
+    public static <T> Stream<T> ofNullable(@Nullable T t) {
+        return t != null ? Stream.of(t) : Stream.empty();
     }
 
     private ExtraStreams() {
