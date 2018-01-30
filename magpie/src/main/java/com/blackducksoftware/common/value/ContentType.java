@@ -20,9 +20,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableListMultimap;
@@ -85,8 +85,8 @@ public class ContentType {
         return subtype;
     }
 
-    public Stream<String> parameter(String attribute) {
-        return parameters.get(attribute).stream();
+    public List<String> parameter(String attribute) {
+        return parameters.get(attribute);
     }
 
     /**
@@ -110,7 +110,7 @@ public class ContentType {
         }
 
         // Assume the content type supports the "charset" attribute
-        return parameter(CHARSET_ATTRIBUTE)
+        return parameter(CHARSET_ATTRIBUTE).stream()
                 .map(Charset::forName)
                 .collect(MoreCollectors.toOptional())
                 .orElseGet(() -> {
