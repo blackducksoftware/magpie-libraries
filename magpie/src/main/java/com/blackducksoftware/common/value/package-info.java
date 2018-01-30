@@ -1,0 +1,4 @@
+@ParametersAreNonnullByDefault
+package com.blackducksoftware.common.value;
+
+import javax.annotation.ParametersAreNonnullByDefault;
