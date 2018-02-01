@@ -181,35 +181,35 @@ public class ExtraIOTest {
     public void onIdleTimeout() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown);
-        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isTrue();
+        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isTrue();
     }
 
     @Test
     public void onIdleClose() throws IOException, InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).close();
-        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isFalse();
+        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isFalse();
     }
 
     @Test
     public void onIdleSkip() throws IOException, InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).skip(1);
-        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isFalse();
+        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isFalse();
     }
 
     @Test
     public void onIdleReadRange() throws IOException, InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).read(new byte[1]);
-        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isFalse();
+        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isFalse();
     }
 
     @Test
     public void onIdleReadSingle() throws IOException, InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).read();
-        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isFalse();
+        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isFalse();
     }
 
 }
