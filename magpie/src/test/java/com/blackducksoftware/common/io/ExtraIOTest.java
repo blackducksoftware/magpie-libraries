@@ -27,6 +27,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -35,7 +37,7 @@ import com.google.common.io.CountingInputStream;
 import com.google.common.io.CountingOutputStream;
 
 /**
- * Tests for {link ExtraIO}.
+ * Tests for {@link ExtraIO}.
  *
  * @author jgustie
  */
@@ -129,6 +131,11 @@ public class ExtraIOTest {
             }
 
             @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
             public void close() throws IOException {
                 assert_().fail();
             }
@@ -148,6 +155,61 @@ public class ExtraIOTest {
                 assert_().fail();
             }
         }).close();
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void onIdleNullIn() {
+        ExtraIO.onIdle(null, 1, TimeUnit.MILLISECONDS, () -> {});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void onIdleNegativeTimeout() {
+        ExtraIO.onIdle(HeapInputStream.empty(), -1, TimeUnit.MILLISECONDS, () -> {});
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void onIdleNullUnit() {
+        ExtraIO.onIdle(HeapInputStream.empty(), 1, null, () -> {});
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void onIdleNullCallback() {
+        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, null);
+    }
+
+    @Test
+    public void onIdleTimeout() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown);
+        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isTrue();
+    }
+
+    @Test
+    public void onIdleClose() throws IOException, InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).close();
+        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isFalse();
+    }
+
+    @Test
+    public void onIdleSkip() throws IOException, InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).skip(1);
+        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isFalse();
+    }
+
+    @Test
+    public void onIdleReadRange() throws IOException, InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).read(new byte[1]);
+        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isFalse();
+    }
+
+    @Test
+    public void onIdleReadSingle() throws IOException, InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).read();
+        assertThat(latch.await(2, TimeUnit.MILLISECONDS)).isFalse();
     }
 
 }

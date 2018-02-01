@@ -15,6 +15,8 @@
  */
 package com.blackducksoftware.common.io;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -35,6 +37,7 @@ import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.io.ByteStreams;
 
@@ -68,6 +71,69 @@ public final class ExtraIO {
 
         @Override
         public void close() {
+        }
+    }
+
+    /**
+     * A filter input stream that invokes a callback if no activity is detected within a given timeout interval.
+     */
+    private static final class OnIdleInputStream extends FilterInputStream {
+        private final Thread monitor;
+
+        private OnIdleInputStream(InputStream in, long idleTimeout, TimeUnit unit, Runnable callback) {
+            super(Objects.requireNonNull(in));
+            checkArgument(idleTimeout > 0);
+            Objects.requireNonNull(unit);
+            Objects.requireNonNull(callback);
+            monitor = new Thread("OnIdleInputStream-" + System.identityHashCode(in)) {
+                @Override
+                public void run() {
+                    try {
+                        unit.sleep(idleTimeout);
+                        callback.run();
+                    } catch (InterruptedException e) {
+                        interrupt();
+                    }
+                }
+            };
+            monitor.setDaemon(true);
+            monitor.start();
+        }
+
+        @Override
+        public int read() throws IOException {
+            try {
+                return super.read();
+            } finally {
+                monitor.interrupt();
+            }
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            try {
+                return super.read(b, off, len);
+            } finally {
+                monitor.interrupt();
+            }
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            try {
+                return super.skip(n);
+            } finally {
+                monitor.interrupt();
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            try {
+                super.close();
+            } finally {
+                monitor.interrupt();
+            }
         }
     }
 
@@ -137,6 +203,13 @@ public final class ExtraIO {
      */
     public static OutputStream ignoreClose(OutputStream out) {
         return new UnclosableOutputStream(Objects.requireNonNull(out));
+    }
+
+    /**
+     * Returns an input stream that will invoke a callback if no activity is detected within the specified timeout.
+     */
+    public static InputStream onIdle(InputStream in, long idleTimeout, TimeUnit unit, Runnable callback) {
+        return new OnIdleInputStream(in, idleTimeout, unit, callback);
     }
 
     private ExtraIO() {
