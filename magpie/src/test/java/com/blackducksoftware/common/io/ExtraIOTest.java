@@ -27,8 +27,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
@@ -179,37 +179,47 @@ public class ExtraIOTest {
 
     @Test
     public void onIdleTimeout() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown);
-        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isTrue();
+        AtomicBoolean called = new AtomicBoolean();
+        InputStream in = ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, () -> called.set(true));
+        // Do nothing, allow the timeout
+        ExtraIO.joinOnIdleInputStream(in);
+        assertThat(called.get()).isTrue();
     }
 
     @Test
     public void onIdleClose() throws IOException, InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).close();
-        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isFalse();
+        AtomicBoolean called = new AtomicBoolean();
+        InputStream in = ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, () -> called.set(true));
+        in.close();
+        ExtraIO.joinOnIdleInputStream(in);
+        assertThat(called.get()).isFalse();
     }
 
     @Test
     public void onIdleSkip() throws IOException, InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).skip(1);
-        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isFalse();
+        AtomicBoolean called = new AtomicBoolean();
+        InputStream in = ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, () -> called.set(true));
+        in.skip(1);
+        ExtraIO.joinOnIdleInputStream(in);
+        assertThat(called.get()).isFalse();
     }
 
     @Test
     public void onIdleReadRange() throws IOException, InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).read(new byte[1]);
-        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isFalse();
+        AtomicBoolean called = new AtomicBoolean();
+        InputStream in = ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, () -> called.set(true));
+        in.read(new byte[1]);
+        ExtraIO.joinOnIdleInputStream(in);
+        assertThat(called.get()).isFalse();
     }
 
     @Test
     public void onIdleReadSingle() throws IOException, InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, latch::countDown).read();
-        assertThat(latch.await(10, TimeUnit.MILLISECONDS)).isFalse();
+        AtomicBoolean called = new AtomicBoolean();
+        InputStream in = ExtraIO.onIdle(HeapInputStream.empty(), 1, TimeUnit.MILLISECONDS, () -> called.set(true));
+        in.read();
+        ExtraIO.joinOnIdleInputStream(in);
+        assertThat(called.get()).isFalse();
     }
 
 }

@@ -39,6 +39,7 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
 
 /**
@@ -134,6 +135,17 @@ public final class ExtraIO {
             } finally {
                 monitor.interrupt();
             }
+        }
+    }
+
+    /**
+     * Waits for the supplied input stream's "on idle monitor" to terminate. Once this method returns, the on idle
+     * callback will never be invoked.
+     */
+    @VisibleForTesting
+    static void joinOnIdleInputStream(InputStream in) throws InterruptedException {
+        if (in instanceof OnIdleInputStream) {
+            ((OnIdleInputStream) in).monitor.join();
         }
     }
 
