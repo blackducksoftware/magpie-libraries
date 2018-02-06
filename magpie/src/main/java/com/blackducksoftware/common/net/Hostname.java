@@ -44,7 +44,7 @@ public class Hostname {
 
     /**
      * Returns the local hostname. If you are going to use this in conjunction with {@code java.net.URI}, consider
-     * {@link #getAsciiHostname()} instead.
+     * {@link #getAscii()} instead.
      */
     public static String get() {
         try {
