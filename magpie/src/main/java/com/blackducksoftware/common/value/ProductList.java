@@ -134,8 +134,10 @@ public class ProductList implements Iterable<Product> {
                             .version(Optional.ofNullable(existing.version()).orElse(product.version()));
                     product.comments().forEach(builder::addComment);
                     i.set(builder.build());
+                    return this;
                 }
             }
+            i.add(product);
             return this;
         }
 

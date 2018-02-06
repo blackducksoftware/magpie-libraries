@@ -70,4 +70,11 @@ public class ProductListTest {
                 .build().toString()).isEqualTo("foo/1 (foo) (bar) gus/2");
     }
 
+    @Test
+    public void builderMergeProductEmpty() {
+        assertThat(new ProductList.Builder()
+                .mergeProduct(new Product.Builder().name("foo").version("1").addComment("(bar)").build())
+                .build().toString()).isEqualTo("foo/1 (bar)");
+    }
+
 }
