@@ -21,6 +21,7 @@ import static com.google.common.collect.ImmutableList.toImmutableList;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -120,6 +121,21 @@ public class ProductList implements Iterable<Product> {
 
         public Builder addProduct(Product product) {
             products.add(Objects.requireNonNull(product));
+            return this;
+        }
+
+        public Builder mergeProduct(Product product) {
+            Objects.requireNonNull(product);
+            ListIterator<Product> i = products.listIterator();
+            while (i.hasNext()) {
+                Product existing = i.next();
+                if (existing.name().equals(product.name())) {
+                    Product.Builder builder = existing.newBuilder()
+                            .version(Optional.ofNullable(existing.version()).orElse(product.version()));
+                    product.comments().forEach(builder::addComment);
+                    i.set(builder.build());
+                }
+            }
             return this;
         }
 

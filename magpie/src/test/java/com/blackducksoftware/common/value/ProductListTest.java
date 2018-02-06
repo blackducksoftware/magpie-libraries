@@ -52,13 +52,22 @@ public class ProductListTest {
 
     @Test
     public void builderKeepsFirstIgnoresComments() {
-        // TODO It would be nice if this produced "foo/1 (foo) (bar) bar gus"
         assertThat(new ProductList.Builder()
                 .addProduct(new Product.Builder().name("foo").version("1").addComment("(foo)").build())
                 .addProduct(new Product.Builder().name("bar").build())
                 .addProduct(new Product.Builder().name("foo").version("1").addComment("(bar)").build())
                 .addProduct(new Product.Builder().name("gus").version("2").build())
                 .build().toString()).isEqualTo("foo/1 (foo) bar gus/2");
+    }
+
+    @Test
+    public void builderMergeProduct() {
+        assertThat(new ProductList.Builder()
+                .addProduct(new Product.Builder().name("foo").addComment("(foo)").build())
+                .mergeProduct(new Product.Builder().name("foo").version("1").addComment("(bar)").build())
+                .addProduct(new Product.Builder().name("gus").version("2").build())
+                .mergeProduct(new Product.Builder().name("gus").version("3").build())
+                .build().toString()).isEqualTo("foo/1 (foo) (bar) gus/2");
     }
 
 }
