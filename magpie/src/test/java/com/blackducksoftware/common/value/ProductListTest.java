@@ -77,4 +77,12 @@ public class ProductListTest {
                 .build().toString()).isEqualTo("foo/1 (bar)");
     }
 
+    @Test
+    public void builderMergeProductDuplicateComments() {
+        assertThat(new ProductList.Builder()
+                .addProduct(new Product.Builder().name("foo").addComment("(foo)").build())
+                .mergeProduct(new Product.Builder().name("foo").addComment("(foo)").build())
+                .build().toString()).isEqualTo("foo (foo)");
+    }
+
 }

@@ -130,9 +130,15 @@ public class ProductList implements Iterable<Product> {
             while (i.hasNext()) {
                 Product existing = i.next();
                 if (existing.name().equals(product.name())) {
-                    Product.Builder builder = existing.newBuilder()
-                            .version(Optional.ofNullable(existing.version()).orElse(product.version()));
-                    product.comments().forEach(builder::addComment);
+                    Product.Builder builder = existing.newBuilder();
+                    if (existing.version() == null) {
+                        builder.version(product.version());
+                    }
+                    for (String comment : product.comments()) {
+                        if (!existing.comments().contains(comment)) {
+                            builder.addComment(comment);
+                        }
+                    }
                     i.set(builder.build());
                     return this;
                 }
