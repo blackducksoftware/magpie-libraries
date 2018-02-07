@@ -265,6 +265,9 @@ public final class HID {
      * {@code Path} instance.
      */
     public static HID from(Object obj) {
+        if (obj instanceof HID) {
+            return (HID) obj;
+        }
         // TODO How can we implement this to not use a URI? For performance and RFC 3986...
         URI uri;
         if (obj instanceof URI) {
