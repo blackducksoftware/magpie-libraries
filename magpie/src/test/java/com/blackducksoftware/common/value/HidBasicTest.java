@@ -23,6 +23,7 @@ import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
@@ -406,9 +407,45 @@ public class HidBasicTest {
 
     @Test
     public void schemeNesting() {
-        final HID hid = HID.from(URI.create("tar:file:%2F%2F%2Ffoo%2Fbar.tar#/abc/def/ghi.txt"));
+        HID hid = HID.from(URI.create("tar:file:%2F%2F%2Ffoo%2Fbar.tar#/abc/def/ghi.txt"));
         assertThat(hid.getScheme()).isEqualTo("tar");
         assertThat(hid.getContainer().getScheme()).isEqualTo("file");
+    }
+
+    @Test
+    public void builder() {
+        HID.Builder builder = new HID.Builder();
+        assertThat(builder.peekFilename()).isNull();
+        builder.push("file", "", "/foo/bar.tar");
+        assertThat(builder.peekFilename()).isEqualTo("bar.tar");
+        assertThat(builder.build().toUriString()).isEqualTo("file:///foo/bar.tar");
+        builder.push("tar", "/abc/def/ghi.txt");
+        assertThat(builder.peekFilename()).isEqualTo("ghi.txt");
+        assertThat(builder.build().toUriString()).isEqualTo("tar:file:%2F%2F%2Ffoo%2Fbar.tar#/abc/def/ghi.txt");
+        builder.pop();
+        assertThat(builder.peekFilename()).isEqualTo("bar.tar");
+        assertThat(builder.build().toUriString()).isEqualTo("file:///foo/bar.tar");
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void builderPopEmpty() {
+        new HID.Builder().pop();
+    }
+
+    @Test
+    public void builderGrow() {
+        assertThat(new HID.Builder()
+                .push("a", "a").push("b", "b").push("c", "c").push("d", "d")
+                .push("e", "e").push("f", "f").push("g", "g").push("h", "h")
+                .push("i", "i").push("j", "j").push("k", "k").push("l", "l")
+                .push("m", "m").push("n", "n").push("o", "o").push("p", "p")
+                .push("q", "q").build().nesting()).isEqualTo(16);
+    }
+
+    @Test
+    public void newBuilder() {
+        assertThat(HID.from(URI.create("file:/z/y/x")).newBuilder().push("tar", "/h/d/a").build().toUriString())
+                .isEqualTo("tar:file:%2F%2F%2Fz%2Fy%2Fx#/h/d/a");
     }
 
 }

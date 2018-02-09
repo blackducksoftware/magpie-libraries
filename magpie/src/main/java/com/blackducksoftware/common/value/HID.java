@@ -23,6 +23,7 @@ import static com.google.common.base.Strings.nullToEmpty;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Path;
@@ -34,6 +35,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -42,7 +44,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Ascii;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ComparisonChain;
@@ -234,95 +235,6 @@ public final class HID {
 
         System.arraycopy(segments, 0, this.segments, 0, nesting);
         System.arraycopy(segments[nesting], 0, this.segments[nesting], 0, this.segments[nesting].length);
-    }
-
-    /**
-     * Internal use only factory method.
-     */
-    private static HID create(String scheme, @Nullable String authority, @Nullable HID container, String entryName) {
-        Objects.requireNonNull(scheme);
-        String[] path = PATH_CACHE.computeIfAbsent(entryName, HID::toPath);
-        if (container != null) {
-            // Copy the container
-            String[][] segments = Arrays.copyOf(container.segments, container.segments.length + 1);
-            segments[segments.length - 1] = path;
-
-            String[] schemes = Arrays.copyOf(container.schemes, container.schemes.length + 1);
-            schemes[schemes.length - 1] = toLowerCase(scheme);
-
-            String[] authorities = Arrays.copyOf(container.authorities, container.authorities.length + 1);
-            authorities[authorities.length - 1] = nullToEmpty(authority);
-
-            return new HID(schemes, authorities, segments, segments.length - 1, -1);
-        } else {
-            // No container, this is a base HID
-            return new HID(new String[] { toLowerCase(scheme) }, new String[] { nullToEmpty(authority) }, new String[][] { path }, 0, -1);
-        }
-    }
-
-    /**
-     * Creates a new HID from a non-null supported object. A HID can be created from a {@code String}, {@code URI} or
-     * {@code Path} instance.
-     */
-    public static HID from(Object obj) {
-        if (obj instanceof HID) {
-            return (HID) obj;
-        }
-        // TODO How can we implement this to not use a URI? For performance and RFC 3986...
-        URI uri;
-        if (obj instanceof URI) {
-            uri = (URI) obj;
-        } else if (obj instanceof Path) {
-            // NOTE: Paths have an independent root that is not part of their path segments. Rather then attempt to
-            // normalize the root and reconcile that, it is easier to just convert the Path into a URI and convert
-            // that into a HID. To URI conversion will normalize the root handling across platforms.
-            uri = ((Path) obj).toUri();
-        } else if (obj instanceof String) {
-            uri = URI.create((String) obj);
-        } else {
-            throw new IllegalArgumentException("unexpected input: " + obj);
-        }
-
-        checkArgument(uri.isAbsolute(), "URI must be absolute: %s", uri);
-        String scheme = Ascii.toLowerCase(uri.getScheme());
-        // NOTE: "jar" can be a hierarchical scheme if it has a fragment!
-        if (uri.getFragment() != null
-                && (HIERARCHICAL_FRAGMENT_SCHEMES.contains(scheme) || uri.getFragment().startsWith("/"))) {
-            // Hierarchical schemes use "<scheme>:<archiveUri>#<entryName>" for URIs
-            HID container = from(URI.create(uri.getSchemeSpecificPart()));
-            return create(uri.getScheme(), null, container, uri.getFragment());
-        } else if (scheme.equals("jar")) {
-            // Java's JAR scheme uses "<scheme>:<archiveUri>!/<entryName>" for URLs
-            return fromJarUrl(uri.toString());
-        } else {
-            // For other URIs, we do not have any place to put non-path information
-            checkArgument(!isNullOrEmpty(uri.getPath()), "path must not be empty: %s", uri);
-            checkArgument(isNullOrEmpty(uri.getQuery()), "query must be empty: %s", uri);
-            checkArgument(isNullOrEmpty(uri.getFragment()), "fragment must be empty or start with '/': %s", uri);
-            return create(uri.getScheme(), uri.getAuthority(), null, uri.getPath());
-        }
-    }
-
-    private static HID fromJarUrl(String url) {
-        // See java.net.JarURLConnection#parseSpecs
-        try {
-            String spec = new URL(url).getFile();
-            int separator = spec.indexOf("!/");
-            if (separator == -1) {
-                throw new MalformedURLException("no !/ found in url spec:" + spec);
-            }
-
-            HID container = from(new URL(spec.substring(0, separator++)).toString());
-            String entryName = null;
-            if (++separator != spec.length()) {
-                entryName = spec.substring(separator, spec.length());
-                entryName = URLDecoder.decode(entryName, "UTF-8");
-            }
-
-            return create("jar", null, container, entryName);
-        } catch (MalformedURLException | UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("bad JAR URL", e);
-        }
     }
 
     @VisibleForTesting
@@ -613,6 +525,188 @@ public final class HID {
                     && Arrays.deepEquals(segments, other.segments);
         }
         return false;
+    }
+
+    public Builder newBuilder() {
+        return new Builder(this);
+    }
+
+    public static HID parse(CharSequence input) {
+        Builder builder = new Builder();
+        builder.parse(input);
+        return builder.build();
+    }
+
+    public static HID of(URI uri) {
+        return new Builder().parseUri(uri).build();
+    }
+
+    public static HID of(Path path) {
+        // NOTE: Paths have an independent root that is not part of their path segments. Rather then attempt to
+        // normalize the root and reconcile that, it is easier to just convert the Path into a URI and convert
+        // that into a HID. To URI conversion will normalize the root handling across platforms.
+        return new Builder().parseUri(path.toUri()).build();
+    }
+
+    /**
+     * Creates a new HID from a non-null supported object. A HID can be created from a {@code CharSequence}, {@code URI}
+     * or {@code Path} instance.
+     */
+    public static HID from(Object obj) {
+        if (obj instanceof HID) {
+            return (HID) obj;
+        } else if (obj instanceof URI) {
+            return of((URI) obj);
+        } else if (obj instanceof Path) {
+            return of((Path) obj);
+        } else if (obj instanceof CharSequence) {
+            return parse((CharSequence) obj);
+        } else {
+            throw new IllegalArgumentException("unexpected input: " + obj);
+        }
+    }
+
+    public static class Builder {
+
+        private static final int DEFAULT_CAPACITY = 10;
+
+        private String[] schemes;
+
+        private String[] authorities;
+
+        private String[][] segments;
+
+        private int size = -1;
+
+        public Builder() {
+            this(DEFAULT_CAPACITY);
+        }
+
+        private Builder(HID hid) {
+            this(computeCapacity(DEFAULT_CAPACITY, hid.schemes.length));
+            System.arraycopy(hid.schemes, 0, schemes, 0, hid.schemes.length);
+            System.arraycopy(hid.authorities, 0, authorities, 0, hid.authorities.length);
+            System.arraycopy(hid.segments, 0, segments, 0, hid.segments.length);
+            size = hid.schemes.length - 1;
+        }
+
+        private Builder(int capacity) {
+            schemes = new String[capacity];
+            authorities = new String[capacity];
+            segments = new String[capacity][];
+        }
+
+        /**
+         * Construct a HID by adding a nested path at a higher nesting level then the current state. The supplied scheme
+         * should reflect the state prior to being called (you can use {@link #peekFilename()} if the processor context
+         * is not available).
+         * <p>
+         * Use this method when you are "outside" an archive, working your way in; i.e. starting with the least nested
+         * path.
+         */
+        public Builder push(CharSequence scheme, @Nullable String authority, String path) {
+            ensureCapacity(++size + 1);
+            schemes[size] = toLowerCase(Rules.checkScheme(scheme));
+            authorities[size] = nullToEmpty(authority); // TODO Validate authority
+            segments[size] = PATH_CACHE.computeIfAbsent(Objects.requireNonNull(path), HID::toPath);
+            return this;
+        }
+
+        /**
+         * @see #push(CharSequence, String, String)
+         */
+        public Builder push(CharSequence scheme, String path) {
+            return push(scheme, null, path);
+        }
+
+        /**
+         * Returns the current filename.
+         */
+        @Nullable
+        public String peekFilename() {
+            return size < 0 ? null : segments[size][segments[size].length - 1];
+        }
+
+        /**
+         * Pops the most nested path off the current state of the builder. Use this method if you need to compute a
+         * sibling path.
+         */
+        public Builder pop() {
+            if (size < 0) {
+                throw new NoSuchElementException();
+            }
+            schemes[size] = null;
+            authorities[size] = null;
+            segments[size] = null;
+            size--;
+            return this;
+        }
+
+        /**
+         * Creates a new HID object from the current state of the builder.
+         */
+        public HID build() {
+            return new HID(schemes, authorities, segments, size, -1);
+        }
+
+        private void ensureCapacity(int minCapacity) {
+            if (minCapacity - schemes.length >= 0) {
+                int newCapacity = computeCapacity(minCapacity, schemes.length);
+                schemes = Arrays.copyOf(schemes, newCapacity);
+                authorities = Arrays.copyOf(authorities, newCapacity);
+                segments = Arrays.copyOf(segments, newCapacity);
+            }
+        }
+
+        private Builder parseUri(URI uri) {
+            checkArgument(uri.isAbsolute(), "URI must be absolute: %s", uri);
+            String scheme = toLowerCase(uri.getScheme());
+            String fragment = uri.getFragment();
+            // NOTE: "jar" can be a hierarchical scheme if it has a fragment!
+            if (fragment != null && (HIERARCHICAL_FRAGMENT_SCHEMES.contains(scheme) || fragment.startsWith("/"))) {
+                // Hierarchical schemes use "<scheme>:<archiveUri>#<entryName>" for URIs
+                return parseUri(URI.create(uri.getSchemeSpecificPart())).push(scheme, fragment);
+            } else if (scheme.equals("jar")) {
+                // Java's JAR scheme uses "<scheme>:<archiveUri>!/<entryName>" for URLs
+                return parseJarUrl(uri.toString());
+            } else {
+                // For other URIs, we do not have any place to put non-path information
+                checkArgument(isNullOrEmpty(fragment), "fragment must be empty or start with '/': %s", uri);
+                checkArgument(isNullOrEmpty(uri.getQuery()), "query must be empty: %s", uri);
+                checkArgument(!isNullOrEmpty(uri.getPath()), "path must not be empty: %s", uri);
+                return push(scheme, uri.getAuthority(), uri.getPath());
+            }
+        }
+
+        private Builder parseJarUrl(String url) {
+            // See java.net.JarURLConnection#parseSpecs
+            try {
+                String spec = new URL(url).getFile();
+                int separator = spec.indexOf("!/");
+                if (separator == -1) {
+                    throw new MalformedURLException("no !/ found in url spec:" + spec);
+                }
+
+                parseUri(new URL(spec.substring(0, separator++)).toURI());
+                String entryName = null;
+                if (++separator != spec.length()) {
+                    entryName = spec.substring(separator, spec.length());
+                    entryName = URLDecoder.decode(entryName, "UTF-8");
+                }
+                return push("jar", entryName);
+            } catch (MalformedURLException | URISyntaxException | UnsupportedEncodingException e) {
+                throw new IllegalArgumentException("bad JAR URL", e);
+            }
+        }
+
+        private void parse(CharSequence input) {
+            // TODO How can we implement this to not use a URI? For performance and RFC 3986...
+            parseUri(URI.create(input.toString()));
+        }
+
+        private static int computeCapacity(int minCapacity, int currentCapacity) {
+            return Math.max(minCapacity, Math.addExact(currentCapacity, currentCapacity >> 1));
+        }
     }
 
 }

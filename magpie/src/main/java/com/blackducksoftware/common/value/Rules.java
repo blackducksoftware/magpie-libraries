@@ -107,6 +107,11 @@ final class Rules {
             }
         }
 
+        public static boolean isScheme(CharSequence input) {
+            return RFC5234.ALPHA.or(RFC5234.DIGIT).or(CharMatcher.anyOf("+-.")).matchesAllOf(input)
+                    && input.length() > 0 && RFC5234.ALPHA.matches(input.charAt(0));
+        }
+
     }
 
     /**
@@ -434,6 +439,12 @@ final class Rules {
     public static String checkURIReference(@Nullable CharSequence input) {
         checkArgument(input != null, "null URI-Reference");
         checkArgument(matchesWithQuotes(input, '"', '"', RFC3986::isURIReference));
+        return input.toString();
+    }
+
+    public static String checkScheme(@Nullable CharSequence input) {
+        checkArgument(input != null, "null scheme");
+        checkArgument(RFC3986.isScheme(input), "invalid scheme: %s", input);
         return input.toString();
     }
 
