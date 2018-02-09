@@ -223,7 +223,7 @@ public final class HID {
         checkArgument(schemes.length == segments.length, "schemes and segment lengths must match");
         checkArgument(segments.length > 0, "segements must not be empty");
         checkArgument(nesting >= 0, "nesting must be >= 0");
-        checkArgument(depth <= segments[segments.length - 1].length, "depth cannot exceed existing segment count");
+        checkArgument(depth <= segments[nesting].length, "depth cannot exceed existing segment count");
 
         this.schemes = Arrays.copyOf(schemes, nesting + 1);
         this.authorities = Arrays.copyOf(authorities, nesting + 1);
