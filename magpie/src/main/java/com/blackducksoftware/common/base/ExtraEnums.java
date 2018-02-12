@@ -169,7 +169,7 @@ public final class ExtraEnums {
      * Attempts to find an enumerated value using {@link Enum#valueOf(Class, String)}.
      */
     public static <E extends Enum<E>> Optional<E> tryByName(Class<E> enumClass, String name) {
-        return Enums.getIfPresent(enumClass, name).toJavaUtil();
+        return Optional.ofNullable(Enums.getIfPresent(enumClass, name).orNull());
     }
 
     /**
