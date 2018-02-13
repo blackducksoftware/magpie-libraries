@@ -606,7 +606,7 @@ public final class HID {
          */
         public Builder push(CharSequence scheme, @Nullable String authority, String path) {
             ensureCapacity(++size + 1);
-            schemes[size] = toLowerCase(Rules.checkScheme(scheme));
+            schemes[size] = Rules.checkScheme(scheme);
             authorities[size] = nullToEmpty(authority); // TODO Validate authority
             segments[size] = PATH_CACHE.computeIfAbsent(Objects.requireNonNull(path), HID::toPath);
             return this;

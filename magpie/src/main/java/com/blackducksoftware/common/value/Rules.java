@@ -15,6 +15,7 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.google.common.base.Ascii.toLowerCase;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.net.URI;
@@ -445,7 +446,7 @@ final class Rules {
     public static String checkScheme(@Nullable CharSequence input) {
         checkArgument(input != null, "null scheme");
         checkArgument(RFC3986.isScheme(input), "invalid scheme: %s", input);
-        return input.toString();
+        return toLowerCase(input);
     }
 
     public static String checkLanguageTag(@Nullable CharSequence input) {
@@ -481,7 +482,7 @@ final class Rules {
     public static String checkAttribute(@Nullable CharSequence input) {
         checkArgument(input != null, "null attribute");
         checkArgument(RFC2045.isToken(input), "invalid attribute: %s", input);
-        return input.toString().toLowerCase();
+        return toLowerCase(input);
     }
 
     public static String checkValue(@Nullable CharSequence input) {
@@ -493,13 +494,13 @@ final class Rules {
     public static String checkType(@Nullable CharSequence input) {
         checkArgument(input != null, "null type");
         checkArgument(RFC4288.isTypeName(input), "invalid type: %s", input);
-        return input.toString().toLowerCase();
+        return toLowerCase(input);
     }
 
     public static String checkSubtype(@Nullable CharSequence input) {
         checkArgument(input != null, "null subtype");
         checkArgument(RFC4288.isSubtypeName(input), "invalid subtype: %s", input);
-        return input.toString().toLowerCase();
+        return toLowerCase(input);
     }
 
     public static boolean isBytesUnit(@Nullable CharSequence input) {
