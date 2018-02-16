@@ -19,6 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 
 import java.util.BitSet;
+import java.util.EnumSet;
 
 import org.junit.Test;
 
@@ -99,6 +100,58 @@ public class ExtraEnumsTest {
     @Test
     public void next_last() {
         assertThat(ExtraEnums.next(TestEnum.ENUM_2)).isEmpty();
+    }
+
+    @Test
+    public void set_empty() {
+        EnumSet<TestEnum> s = EnumSet.noneOf(TestEnum.class);
+        assertThat(ExtraEnums.set(s, TestEnum.ENUM_0, false)).isFalse();
+        assertThat(s).doesNotContain(TestEnum.ENUM_0);
+        assertThat(ExtraEnums.set(s, TestEnum.ENUM_0, true)).isTrue();
+        assertThat(s).contains(TestEnum.ENUM_0);
+    }
+
+    @Test
+    public void set_full() {
+        EnumSet<TestEnum> s = EnumSet.allOf(TestEnum.class);
+        assertThat(ExtraEnums.set(s, TestEnum.ENUM_0, true)).isFalse();
+        assertThat(s).contains(TestEnum.ENUM_0);
+        assertThat(ExtraEnums.set(s, TestEnum.ENUM_0, false)).isTrue();
+        assertThat(s).doesNotContain(TestEnum.ENUM_0);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void set_nullSet() {
+        ExtraEnums.set(null, TestEnum.ENUM_0, false);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void set_nullValue() {
+        ExtraEnums.set(EnumSet.noneOf(TestEnum.class), null, false);
+    }
+
+    @Test
+    public void flip_absent() {
+        EnumSet<TestEnum> s = EnumSet.noneOf(TestEnum.class);
+        ExtraEnums.flip(s, TestEnum.ENUM_0);
+        assertThat(s).contains(TestEnum.ENUM_0);
+    }
+
+    @Test
+    public void flip_present() {
+        EnumSet<TestEnum> s = EnumSet.allOf(TestEnum.class);
+        ExtraEnums.flip(s, TestEnum.ENUM_0);
+        assertThat(s).doesNotContain(TestEnum.ENUM_0);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void flip_nullSet() {
+        ExtraEnums.flip(null, TestEnum.ENUM_0);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void flip_nullValue() {
+        ExtraEnums.flip(EnumSet.noneOf(TestEnum.class), null);
     }
 
     @Test

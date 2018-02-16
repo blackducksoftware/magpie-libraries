@@ -203,6 +203,29 @@ public final class ExtraEnums {
     }
 
     /**
+     * Adds or removes the enumerated value from the supplied set based on a boolean flag. Returns {@code true} if the
+     * set changed as a result of the operation.
+     */
+    public static <E extends Enum<E>> boolean set(Set<E> set, E value, boolean on) {
+        // One would think this functionality would be part of EnumSet
+        Objects.requireNonNull(value);
+        return on ? set.add(value) : set.remove(value);
+    }
+
+    /**
+     * Adds or removes the enumerated value from the supplied set.
+     */
+    public static <E extends Enum<E>> void flip(Set<E> set, E value) {
+        // One would think this functionality would be part of EnumSet
+        Objects.requireNonNull(value);
+        if (set.contains(value)) {
+            set.remove(value);
+        } else {
+            set.add(value);
+        }
+    }
+
+    /**
      * Returns a set of enum constants whose ordinals correspond to the set bit positions in the supplied integer value.
      * This requires that the enum constants be defined in a fixed, well-known order; before trying to use this method,
      * be sure that precautions are taken to ensure that enum declarations are stable.
