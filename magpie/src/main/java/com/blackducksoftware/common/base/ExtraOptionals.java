@@ -206,19 +206,6 @@ public final class ExtraOptionals {
         return Streams.stream(self).flatMap(mapper);
     }
 
-    /**
-     * If both values are present, performs the given action using both values.
-     */
-    // TODO Name?
-    // public static <A, B> void acceptIfBothPresent(Optional<A> a, Optional<B> b, BiConsumer<? super A, ? super B>
-    // consumer) {
-    // Objects.requireNonNull(consumer);
-    // Objects.requireNonNull(b);
-    // if (a.isPresent() && b.isPresent()) {
-    // consumer.accept(a.get(), b.get());
-    // }
-    // }
-
     private ExtraOptionals() {
         assert false;
     }

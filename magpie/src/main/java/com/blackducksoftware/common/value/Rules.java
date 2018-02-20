@@ -141,7 +141,6 @@ final class Rules {
     /**
      * @see <a href="https://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>
      */
-
     static final class RFC5234 {
 
         private static final CharMatcher ALPHA = CharMatcher.inRange('A', 'Z').or(CharMatcher.inRange('a', 'z'));
