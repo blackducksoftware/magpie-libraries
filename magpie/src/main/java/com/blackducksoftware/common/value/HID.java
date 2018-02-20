@@ -23,7 +23,6 @@ import static com.google.common.base.Strings.nullToEmpty;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Path;
@@ -228,13 +227,8 @@ public final class HID {
 
         this.schemes = Arrays.copyOf(schemes, nesting + 1);
         this.authorities = Arrays.copyOf(authorities, nesting + 1);
-
-        // Copy the segments over
-        this.segments = new String[nesting + 1][];
-        this.segments[nesting] = new String[depth < 0 ? segments[nesting].length : depth];
-
-        System.arraycopy(segments, 0, this.segments, 0, nesting);
-        System.arraycopy(segments[nesting], 0, this.segments[nesting], 0, this.segments[nesting].length);
+        this.segments = Arrays.copyOf(segments, nesting + 1);
+        this.segments[nesting] = Arrays.copyOf(segments[nesting], depth < 0 ? segments[nesting].length : depth);
     }
 
     @VisibleForTesting
@@ -532,9 +526,7 @@ public final class HID {
     }
 
     public static HID parse(CharSequence input) {
-        Builder builder = new Builder();
-        builder.parse(input);
-        return builder.build();
+        return new Builder().parse(input).build();
     }
 
     public static HID of(URI uri) {
@@ -602,7 +594,7 @@ public final class HID {
          * is not available).
          * <p>
          * Use this method when you are "outside" an archive, working your way in; i.e. starting with the least nested
-         * path.
+         * path and traversing into archives.
          */
         public Builder push(CharSequence scheme, @Nullable String authority, String path) {
             ensureCapacity(++size + 1);
@@ -665,7 +657,7 @@ public final class HID {
             // NOTE: "jar" can be a hierarchical scheme if it has a fragment!
             if (fragment != null && (HIERARCHICAL_FRAGMENT_SCHEMES.contains(scheme) || fragment.startsWith("/"))) {
                 // Hierarchical schemes use "<scheme>:<archiveUri>#<entryName>" for URIs
-                return parseUri(URI.create(uri.getSchemeSpecificPart())).push(scheme, fragment);
+                return parse(uri.getSchemeSpecificPart()).push(scheme, fragment);
             } else if (scheme.equals("jar")) {
                 // Java's JAR scheme uses "<scheme>:<archiveUri>!/<entryName>" for URLs
                 return parseJarUrl(uri.toString());
@@ -687,21 +679,22 @@ public final class HID {
                     throw new MalformedURLException("no !/ found in url spec:" + spec);
                 }
 
-                parseUri(new URL(spec.substring(0, separator++)).toURI());
+                parse(new URL(spec.substring(0, separator++)).toString());
                 String entryName = null;
                 if (++separator != spec.length()) {
                     entryName = spec.substring(separator, spec.length());
                     entryName = URLDecoder.decode(entryName, "UTF-8");
                 }
                 return push("jar", entryName);
-            } catch (MalformedURLException | URISyntaxException | UnsupportedEncodingException e) {
+            } catch (MalformedURLException | UnsupportedEncodingException e) {
                 throw new IllegalArgumentException("bad JAR URL", e);
             }
         }
 
-        private void parse(CharSequence input) {
-            // TODO How can we implement this to not use a URI? For performance and RFC 3986...
+        private Builder parse(CharSequence input) {
+            // TODO We should implement this without using URI for performance and RFC 3986...
             parseUri(URI.create(input.toString()));
+            return this;
         }
 
         private static int computeCapacity(int minCapacity, int currentCapacity) {
