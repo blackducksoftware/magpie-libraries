@@ -25,7 +25,9 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 
@@ -35,6 +37,10 @@ import com.google.common.collect.ImmutableList;
  * @author jgustie
  */
 public class ProductList implements Iterable<Product> {
+
+    public static Collector<? super Product, ?, ProductList> toProductList() {
+        return Collector.of(Builder::new, Builder::addProduct, Builder::combine, Builder::build);
+    }
 
     private final ImmutableList<Product> products;
 
@@ -59,6 +65,10 @@ public class ProductList implements Iterable<Product> {
     @Override
     public Iterator<Product> iterator() {
         return products.iterator();
+    }
+
+    public Stream<Product> stream() {
+        return products.stream();
     }
 
     @Override
@@ -149,6 +159,11 @@ public class ProductList implements Iterable<Product> {
 
         public ProductList build() {
             return new ProductList(this);
+        }
+
+        Builder combine(Builder b) {
+            products.addAll(b.products);
+            return this;
         }
 
         void parse(CharSequence input) {

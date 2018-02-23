@@ -16,6 +16,9 @@
 package com.blackducksoftware.common.value;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
+
+import java.util.stream.Stream;
 
 import org.junit.Test;
 
@@ -25,6 +28,16 @@ import org.junit.Test;
  * @author jgustie
  */
 public class ProductListTest {
+
+    @Test(expected = IllegalArgumentException.class)
+    public void parse_empty() {
+        ProductList.parse("");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void build_empty() {
+        new ProductList.Builder().build();
+    }
 
     @Test
     public void multipleNamesNoVersionsNoComments() {
@@ -38,6 +51,30 @@ public class ProductListTest {
         ProductList fooBar = ProductList.parse("foo/1.0 bar/1.0");
         assertThat(fooBar).hasSize(2);
         assertThat(fooBar).containsExactly(Product.parse("foo/1.0"), Product.parse("bar/1.0")).inOrder();
+    }
+
+    @Test
+    public void multipleNamesVersionsComments() {
+        ProductList fooBar = ProductList.parse("foo/1.0 (test1) bar/1.0");
+        assertThat(fooBar).hasSize(2);
+        assertThat(fooBar).containsExactly(Product.parse("foo/1.0 (test1)"), Product.parse("bar/1.0")).inOrder();
+    }
+
+    @Test
+    public void primary() {
+        ProductList fooBar = ProductList.parse("foo bar");
+        assertThat(fooBar.primary()).isEqualTo(Product.parse("foo"));
+    }
+
+    @Test
+    public void findByName_present() {
+        ProductList fooBar = ProductList.parse("foo bar");
+        assertThat(fooBar.tryFind(p -> p.name().equals("bar"))).hasValue(Product.parse("bar"));
+    }
+
+    @Test
+    public void find_empty() {
+        assertThat(ProductList.parse("foo bar").tryFind(x -> false)).isEmpty();
     }
 
     @Test
@@ -83,6 +120,19 @@ public class ProductListTest {
                 .addProduct(new Product.Builder().name("foo").addComment("(foo)").build())
                 .mergeProduct(new Product.Builder().name("foo").addComment("(foo)").build())
                 .build().toString()).isEqualTo("foo (foo)");
+    }
+
+    @Test
+    public void streamProducts() {
+        assertThat(ProductList.parse("foo bar gus").stream())
+                .containsExactly(Product.parse("foo"), Product.parse("bar"), Product.parse("gus"))
+                .inOrder();
+    }
+
+    @Test
+    public void collectProducts() {
+        assertThat(Stream.of(Product.parse("foo"), Product.parse("bar"), Product.parse("gus")).collect(ProductList.toProductList()).toString())
+                .isEqualTo("foo bar gus");
     }
 
 }

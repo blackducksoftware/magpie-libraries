@@ -117,7 +117,7 @@ public class Product {
             comments = new ArrayList<>(1);
         }
 
-        Builder(Product product) {
+        private Builder(Product product) {
             name = product.name;
             version = product.version.orElse(null);
             comments = new ArrayList<>(product.comments);
