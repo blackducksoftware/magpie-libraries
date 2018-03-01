@@ -476,10 +476,7 @@ public final class HID {
      * Returns this HID as a URI useful for serialization.
      * <p>
      * <em>WARNING</em> This method will fail for non-RFC 2396 URIs.
-     *
-     * @deprecated Use {@link #toUriString()} instead. This method will be removed in a future release.
      */
-    @Deprecated
     public URI toUri() {
         return URI.create(toUriString());
     }
