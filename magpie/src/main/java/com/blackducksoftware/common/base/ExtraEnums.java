@@ -16,21 +16,13 @@
 package com.blackducksoftware.common.base;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Enums;
@@ -42,128 +34,6 @@ import com.google.common.base.Enums;
  * @author jgustie
  */
 public final class ExtraEnums {
-
-    /**
-     * Used to produce collections of enumeration derived values.
-     */
-    private static final class EnumCollectors {
-
-        private static <E extends Enum<E>> Collector<E, ?, List<String>> stringValues() {
-            return mapping(E::toString, collectingAndThen(toList(), Collections::unmodifiableList));
-        }
-
-        private static <E extends Enum<E>> Collector<E, ?, Set<String>> uniqueStringValues() {
-            return mapping(E::toString, collectingAndThen(toSet(), Collections::unmodifiableSet));
-        }
-
-        private static <E extends Enum<E>> Collector<E, ?, Set<String>> names() {
-            return mapping(E::name, collectingAndThen(toSet(), Collections::unmodifiableSet));
-        }
-
-    }
-
-    /**
-     * Returns a stream of enumeration constants.
-     *
-     * @deprecated Use {@link ExtraStreams#stream(Class)} instead.
-     */
-    @Deprecated
-    public static <E extends Enum<E>> Stream<E> stream(Class<E> enumClass) {
-        return ExtraStreams.stream(enumClass);
-    }
-
-    /**
-     * Returns all of the string representations for an enumerated type.
-     *
-     * @deprecated Use {@link ExtraCollectors#enumStrings()} instead.
-     */
-    @Deprecated
-    public static <E extends Enum<E>> List<String> stringValues(Class<E> enumClass) {
-        return ExtraStreams.stream(enumClass).collect(EnumCollectors.stringValues());
-    }
-
-    /**
-     * Returns the string representations for the supplied enumerated values.
-     *
-     * @deprecated Use {@link ExtraCollectors#enumStrings()} instead.
-     */
-    @Deprecated
-    @SafeVarargs
-    public static <E extends Enum<E>> List<String> stringValues(E enumValue, E... enumValues) {
-        return Stream.concat(Stream.of(enumValue), Stream.of(enumValues)).collect(EnumCollectors.stringValues());
-    }
-
-    /**
-     * Returns the string representations for the supplied enumerated values.
-     *
-     * @deprecated Use {@link ExtraCollectors#enumStrings()} instead.
-     */
-    @Deprecated
-    public static <E extends Enum<E>> List<String> stringValues(Iterable<E> enumValues) {
-        return StreamSupport.stream(enumValues.spliterator(), false).collect(EnumCollectors.stringValues());
-    }
-
-    /**
-     * Returns the unique string representations for an enumerated type.
-     *
-     * @deprecated Use {@link ExtraCollectors#uniqueEnumStrings()} instead.
-     */
-    @Deprecated
-    public static <E extends Enum<E>> Set<String> uniqueStringValues(Class<E> enumClass) {
-        return ExtraStreams.stream(enumClass).collect(EnumCollectors.uniqueStringValues());
-    }
-
-    /**
-     * Returns the unique string representations for the supplied enumerated values.
-     *
-     * @deprecated Use {@link ExtraCollectors#uniqueEnumStrings()} instead.
-     */
-    @Deprecated
-    @SafeVarargs
-    public static <E extends Enum<E>> Set<String> uniqueStringValues(E enumValue, E... enumValues) {
-        return Stream.concat(Stream.of(enumValue), Stream.of(enumValues)).collect(EnumCollectors.uniqueStringValues());
-    }
-
-    /**
-     * Returns the unique string representations for the supplied enumerated values.
-     *
-     * @deprecated Use {@link ExtraCollectors#uniqueEnumStrings()} instead.
-     */
-    @Deprecated
-    public static <E extends Enum<E>> Set<String> uniqueStringValues(Iterable<E> enumValues) {
-        return StreamSupport.stream(enumValues.spliterator(), false).collect(EnumCollectors.uniqueStringValues());
-    }
-
-    /**
-     * Returns all of names for an enumerated type.
-     *
-     * @deprecated Use {@link ExtraCollectors#enumNames()} instead.
-     */
-    @Deprecated
-    public static <E extends Enum<E>> Set<String> names(Class<E> enumClass) {
-        return ExtraStreams.stream(enumClass).collect(EnumCollectors.names());
-    }
-
-    /**
-     * Returns the names for the supplied enumerated values.
-     *
-     * @deprecated Use {@link ExtraCollectors#enumNames()} instead.
-     */
-    @Deprecated
-    @SafeVarargs
-    public static <E extends Enum<E>> Set<String> names(E enumValue, E... enumValues) {
-        return Stream.concat(Stream.of(enumValue), Stream.of(enumValues)).collect(EnumCollectors.names());
-    }
-
-    /**
-     * Returns the names for the supplied enumerated values.
-     *
-     * @deprecated Use {@link ExtraCollectors#enumNames()} instead.
-     */
-    @Deprecated
-    public static <E extends Enum<E>> Set<String> names(Iterable<E> enumValues) {
-        return StreamSupport.stream(enumValues.spliterator(), false).collect(EnumCollectors.names());
-    }
 
     /**
      * Attempts to find an enumerated value using {@link Enum#valueOf(Class, String)}.
