@@ -323,6 +323,38 @@ public final class HID {
     }
 
     /**
+     * Applies a new base to this HID. The supplied old base must be an ancestor, all path elements from the old base
+     * will be removed and the remaining path elements will be re-based onto the new base.
+     */
+    public HID getRebased(HID oldBase, HID newBase) {
+        checkArgument(this.isAncestor(oldBase));
+        // TODO If oldBase == newBase just return this?
+        // TODO Require that both bases have the same nesting to avoid Frankenstein paths?
+        // We could relax it slightly if oldBase matches the entire path at that nesting level
+
+        int nesting = nesting() - oldBase.nesting() + newBase.nesting();
+        String[] schemes = new String[nesting + 1];
+        String[] authorities = new String[nesting + 1];
+        String[][] segments = new String[nesting + 1][];
+
+        System.arraycopy(newBase.schemes, 0, schemes, 0, newBase.nesting() + 1);
+        System.arraycopy(newBase.authorities, 0, authorities, 0, newBase.nesting() + 1);
+        System.arraycopy(newBase.segments, 0, segments, 0, newBase.nesting());
+
+        System.arraycopy(this.schemes, oldBase.nesting() + 1, schemes, newBase.nesting() + 1, nesting - newBase.nesting());
+        System.arraycopy(this.authorities, oldBase.nesting() + 1, authorities, newBase.nesting() + 1, nesting - newBase.nesting());
+        System.arraycopy(this.segments, oldBase.nesting() + 1, segments, newBase.nesting() + 1, nesting - newBase.nesting());
+
+        int depth = this.segments[oldBase.nesting()].length - oldBase.depth() + newBase.depth();
+        segments[newBase.nesting()] = new String[depth];
+
+        System.arraycopy(newBase.segments[newBase.nesting()], 0, segments[newBase.nesting()], 0, newBase.depth());
+        System.arraycopy(this.segments[oldBase.nesting()], oldBase.depth(), segments[newBase.nesting()], newBase.depth(), depth - newBase.depth());
+
+        return new HID(schemes, authorities, segments, nesting, -1);
+    }
+
+    /**
      * Returns the directory level parent identifier. This corresponds to the "directory" that contains this identifier.
      * <p>
      * Note that if this HID is a "{@linkplain #getRoot() root}", this method will return the container HID.
