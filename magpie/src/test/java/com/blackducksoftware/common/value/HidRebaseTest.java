@@ -22,8 +22,19 @@ import org.junit.Test;
 /**
  * Tests for the rebasing functionality of the HID value.
  *
+ * @author jgustie
  */
 public class HidRebaseTest {
+
+    /**
+     * If you pass the same two base HIDs you get a no-op, even if an error should have been raised because the rebase
+     * would have been invalid. This same test fails if "file:/b" is changed to "file:/c" because "/b" is not an
+     * ancestor of "/a", but because the equal base test short circuits even the preconditions, this still passes.
+     */
+    @Test
+    public void shortCircuit() {
+        assertThat(HID.from("file:/a").getRebased(HID.from("file:/b"), HID.from("file:/b")).getPath()).isEqualTo("/a");
+    }
 
     @Test
     public void rebaseNesting0() {

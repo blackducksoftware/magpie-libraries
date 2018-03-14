@@ -327,6 +327,13 @@ public final class HID {
      * will be removed and the remaining path elements will be re-based onto the new base.
      */
     public HID getRebased(HID oldBase, HID newBase) {
+        // Normally some of the validation would go prior to this optimization, however passing the same
+        // two bases is such a strong case for a no-op that it is probably better to just skip everything
+        if (oldBase.equals(newBase)) {
+            return this;
+        }
+
+        // Validate the rebase
         checkArgument(this.isAncestor(oldBase), "must rebase from an ancestor");
         checkArgument(nesting() == oldBase.nesting()
                 || segments[oldBase.nesting()].length == oldBase.segments[oldBase.nesting()].length
