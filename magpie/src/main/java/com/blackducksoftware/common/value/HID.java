@@ -641,6 +641,26 @@ public final class HID {
         }
 
         /**
+         * Resolves the supplied path against the current path.
+         */
+        public Builder resolve(String path) {
+            String[] newSegments = toPath(path);
+            if (path.charAt(0) == PATH_SEPARATOR_CHAR) {
+                segments[size] = newSegments;
+            } else {
+                int srcPos = 0;
+                while (newSegments[srcPos].equals("..")) {
+                    srcPos++;
+                }
+                int destPos = segments[size].length - srcPos;
+                int length = newSegments.length - srcPos;
+                segments[size] = Arrays.copyOf(segments[size], destPos + length);
+                System.arraycopy(newSegments, srcPos, segments[size], destPos, length);
+            }
+            return this;
+        }
+
+        /**
          * Returns the current filename.
          */
         @Nullable

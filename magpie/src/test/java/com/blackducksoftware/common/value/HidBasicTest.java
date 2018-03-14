@@ -49,7 +49,6 @@ public class HidBasicTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation") // Uses "toUri" to get at individual pieces of the URI
     public void toUriNested() {
         URI uri = URI.create("tar:file:%2F%2F%2Ffoo%2Fbar.tar#/test.txt");
         HID hid = HID.from(uri);
@@ -354,7 +353,6 @@ public class HidBasicTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation") // Uses "toUri" to get at individual pieces of the URI
     public void fromHttpUrl() {
         // HIDs preserve the authority but don't otherwise expose it
         HID hid = HID.from(URI.create("http://example.com/foo/bar"));
@@ -440,6 +438,14 @@ public class HidBasicTest {
                 .push("i", "i").push("j", "j").push("k", "k").push("l", "l")
                 .push("m", "m").push("n", "n").push("o", "o").push("p", "p")
                 .push("q", "q").build().nesting()).isEqualTo(16);
+    }
+
+    @Test
+    public void builderResolve() {
+        assertThat(new HID.Builder().push("file", "/a/b").resolve("c").build().getPath()).isEqualTo("/a/b/c");
+        assertThat(new HID.Builder().push("file", "/a/b").resolve("../c").build().getPath()).isEqualTo("/a/c");
+        assertThat(new HID.Builder().push("file", "/a/b").resolve("../../c").build().getPath()).isEqualTo("/c");
+        assertThat(new HID.Builder().push("file", "/a/b").resolve("/c").build().getPath()).isEqualTo("/c");
     }
 
     @Test
