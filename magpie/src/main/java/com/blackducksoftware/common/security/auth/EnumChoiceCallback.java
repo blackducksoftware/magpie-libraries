@@ -58,8 +58,8 @@ public class EnumChoiceCallback<E extends Enum<E>> extends ChoiceCallback {
     private static <E extends Enum<E>> String[] choices(Class<E> choices, ResourceBundle bundle) {
         return Stream.of(choices.getEnumConstants())
                 .map(E::name)
+                // TODO Map this to include a prefix based on the class name?
                 .map(bundle::getString)
-                // TODO Use a prefix based on the class name?
                 .toArray(String[]::new);
     }
 

@@ -15,15 +15,16 @@
  */
 package com.blackducksoftware.common.security.auth;
 
+import static com.blackducksoftware.common.security.cert.X509Certificates.subjectAlternativeDnsNames;
+import static com.blackducksoftware.common.security.cert.X509Certificates.subjectCommonName;
+
 import java.security.cert.X509Certificate;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-
-import com.google.common.base.CharMatcher;
+import com.blackducksoftware.common.base.ExtraOptionals;
+import com.blackducksoftware.common.base.ExtraStrings;
+import com.google.common.net.InternetDomainName;
 
 /**
  * An invalid certificate callback for when the certificate chain cannot be verified.
@@ -59,42 +60,14 @@ public final class InvalidCertificateChainCallback extends InvalidCertificateCal
     }
 
     /**
-     * Returns a key store alias to use for this trusted certificate chain.
-     */
-    public String getAlias() {
-        // If things really go south, you can always set this system property
-        return Optional.ofNullable(System.getProperty("blackduck.scan.untrustedCertAlias"))
-                .orElseGet(() -> subjectCommonName(chain[0])
-                        .map(CharMatcher.inRange('a', 'z')::retainFrom)
-                        .map(String::toLowerCase)
-                        .map(name -> name.concat("server")) // TODO Don't double up...
-                        .orElse("untrustedserver"));
-    }
-
-    /**
      * Extracts the most likely server name from a certificate.
      */
     private static String getName(X509Certificate cert) {
-        // TODO Subject alternative names first...
-        return subjectCommonName(cert)
-                .orElseGet(() -> cert.getSubjectDN().getName());
-    }
-
-    /**
-     * Attempts to extract the common name from the certificate's subject.
-     */
-    private static Optional<String> subjectCommonName(X509Certificate cert) {
-        try {
-            LdapName subjectName = new LdapName(cert.getSubjectX500Principal().getName());
-            for (Rdn rdn : subjectName.getRdns()) {
-                if (rdn.getType().equalsIgnoreCase("CN")) {
-                    return Optional.of(rdn.getValue().toString());
-                }
-            }
-            return Optional.empty();
-        } catch (InvalidNameException e) {
-            return Optional.empty();
-        }
+        Optional<String> name = Optional.empty();
+        name = ExtraOptionals.or(name, () -> subjectAlternativeDnsNames(cert).findFirst());
+        name = ExtraOptionals.or(name, () -> subjectCommonName(cert).filter(InternetDomainName::isValid));
+        name = ExtraOptionals.or(name, () -> ExtraStrings.ofEmpty(cert.getSubjectX500Principal().getName()));
+        return name.orElse("<unknown host>");
     }
 
 }
