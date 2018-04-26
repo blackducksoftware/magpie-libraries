@@ -16,13 +16,9 @@
 package com.blackducksoftware.common.io;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
-
-import com.google.common.base.Optional;
-import com.google.common.io.ByteSource;
 
 /**
  * An extension of the standard byte array output stream that exposes more ways to access the written content.
@@ -84,28 +80,6 @@ public class HeapOutputStream extends ByteArrayOutputStream {
      */
     public synchronized ByteBuffer toByteBuffer() {
         return ByteBuffer.wrap(buf, 0, count).asReadOnlyBuffer();
-    }
-
-    /**
-     * Returns a byte source which can provide access to the contents written to this output stream.
-     */
-    public synchronized ByteSource asByteSource() {
-        return new ByteSource() {
-            @Override
-            public InputStream openStream() throws IOException {
-                return getInputStream();
-            }
-
-            @Override
-            public InputStream openBufferedStream() throws IOException {
-                return getInputStream();
-            }
-
-            @Override
-            public Optional<Long> sizeIfKnown() {
-                return Optional.of(Long.valueOf(count));
-            }
-        };
     }
 
 }

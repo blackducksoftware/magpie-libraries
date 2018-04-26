@@ -28,8 +28,6 @@ import java.nio.channels.SeekableByteChannel;
 
 import org.junit.Test;
 
-import com.google.common.io.ByteSource;
-
 /**
  * Tests for {@link HeapOutputStream}.
  *
@@ -100,28 +98,6 @@ public class HeapOutputStreamTest {
             assertThat(out.getInputStream().skip(1L)).isEqualTo(1L);
 
             assertThat(inputStream.skip(1L)).isEqualTo(0L);
-        }
-    }
-
-    @Test
-    public void byteSourceLiveView() throws IOException {
-        try (HeapOutputStream out = new HeapOutputStream()) {
-            ByteSource byteSource = out.asByteSource();
-
-            assertThat(byteSource.sizeIfKnown()).hasValue(0L);
-            out.write(1);
-            assertThat(byteSource.sizeIfKnown()).hasValue(1L);
-        }
-    }
-
-    @Test
-    public void byteSourceAlreadyBuffered() throws IOException {
-        try (HeapOutputStream out = new HeapOutputStream()) {
-            ByteSource byteSource = out.asByteSource();
-
-            Class<?> expectedType = out.getInputStream().getClass();
-            assertThat(byteSource.openStream()).isInstanceOf(expectedType);
-            assertThat(byteSource.openBufferedStream()).isInstanceOf(expectedType);
         }
     }
 
