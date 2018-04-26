@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayReader;
+import java.io.CharArrayWriter;
 import java.io.Closeable;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
@@ -34,7 +35,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -189,6 +192,18 @@ public final class ExtraIO {
             return out;
         } else {
             return new BufferedOutputStream(out);
+        }
+    }
+
+    /**
+     * Conditionally buffers a character stream, returning the supplied stream if buffering is not necessary.
+     */
+    public static Writer buffer(Writer writer) {
+        Objects.requireNonNull(writer);
+        if (writer instanceof BufferedWriter || writer instanceof CharArrayWriter || writer instanceof StringWriter) {
+            return writer;
+        } else {
+            return new BufferedWriter(writer);
         }
     }
 
