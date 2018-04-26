@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
+import java.util.Base64;
 
 import org.junit.Test;
 
@@ -98,6 +99,14 @@ public class HeapOutputStreamTest {
             assertThat(out.getInputStream().skip(1L)).isEqualTo(1L);
 
             assertThat(inputStream.skip(1L)).isEqualTo(0L);
+        }
+    }
+
+    @Test
+    public void base64encode() throws IOException {
+        try (HeapOutputStream out = new HeapOutputStream()) {
+            out.write("Hello World".getBytes());
+            assertThat(out.toString(Base64.getEncoder())).isEqualTo("SGVsbG8gV29ybGQ=");
         }
     }
 

@@ -15,10 +15,14 @@
  */
 package com.blackducksoftware.common.io;
 
+import static com.google.common.base.Verify.verify;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.charset.Charset;
+import java.util.Base64;
 
 /**
  * An extension of the standard byte array output stream that exposes more ways to access the written content.
@@ -80,6 +84,29 @@ public class HeapOutputStream extends ByteArrayOutputStream {
      */
     public synchronized ByteBuffer toByteBuffer() {
         return ByteBuffer.wrap(buf, 0, count).asReadOnlyBuffer();
+    }
+
+    /**
+     * Converts the buffer's contents into a string by decoding the bytes using the supplied charset.
+     */
+    public synchronized String toString(Charset charset) {
+        // TODO Is there a more efficient UTF-8 encoder we should offer?
+        return new String(buf, 0, count, charset);
+    }
+
+    /**
+     * Converts the buffer's contents into a string by base 64 encoding the bytes using the supplied encoder.
+     * <p>
+     * In general, it is preferable to wrap the buffer using the encoder before writing data into it; encoding the data
+     * after the data has been written requires additional temporary buffering (bytes for expansion and padding,
+     * characters for string conversion).
+     */
+    @SuppressWarnings("deprecation")
+    public synchronized String toString(Base64.Encoder encoder) {
+        ByteBuffer bb = encoder.encode(toByteBuffer());
+        verify(bb.hasArray(), "expected backing array");
+        // NOTE: This is the same implementation as Base64.Encoder.encodeToString
+        return new String(bb.array(), 0, bb.arrayOffset() + bb.position(), bb.remaining());
     }
 
 }
