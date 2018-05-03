@@ -18,6 +18,7 @@ package com.blackducksoftware.common.io;
 import static com.blackducksoftware.common.test.ByteBufferSubject.assertThat;
 import static com.blackducksoftware.common.test.SeekableByteChannelSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -105,7 +106,7 @@ public class HeapOutputStreamTest {
     @Test
     public void base64encode() throws IOException {
         try (HeapOutputStream out = new HeapOutputStream()) {
-            out.write("Hello World".getBytes());
+            out.write("Hello World".getBytes(US_ASCII));
             assertThat(out.toString(Base64.getEncoder())).isEqualTo("SGVsbG8gV29ybGQ=");
         }
     }
