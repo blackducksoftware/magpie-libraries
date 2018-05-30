@@ -185,6 +185,17 @@ public final class ExtraOptionals {
     }
 
     /**
+     * If a value is present, apply the provided mapping function, returning empty if it fails with a runtime exception.
+     */
+    public static <T, U> Optional<U> flatMapThrowable(Optional<T> self, Function<? super T, U> mapper) {
+        try {
+            return self.map(mapper);
+        } catch (RuntimeException e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
      * If a value is present, apply the provided mapping function to return zero or more results, otherwise return an
      * empty {@code Stream}.
      */

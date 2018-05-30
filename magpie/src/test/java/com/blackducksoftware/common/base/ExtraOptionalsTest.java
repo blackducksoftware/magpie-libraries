@@ -273,6 +273,24 @@ public class ExtraOptionalsTest {
     }
 
     @Test
+    public void flatMapThrowable_empty() {
+        assertThat(ExtraOptionals.flatMapThrowable(Optional.empty(), function)).isEmpty();
+        verify(function, never()).apply(Mockito.anyString());
+    }
+
+    @Test
+    public void flatMapThrowable_identity() {
+        assertThat(ExtraOptionals.flatMapThrowable(Optional.of("test"), Function.identity())).hasValue("test");
+    }
+
+    @Test
+    public void flatMapThrowable_functionThrows() {
+        assertThat(ExtraOptionals.flatMapThrowable(Optional.of("test"), x -> {
+            throw new RuntimeException();
+        })).isEmpty();
+    }
+
+    @Test
     public void flatMapMany_null() {
         thrown.expect(NullPointerException.class);
         ExtraOptionals.flatMapMany(null, Stream::of);
