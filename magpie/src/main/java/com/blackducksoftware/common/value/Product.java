@@ -16,7 +16,6 @@
 package com.blackducksoftware.common.value;
 
 import static com.blackducksoftware.common.base.ExtraFunctions.curry;
-import static com.blackducksoftware.common.base.ExtraOptionals.flatMapNullable;
 import static com.blackducksoftware.common.value.Rules.TokenType.RFC7230;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -156,14 +155,14 @@ public class Product {
 
         public Builder implementationTitle(Class<?> type) {
             Optional<Package> pkg = Optional.ofNullable(type.getPackage());
-            return name(flatMapNullable(pkg, Package::getImplementationTitle)
+            return name(pkg.map(Package::getImplementationTitle)
                     .map(curry(RFC7230, Rules::retainTokenChars))
                     .orElse(type.getSimpleName()));
         }
 
         public Builder implementationVersion(Class<?> type) {
             Optional<Package> pkg = Optional.ofNullable(type.getPackage());
-            return version(flatMapNullable(pkg, Package::getImplementationVersion)
+            return version(pkg.map(Package::getImplementationVersion)
                     .map(curry(RFC7230, Rules::retainTokenChars))
                     .orElse(null));
         }
