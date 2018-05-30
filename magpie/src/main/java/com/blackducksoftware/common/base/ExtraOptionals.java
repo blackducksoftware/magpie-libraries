@@ -185,19 +185,6 @@ public final class ExtraOptionals {
     }
 
     /**
-     * If a value is present, apply the provided mapping function, return the possibly {@code null} result wrapped in
-     * an {@code Optional}, otherwise return an empty {@code Optional}.
-     */
-    public static <T, U> Optional<U> flatMapNullable(Optional<T> self, Function<? super T, U> mapper) {
-        Objects.requireNonNull(mapper);
-        if (!self.isPresent())
-            return Optional.empty();
-        else {
-            return Optional.ofNullable(mapper.apply(self.get()));
-        }
-    }
-
-    /**
      * If a value is present, apply the provided mapping function to return zero or more results, otherwise return an
      * empty {@code Stream}.
      */
