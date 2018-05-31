@@ -137,6 +137,19 @@ public abstract class ContentRange {
         return unit() + ' ' + range();
     }
 
+    public Builder newBuilder() {
+        return new Builder(this);
+    }
+
+    /**
+     * Synonym for {@code parse}.
+     *
+     * @see #parse(CharSequence)
+     */
+    public static ContentRange valueOf(String input) {
+        return parse(input);
+    }
+
     public static ContentRange parse(CharSequence input) {
         Builder builder = new Builder();
         builder.parse(input);
@@ -160,6 +173,18 @@ public abstract class ContentRange {
             firstByte = -1L;
             lastByte = -1L;
             contentLength = -1L;
+        }
+
+        private Builder(ContentRange contentRange) {
+            unit = contentRange.unit();
+            if (contentRange instanceof ByteContentRange) {
+                ByteContentRange byteRange = (ByteContentRange) contentRange;
+                firstByte = byteRange.firstBytePos;
+                lastByte = byteRange.lastBytePos;
+                contentLength = byteRange.completeLength;
+            } else {
+                otherRange = contentRange.range();
+            }
         }
 
         public Builder byteRange(long firstByte, long lastByte, long contentLength) {

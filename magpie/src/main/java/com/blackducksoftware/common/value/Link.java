@@ -76,6 +76,19 @@ public class Link {
         return result.toString();
     }
 
+    public Builder newBuilder() {
+        return new Builder(this);
+    }
+
+    /**
+     * Synonym for {@code parse}.
+     *
+     * @see #parse(CharSequence)
+     */
+    public static Link valueOf(String input) {
+        return parse(input);
+    }
+
     public static Link parse(CharSequence input) {
         Builder builder = new Builder();
         builder.parse(input);
@@ -99,6 +112,11 @@ public class Link {
             linkParams.put("title", null);
             linkParams.put("title*", null);
             linkParams.put("type", null);
+        }
+
+        private Builder(Link link) {
+            uriReference = link.uriReference;
+            linkParams = new LinkedHashMap<>(link.linkParams);
         }
 
         public Builder uriReference(CharSequence uriReference) {

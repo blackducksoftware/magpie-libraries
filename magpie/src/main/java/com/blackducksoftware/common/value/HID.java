@@ -565,6 +565,15 @@ public final class HID {
         return new Builder(this);
     }
 
+    /**
+     * Synonym for {@code parse}.
+     *
+     * @see #parse(CharSequence)
+     */
+    public static HID valueOf(String input) {
+        return parse(input);
+    }
+
     public static HID parse(CharSequence input) {
         return new Builder().parse(input).build();
     }

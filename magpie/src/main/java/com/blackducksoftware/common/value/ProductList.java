@@ -95,6 +95,15 @@ public class ProductList implements Iterable<Product> {
         return new Builder(this);
     }
 
+    /**
+     * Synonym for {@code parse}.
+     *
+     * @see #parse(CharSequence)
+     */
+    public static ProductList valueOf(String input) {
+        return parse(input);
+    }
+
     public static ProductList parse(CharSequence input) {
         Builder builder = new Builder();
         builder.parse(input);

@@ -98,6 +98,10 @@ public class Product {
         return new Builder(this);
     }
 
+    public static Product valueOf(String input) {
+        return parse(input);
+    }
+
     public static Product parse(CharSequence input) {
         Builder builder = new Builder();
         builder.parse(input);

@@ -71,6 +71,19 @@ public class Digest {
         return algorithm + ':' + value;
     }
 
+    public Builder newBuilder() {
+        return new Builder(this);
+    }
+
+    /**
+     * Synonym for {@code parse}.
+     *
+     * @see #parse(CharSequence)
+     */
+    public static Digest valueOf(String input) {
+        return parse(input);
+    }
+
     public static Digest parse(CharSequence input) {
         Builder builder = new Builder();
         builder.parse(input);
@@ -103,6 +116,11 @@ public class Digest {
         private String value;
 
         public Builder() {
+        }
+
+        private Builder(Digest digest) {
+            algorithm = digest.algorithm;
+            value = digest.value;
         }
 
         public Builder algorithm(@Nullable CharSequence algorithm) {

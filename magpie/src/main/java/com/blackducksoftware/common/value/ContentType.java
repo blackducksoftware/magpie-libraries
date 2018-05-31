@@ -174,6 +174,19 @@ public class ContentType {
         return result.toString();
     }
 
+    public Builder newBuilder() {
+        return new Builder(this);
+    }
+
+    /**
+     * Synonym for {@code parse}.
+     *
+     * @see #parse(CharSequence)
+     */
+    public static ContentType valueOf(String input) {
+        return parse(input);
+    }
+
     public static ContentType parse(CharSequence input) {
         Builder builder = new Builder();
         builder.parse(input);
@@ -190,6 +203,12 @@ public class ContentType {
 
         public Builder() {
             parameters = LinkedListMultimap.create();
+        }
+
+        private Builder(ContentType contentType) {
+            type = contentType.type;
+            subtype = contentType.subtype;
+            parameters = LinkedListMultimap.create(contentType.parameters);
         }
 
         /**
