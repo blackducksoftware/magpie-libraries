@@ -38,8 +38,8 @@ subprojects {
 
 	jar {
 		manifest {
-			attributes('Implementation-Title': project.description,
-			           'Implementation-Version': project.version)
+			attributes('Implementation-Title': "${-> project.description}",
+			           'Implementation-Version': "${-> project.version}")
 		}
 	}
 	
