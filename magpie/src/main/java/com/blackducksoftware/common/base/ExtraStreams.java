@@ -104,7 +104,27 @@ public final class ExtraStreams {
     }
 
     /**
-     * Returns a stream from a potentially {@code null} element.
+     * Returns a stream containing the specified first element and the sequence of additional elements.
+     * <p>
+     * This method is intended to be used with vararg parameters to enforce "one or more" semantics or to help eliminate
+     * ambiguity in method signatures.
+     */
+    public static <T> Stream<T> of(@Nullable T first, T[] rest) {
+        return rest.length != 0 ? Stream.concat(Stream.of(first), Arrays.stream(rest)) : Stream.of(first);
+    }
+
+    /**
+     * Returns a stream containing the specified first and second element and the sequence of additional elements.
+     * <p>
+     * This method is intended to be used with vararg parameters to enforce "two or more" semantics or to help eliminate
+     * ambiguity in method signatures.
+     */
+    public static <T> Stream<T> of(@Nullable T first, @Nullable T second, T[] rest) {
+        return rest.length != 0 ? Stream.concat(Stream.of(first, second), Arrays.stream(rest)) : Stream.of(first, second);
+    }
+
+    /**
+     * Returns a stream containing either a single non-{@code null} element or an empty stream.
      */
     public static <T> Stream<T> ofNullable(@Nullable T t) {
         return t != null ? Stream.of(t) : Stream.empty();

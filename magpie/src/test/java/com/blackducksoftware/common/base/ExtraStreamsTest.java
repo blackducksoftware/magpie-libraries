@@ -105,6 +105,41 @@ public class ExtraStreamsTest {
     }
 
     @Test
+    public void ofSingle() {
+        assertThat(ExtraStreams.of("test", new String[0])).containsExactly("test");
+    }
+
+    @Test
+    public void ofSingleNull() {
+        assertThat(ExtraStreams.of(null, new String[0])).containsExactly((String) null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void ofSingleNullRest() {
+        ExtraStreams.of("test", null);
+    }
+
+    @Test
+    public void ofDouble() {
+        assertThat(ExtraStreams.of("test1", "test2", new String[0])).containsExactly("test1", "test2").inOrder();
+    }
+
+    @Test
+    public void ofDoubleNull() {
+        assertThat(ExtraStreams.of(null, null, new String[0])).containsExactly(null, null);
+    }
+
+    @Test
+    public void ofDoubleRest() {
+        assertThat(ExtraStreams.of("test1", "test2", new String[] { "test3", "test4" })).containsExactly("test1", "test2", "test3", "test4").inOrder();
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void ofDoubleNullRest() {
+        ExtraStreams.of("test1", "test2", null);
+    }
+
+    @Test
     public void ofNullableNull() {
         assertThat(ExtraStreams.ofNullable(null)).isEmpty();
     }
