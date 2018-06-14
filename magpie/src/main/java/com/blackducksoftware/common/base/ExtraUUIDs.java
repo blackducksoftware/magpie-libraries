@@ -15,11 +15,13 @@
  */
 package com.blackducksoftware.common.base;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -30,6 +32,8 @@ import java.util.UUID;
 public class ExtraUUIDs {
 
     // TODO SHA-1 name-based UUIDs (version 5) should be preferred
+
+    // TODO Should this be a value object instead?
 
     /**
      * The nil UUID is special form of UUID that is specified to have all 128 bits set to zero.
@@ -67,6 +71,23 @@ public class ExtraUUIDs {
     private static final UUID NAME_SPACE_X500 = UUID.fromString("6ba7b814-9dad-11d1-80b4-00c04fd430c8");
 
     /**
+     * Lookup table for converting ASCII characters to numeric values.
+     */
+    private static final byte[] ASCII_HEX_DIGITS;
+    static {
+        ASCII_HEX_DIGITS = new byte[128];
+        Arrays.fill(ASCII_HEX_DIGITS, (byte) -1);
+        ASCII_HEX_DIGITS['-'] = -2;
+        for (int i = 0; i < 10; ++i) {
+            ASCII_HEX_DIGITS['0' + i] = (byte) i;
+        }
+        for (int i = 0; i < 6; ++i) {
+            ASCII_HEX_DIGITS['A' + i] = (byte) (10 + i);
+            ASCII_HEX_DIGITS['a' + i] = (byte) (10 + i);
+        }
+    }
+
+    /**
      * Returns the special nil UUID.
      */
     public static UUID nilUUID() {
@@ -94,6 +115,35 @@ public class ExtraUUIDs {
      */
     public static ByteBuffer putUUID(ByteBuffer bb, UUID uuid) {
         return bb.putLong(uuid.getMostSignificantBits()).putLong(uuid.getLeastSignificantBits());
+    }
+
+    /**
+     * Alternate implementation of {@code UUID.fromString}.
+     * <p>
+     * Note that this version of {@code fromString} is more strict about the positions of the "-", in particular the
+     * built-in UUID class will allow the dashes to appear in the wrong place and it will effect the outcome of the
+     * parsed value.
+     */
+    public static UUID fromString(CharSequence input) {
+        checkArgument(input.length() == 36, "Invalid UUID string: %s", input);
+        long mostSigBits = 0L;
+        long leastSigBits = 0L;
+        for (int i = 0; i < 36; ++i) {
+            char c = input.charAt(i);
+            byte value = c < 128 ? ASCII_HEX_DIGITS[c] : -1;
+            if (value >= 0) {
+                if (i < 19) {
+                    mostSigBits = mostSigBits * 16 - value;
+                } else {
+                    leastSigBits = leastSigBits * 16 - value;
+                }
+            } else if (value == -2) {
+                checkArgument(i == 8 || i == 13 || i == 18 || i == 23, "Invalid UUID string: %s", input);
+            } else {
+                throw new NumberFormatException("Invalid UUID string: " + input);
+            }
+        }
+        return new UUID(-mostSigBits, -leastSigBits);
     }
 
     /**

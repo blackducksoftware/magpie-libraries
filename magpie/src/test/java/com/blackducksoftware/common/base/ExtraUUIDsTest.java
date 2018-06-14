@@ -64,6 +64,69 @@ public class ExtraUUIDsTest {
     }
 
     @Test
+    public void fromString_lowerCase() {
+        assertThat(ExtraUUIDs.fromString("00000000-0000-0000-0000-000000000000")).isEqualTo(new UUID(0x00000000_00000000L, 0x00000000_00000000L));
+        assertThat(ExtraUUIDs.fromString("01234567-89ab-cdef-0123-456789abcdef")).isEqualTo(new UUID(0x01234567_89abcdefL, 0x01234567_89abcdefL));
+        assertThat(ExtraUUIDs.fromString("3d813cbb-47fb-32ba-91df-831e1593ac29")).isEqualTo(new UUID(0x3d813cbb_47fb32baL, 0x91df831e_1593ac29L));
+        assertThat(ExtraUUIDs.fromString("5bef6a07-77f3-3874-aeb7-e271ce5e53e1")).isEqualTo(new UUID(0x5bef6a07_77f33874L, 0xaeb7e271_ce5e53e1L));
+        assertThat(ExtraUUIDs.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff")).isEqualTo(new UUID(0xFFFFFFFF_FFFFFFFFL, 0xFFFFFFFF_FFFFFFFFL));
+    }
+
+    @Test
+    public void fromString_upperCase() {
+        assertThat(ExtraUUIDs.fromString("00000000-0000-0000-0000-000000000000")).isEqualTo(new UUID(0x00000000_00000000L, 0x00000000_00000000L));
+        assertThat(ExtraUUIDs.fromString("01234567-89AB-CDEF-0123-456789ABCDEF")).isEqualTo(new UUID(0x01234567_89abcdefL, 0x01234567_89abcdefL));
+        assertThat(ExtraUUIDs.fromString("3D813CBB-47FB-32BA-91DF-831E1593AC29")).isEqualTo(new UUID(0x3d813cbb_47fb32baL, 0x91df831e_1593ac29L));
+        assertThat(ExtraUUIDs.fromString("5BEF6A07-77F3-3874-AEB7-E271CE5E53E1")).isEqualTo(new UUID(0x5bef6a07_77f33874L, 0xaeb7e271_ce5e53e1L));
+        assertThat(ExtraUUIDs.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")).isEqualTo(new UUID(0xffffffff_ffffffffL, 0xffffffff_ffffffffL));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void fromString_null() {
+        ExtraUUIDs.fromString(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromString_empty() {
+        ExtraUUIDs.fromString("");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromString_tooShort() {
+        ExtraUUIDs.fromString("01234567-89AB-CDEF-0123-456789ABCDE");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromString_tooLong() {
+        ExtraUUIDs.fromString("01234567-89AB-CDEF-0123-456789ABCDEF0");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromString_wrongDash8() {
+        ExtraUUIDs.fromString("012345678-9AB-CDEF-0123-456789ABCDEF");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromString_wrongDashC() {
+        ExtraUUIDs.fromString("01234567-89ABC-DEF-0123-456789ABCDEF");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromString_wrongDash0() {
+        ExtraUUIDs.fromString("01234567-89AB-CDEF0-123-456789ABCDEF");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fromString_wrongDash4() {
+        ExtraUUIDs.fromString("01234567-89AB-CDEF-01234-56789ABCDEF");
+    }
+
+    @Test(expected = NumberFormatException.class)
+    public void fromString_numberG() {
+        ExtraUUIDs.fromString("01234567-89AB-CDEF-0123-456789ABCDEG");
+    }
+
+    @Test
     public void rfc4122AppendixB() {
         assertThat(ExtraUUIDs.nameUUIDFromDns("www.widgets.com").toString()).isEqualTo(UUID_OUTPUT_V3_DNS_WWW_WIDGETS_COM);
     }
