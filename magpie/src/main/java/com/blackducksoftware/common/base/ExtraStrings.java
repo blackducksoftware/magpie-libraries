@@ -31,11 +31,18 @@ import com.google.common.base.CharMatcher;
 public final class ExtraStrings {
 
     /**
+     * Returns {@code true} if the supplied character sequence has a length greater then zero.
+     */
+    public static boolean isNotEmpty(CharSequence value) {
+        return value.length() > 0;
+    }
+
+    /**
      * Returns an optional string that is present only if the supplied value is not empty. For example,
      * {@code ofEmpty(null).isPresent() == ofEmpty("").isPresent()}.
      */
     public static Optional<String> ofEmpty(@Nullable CharSequence value) {
-        return Optional.ofNullable(value).filter(cs -> cs.length() > 0).map(CharSequence::toString);
+        return Optional.ofNullable(value).filter(ExtraStrings::isNotEmpty).map(CharSequence::toString);
     }
 
     /**

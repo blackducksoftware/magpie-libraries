@@ -30,6 +30,21 @@ import org.junit.Test;
  */
 public class ExtraStringsTest {
 
+    @Test(expected = NullPointerException.class)
+    public void isNotEmptyNullValue() {
+        ExtraStrings.isNotEmpty(null);
+    }
+
+    @Test
+    public void isNotEmptyEmptyValue() {
+        assertThat(ExtraStrings.isNotEmpty("")).isFalse();
+    }
+
+    @Test
+    public void isNotEmptyValue() {
+        assertThat(ExtraStrings.isNotEmpty("foo")).isTrue();
+    }
+
     @Test
     public void ofEmptyNullValue() {
         assertThat(ExtraStrings.ofEmpty(null)).isEmpty();
