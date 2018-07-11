@@ -181,7 +181,6 @@ public class ExtraUUIDs {
      * Creates a new UUID from the supplied namespace and name.
      *
      * @see #nameUUIDFromBytes(UUID, byte[])
-     * @implNote Primarily overloaded to avoid excess array copying when encoding character sequences
      */
     public static UUID nameUUIDFromBytes(UUID nameSpaceId, ByteBuffer name) {
         byte[] nameBytes = new byte[16 + name.remaining()];
