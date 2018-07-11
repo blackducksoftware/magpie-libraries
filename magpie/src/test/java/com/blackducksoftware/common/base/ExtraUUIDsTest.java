@@ -64,6 +64,22 @@ public class ExtraUUIDsTest {
     }
 
     @Test
+    public void fromUriString() {
+        UUID uuid = UUID.randomUUID();
+        assertThat(ExtraUUIDs.fromUriString("URN:UUID:" + uuid)).isEqualTo(uuid);
+        assertThat(ExtraUUIDs.fromUriString("URN:uuid:" + uuid)).isEqualTo(uuid);
+        assertThat(ExtraUUIDs.fromUriString("urn:uuid:" + uuid)).isEqualTo(uuid);
+    }
+
+    @Test
+    public void fromUri() {
+        UUID uuid = UUID.randomUUID();
+        assertThat(ExtraUUIDs.fromUri(URI.create("URN:UUID:" + uuid))).isEqualTo(uuid);
+        assertThat(ExtraUUIDs.fromUri(URI.create("URN:uuid:" + uuid))).isEqualTo(uuid);
+        assertThat(ExtraUUIDs.fromUri(URI.create("urn:uuid:" + uuid))).isEqualTo(uuid);
+    }
+
+    @Test
     public void fromString_lowerCase() {
         assertThat(ExtraUUIDs.fromString("00000000-0000-0000-0000-000000000000")).isEqualTo(new UUID(0x00000000_00000000L, 0x00000000_00000000L));
         assertThat(ExtraUUIDs.fromString("01234567-89ab-cdef-0123-456789abcdef")).isEqualTo(new UUID(0x01234567_89abcdefL, 0x01234567_89abcdefL));

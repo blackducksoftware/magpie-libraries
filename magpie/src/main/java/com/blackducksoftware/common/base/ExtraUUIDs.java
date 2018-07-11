@@ -24,6 +24,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.UUID;
 
+import com.google.common.base.Ascii;
+
 /**
  * Additional support for RFC 4122 Universally Unique IDentifiers.
  *
@@ -108,6 +110,25 @@ public class ExtraUUIDs {
      */
     public static URI toUri(UUID uuid) {
         return URI.create(toUriString(uuid));
+    }
+
+    /**
+     * Returns a UUID from a URI string representation.
+     */
+    public static UUID fromUriString(CharSequence uri) {
+        checkArgument(uri.length() == 45, "UUID URN should be exactly 45 characters (was %s): %s", uri.length(), uri);
+        checkArgument(Ascii.equalsIgnoreCase("urn:uuid:", uri.subSequence(0, 9)), "expected UUID URN scheme: %s", uri);
+        return fromString(uri.subSequence(9, 45));
+    }
+
+    /**
+     * Returns a UUID from a URI.
+     */
+    public static UUID fromUri(URI uri) {
+        checkArgument(Ascii.equalsIgnoreCase(uri.getScheme(), "urn"), "expected 'urn' scheme: %s", uri);
+        String ssp = uri.getSchemeSpecificPart();
+        checkArgument(ssp != null && Ascii.equalsIgnoreCase(ssp.substring(0, 5), "uuid:"), "expected 'uuid' namespace: %s ", uri);
+        return fromString(ssp.substring(5));
     }
 
     /**
