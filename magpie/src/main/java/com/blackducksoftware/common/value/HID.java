@@ -334,7 +334,7 @@ public final class HID {
         }
 
         // Validate the rebase
-        checkArgument(this.isAncestor(oldBase), "must rebase from an ancestor");
+        checkArgument(this.isAncestor(oldBase), "must rebase from an ancestor: %s is not an ancestor of %s", oldBase, this);
         checkArgument(nesting() == oldBase.nesting()
                 || segments[oldBase.nesting()].length == oldBase.segments[oldBase.nesting()].length
                 || newBase.isAncestor(oldBase)
