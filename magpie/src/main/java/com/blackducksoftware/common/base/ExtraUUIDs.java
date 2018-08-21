@@ -179,6 +179,23 @@ public class ExtraUUIDs {
 
     /**
      * Creates a new UUID from the supplied namespace and name.
+     * <p>
+     * <em>Warning:</em> This will not generally produce name based UUIDs that are comparable with those generated on
+     * other platforms because no character encoding is performed. If the resulting UUID will be considered by another
+     * program, prefer to encode the character sequence as UTF-8 bytes first.
+     */
+    public static UUID nameUUIDFromUnencodedChars(UUID nameSpaceId, CharSequence name) {
+        int len = name.length();
+        byte[] nameBytes = new byte[16 + len * 2];
+        ByteBuffer buf = putUUID(ByteBuffer.wrap(nameBytes), nameSpaceId);
+        for (int i = 0; i < len; ++i) {
+            buf.putChar(name.charAt(i));
+        }
+        return UUID.nameUUIDFromBytes(nameBytes);
+    }
+
+    /**
+     * Creates a new UUID from the supplied namespace and name.
      *
      * @see #nameUUIDFromBytes(UUID, byte[])
      */
