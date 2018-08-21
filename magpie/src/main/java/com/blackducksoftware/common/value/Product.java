@@ -16,9 +16,15 @@
 package com.blackducksoftware.common.value;
 
 import static com.blackducksoftware.common.base.ExtraFunctions.curry;
+import static com.blackducksoftware.common.value.Rules.retainTokenChars;
 import static com.blackducksoftware.common.value.Rules.TokenType.RFC7230;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.StandardSystemProperty.JAVA_VENDOR;
+import static com.google.common.base.StandardSystemProperty.JAVA_VERSION;
+import static com.google.common.base.StandardSystemProperty.OS_ARCH;
+import static com.google.common.base.StandardSystemProperty.OS_NAME;
+import static com.google.common.base.StandardSystemProperty.OS_VERSION;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +45,28 @@ import com.google.common.collect.ImmutableList;
  * @see <a href="https://tools.ietf.org/html/rfc7231#section-7.4.2">Server</a>
  */
 public class Product {
+
+    /**
+     * Returns a product describing the current operating system.
+     */
+    public static Product os() {
+        return new Builder()
+                .name(retainTokenChars(RFC7230, OS_NAME.value()))
+                .version(OS_VERSION.value())
+                .addCommentText("%s", OS_ARCH.value())
+                .build();
+    }
+
+    /**
+     * Returns a product describing the current Java runtime environment.
+     */
+    public static Product java() {
+        return new Builder()
+                .name("Java")
+                .version(JAVA_VERSION.value())
+                .addCommentText("%s", JAVA_VENDOR.value())
+                .build();
+    }
 
     private final String name;
 
