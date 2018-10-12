@@ -15,12 +15,9 @@
  */
 package com.blackducksoftware.common.nio.file;
 
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * Extra path matcher helpers.
@@ -31,37 +28,12 @@ public class ExtraPathMatchers {
 
     /**
      * Modifies a file visitor so that visits are filtered by the supplied path matcher.
+     *
+     * @deprecated Use {@link ExtraFileVisitors#filter(FileVisitor, PathMatcher)} instead.
      */
+    @Deprecated
     public static FileVisitor<Path> filterVisitor(FileVisitor<Path> visitor, PathMatcher pathMatcher) {
-        return new FileVisitor<Path>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                if (pathMatcher.matches(dir)) {
-                    return visitor.preVisitDirectory(dir, attrs);
-                } else {
-                    return FileVisitResult.SKIP_SUBTREE;
-                }
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                if (pathMatcher.matches(file)) {
-                    return visitor.visitFile(file, attrs);
-                } else {
-                    return FileVisitResult.CONTINUE;
-                }
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                return visitor.visitFileFailed(file, exc);
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                return visitor.postVisitDirectory(dir, exc);
-            }
-        };
+        return ExtraFileVisitors.filter(visitor, pathMatcher);
     }
 
     private ExtraPathMatchers() {
