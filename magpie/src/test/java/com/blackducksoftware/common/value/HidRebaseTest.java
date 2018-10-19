@@ -48,12 +48,28 @@ public class HidRebaseTest {
     @Test
     public void rebaseNesting1() {
         HID a = new HID.Builder().push("file", "/foo/bar/gus.tar").push("tar", "/h/d/a").build();
+
+        // Ancestor directory is renamed
         assertThat(a.getRebased(HID.from("file:/foo/bar"), HID.from("file:/foo/test")))
                 .isEqualTo(new HID.Builder().push("file", "/foo/test/gus.tar").push("tar", "/h/d/a").build());
+
+        // Ancestor directory is moved shallower
+        assertThat(a.getRebased(HID.from("file:/foo/bar"), HID.from("file:/foo")))
+                .isEqualTo(new HID.Builder().push("file", "/foo/gus.tar").push("tar", "/h/d/a").build());
+
+        // Ancestor directory is moved deeper
+        assertThat(a.getRebased(HID.from("file:/foo/bar"), HID.from("file:/foo/b/a/r")))
+                .isEqualTo(new HID.Builder().push("file", "/foo/b/a/r/gus.tar").push("tar", "/h/d/a").build());
+
+        // Ancestor archive is renamed
         assertThat(a.getRebased(HID.from("file:/foo/bar/gus.tar"), HID.from("file:/foo/bar/gus")))
                 .isEqualTo(new HID.Builder().push("file", "/foo/bar/gus").push("tar", "/h/d/a").build());
+
+        // Archive is (partially) extracted to disk
         assertThat(a.getRebased(HID.from("tar:file:%2Ffoo%2Fbar%2Fgus.tar#/h/d"), HID.from("file:/foo/bar/h/d")))
                 .isEqualTo(HID.from("file:/foo/bar/h/d/a"));
+
+        // Archive is nested into another archive
         assertThat(a.getRebased(HID.from("file:/foo/bar/gus.tar"), new HID.Builder().push("file", "/test.zip").push("zip", "/foo/bar/gus.tar").build()))
                 .isEqualTo(new HID.Builder().push("file", "/test.zip").push("zip", "/foo/bar/gus.tar").push("tar", "/h/d/a").build());
     }
@@ -62,17 +78,6 @@ public class HidRebaseTest {
     public void rebaseNonAncestorNesting0() {
         // The old base must be an ancestor of the original
         HID.from("file:/a").getRebased(HID.from("file:/b"), HID.from("file:/c"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void rebaseNesting1PartialPath() {
-        // This isn't allowed because the bases do not have anything in common and old base doesn't match the entire
-        // nesting level of the original
-        new HID.Builder()
-                .push("file", "/foo/bar/gus.tar")
-                .push("tar", "/h/d/a")
-                .build()
-                .getRebased(HID.from("file:/foo/bar"), HID.from("file:/example"));
     }
 
 }
