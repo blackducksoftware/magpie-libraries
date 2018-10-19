@@ -335,12 +335,6 @@ public final class HID {
 
         // Validate the rebase
         checkArgument(this.isAncestor(oldBase), "must rebase from an ancestor: %s is not an ancestor of %s", oldBase, this);
-        checkArgument(nesting() == oldBase.nesting()
-                || segments[oldBase.nesting()].length == oldBase.segments[oldBase.nesting()].length
-                || newBase.isAncestor(oldBase)
-                || oldBase.isAncestor(newBase)
-                || Objects.equals(oldBase.getParent(), newBase.getParent()),
-                "incompatible source and target bases");
 
         // Allocate storage (note we are not computing the final depth, rather the depth at inflection)
         int nesting = nesting() - oldBase.nesting() + newBase.nesting();
