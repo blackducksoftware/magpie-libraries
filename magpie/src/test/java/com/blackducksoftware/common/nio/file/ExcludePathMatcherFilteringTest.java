@@ -180,7 +180,7 @@ public class ExcludePathMatcherFilteringTest {
     private static FileCollector walkFileTree(FileSystem fileSystem, PathMatcher pathMatcher) throws IOException {
         FileCollector result = new FileCollector();
         Path start = Iterables.getOnlyElement(fileSystem.getRootDirectories());
-        Files.walkFileTree(start, ExtraPathMatchers.filterVisitor(result, pathMatcher));
+        Files.walkFileTree(start, ExtraFileVisitors.filter(result, pathMatcher));
         return result;
     }
 
