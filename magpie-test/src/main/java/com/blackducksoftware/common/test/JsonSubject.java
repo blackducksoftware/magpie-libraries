@@ -17,10 +17,11 @@ package com.blackducksoftware.common.test;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.truth.Fact.fact;
+import static com.google.common.truth.Fact.simpleFact;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,7 +37,6 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.truth.DefaultSubject;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.IntegerSubject;
@@ -179,7 +179,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         // Resolve the JSON node using the pointer
         JsonNode next = actual().at(pointer);
         if (next.isMissingNode()) {
-            fail("matches anything at pointer", pointer);
+            failWithActual("expected match at pointer", pointer);
         }
         return check().about(factory).that(next);
     }
@@ -188,7 +188,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
 
     public IterableSubject isArray() {
         if (actual() == null || !actual().isArray()) {
-            fail("is an array");
+            failWithActual(simpleFact("expected array"));
         }
         return check().that((Iterable<?>) JsonUtil.unwrap(actual()));
     }
@@ -199,7 +199,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
 
     public StringSubject isTextual() {
         if (actual() == null || !actual().isTextual()) {
-            fail("is textual");
+            failWithActual(simpleFact("expected textual"));
         }
         return check().that(actual().asText());
     }
@@ -210,7 +210,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
 
     public IntegerSubject isInteger() {
         if (actual() == null || !actual().isInt()) {
-            fail("is integer");
+            failWithActual(simpleFact("expected integer"));
         }
         return check().that(actual().intValue());
     }
@@ -225,9 +225,9 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
     public void containsName(String name) {
         checkNotNull(name);
         if (actual() == null || !actual().isObject()) {
-            fail("is an object");
+            failWithActual(simpleFact("expected object"));
         } else if (!actual().has(name)) {
-            fail("contains name", name);
+            failWithActual("expected to contain name", name);
         }
     }
 
@@ -237,9 +237,9 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
     public void doesNotContainName(String name) {
         checkNotNull(name);
         if (actual() == null || !actual().isObject()) {
-            fail("is an object");
+            failWithActual(simpleFact("expected object"));
         } else if (actual().has(name)) {
-            fail("does not contain name", name);
+            failWithActual("expected not to contain name", name);
         }
     }
 
@@ -258,7 +258,7 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
     public void doesNotContainPair(String name, @Nullable Object value) {
         checkNotNull(name);
         if (actual() == null || !actual().isObject()) {
-            fail("is an object");
+            failWithActual(simpleFact("expected object"));
         } else if (actual().has(name)) {
             at(name).isNotEqualTo(value);
         }
@@ -269,9 +269,9 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
      */
     public void isEmpty() {
         if (actual() == null || !actual().isContainerNode()) {
-            fail("is a container");
+            failWithActual(simpleFact("expected container"));
         } else if (actual().size() != 0) {
-            fail("is empty");
+            failWithActual(simpleFact("expected empty"));
         }
     }
 
@@ -280,9 +280,9 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
      */
     public void isNotEmpty() {
         if (actual() == null || !actual().isContainerNode()) {
-            fail("is a container");
+            failWithActual(simpleFact("expected container"));
         } else if (actual().size() == 0) {
-            fail("is not empty");
+            failWithActual(simpleFact("expected not empty"));
         }
     }
 
@@ -293,9 +293,9 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         // TODO Support string length?
         checkArgument(length >= 0, "length (%s) must be >= 0", length);
         if (actual() == null || !actual().isContainerNode()) {
-            fail("is a container");
+            failWithActual(simpleFact("expected empty"));
         } else if (actual().size() != length) {
-            fail("has length", length);
+            failWithActual("expected length", length);
         }
     }
 
@@ -310,14 +310,14 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
     @Override
     public void isNull() {
         if (actual() != null && !actual().isNull()) {
-            fail("is null");
+            failWithActual(simpleFact("expected null"));
         }
     }
 
     @Override
     public void isNotNull() {
         if (actual() == null || actual().isNull()) {
-            fail("is not null");
+            failWithActual(simpleFact("expected non null"));
         }
     }
 
@@ -336,10 +336,12 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
         checkNotNull(clazz);
         if (!clazz.isInstance(actual()) && !JsonUtil.isInstanceOfType(actual(), clazz)) {
             if (actual() != null) {
-                failWithBadResults("is an instance of", clazz.getName(),
-                        actual().isValueNode() ? "has a node type of" : "is an instance of", JsonUtil.typeName(actual()));
+                failWithoutActual(
+                        fact("expected instance of", clazz.getName()),
+                        fact(actual().isValueNode() ? "but has node type of" : "but was instance of", JsonUtil.typeName(actual())),
+                        fact("with value", actualAsString()));
             } else {
-                fail("is an instance of", clazz.getName());
+                failWithActual("expected instance of", clazz.getName());
             }
         }
     }
@@ -348,14 +350,14 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
     public void isNotInstanceOf(Class<?> clazz) {
         checkNotNull(clazz);
         if (actual() != null && (clazz.isInstance(actual()) || JsonUtil.isInstanceOfType(actual(), clazz))) {
-            failWithRawMessage("%s expected not to be an instance of %s, but was.", actualAsString(), clazz.getName());
+            failWithActual("expected not to be an instance of", clazz.getName());
         }
     }
 
     @Override
     public void isIn(Iterable<?> iterable) {
         if (!Iterables.contains(iterable, actual()) && !Iterables.contains(iterable, JsonUtil.unwrap(actual()))) {
-            fail("is equal to any element in", iterable);
+            failWithActual("expected any of", iterable);
         }
     }
 
@@ -363,21 +365,8 @@ public class JsonSubject extends Subject<JsonSubject, JsonNode> {
     public void isNotIn(Iterable<?> iterable) {
         int index = Iterables.indexOf(iterable, e -> Objects.equals(e, actual()) || Objects.equals(e, JsonUtil.unwrap(actual())));
         if (index != -1) {
-            failWithRawMessage("Not true that %s is not in %s. It was found at index %s", actualAsString(), iterable, index);
+            failWithActual("expected not to be any of", iterable);
         }
-    }
-
-    @Override
-    public void isAnyOf(Object first, Object second, Object... rest) {
-        List<Object> list = Lists.asList(first, second, rest);
-        if (!list.contains(actual()) && !list.contains(JsonUtil.unwrap(actual()))) {
-            fail("is equal to any of", list);
-        }
-    }
-
-    @Override
-    public void isNoneOf(Object first, Object second, Object... rest) {
-        isNotIn(Lists.asList(first, second, rest));
     }
 
     /**
