@@ -15,16 +15,11 @@
  */
 package com.blackducksoftware.common.test;
 
-import static com.google.common.io.BaseEncoding.base16;
-import static com.google.common.truth.Fact.fact;
-import static com.google.common.truth.Truth.assertAbout;
-
 import java.nio.ByteBuffer;
-
-import javax.annotation.Nullable;
 
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
+import com.google.common.truth.Truth;
 
 /**
  * Subject for testing byte buffers.
@@ -33,12 +28,19 @@ import com.google.common.truth.Subject;
  */
 public final class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuffer> {
 
+    private static final Subject.Factory<ByteBufferSubject, ByteBuffer> FACTORY = new Subject.Factory<ByteBufferSubject, ByteBuffer>() {
+        @Override
+        public ByteBufferSubject createSubject(FailureMetadata metadata, ByteBuffer actual) {
+            return new ByteBufferSubject(metadata, actual);
+        }
+    };
+
     public static Subject.Factory<ByteBufferSubject, ByteBuffer> byteBuffers() {
-        return ByteBufferSubject::new;
+        return FACTORY;
     }
 
-    public static ByteBufferSubject assertThat(@Nullable ByteBuffer target) {
-        return assertAbout(byteBuffers()).that(target);
+    public static ByteBufferSubject assertThat(ByteBuffer target) {
+        return Truth.assertAbout(byteBuffers()).that(target);
     }
 
     private ByteBufferSubject(FailureMetadata metadata, ByteBuffer actual) {
@@ -49,7 +51,6 @@ public final class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuff
     @Override
     protected String actualCustomStringRepresentation() {
         if (actual() != null) {
-            // TODO Include buffer contents
             return String.format("%s[pos=%d lim=%d cap=%d]",
                     actual().getClass().getSimpleName(), actual().position(), actual().limit(), actual().capacity());
         } else {
@@ -59,14 +60,14 @@ public final class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuff
 
     public void hasNextBytes(byte... expected) {
         if (actual() == null) {
-            failWithActual("expected buffer content", base16().encode(expected));
+            fail("hasNextBytes", expected);
         } else if (actual().remaining() < expected.length) {
-            failWithActual("expected buffer content", base16().encode(expected));
+            fail("hasNextBytes", expected);
         } else {
             final int off = actual().position();
             for (int i = 0; i < expected.length; ++i) {
                 if (actual().get(off + i) != expected[i]) {
-                    failWithActual("expected buffer content", base16().encode(expected));
+                    fail("hasNextBytes", expected);
                 }
             }
         }
@@ -74,9 +75,7 @@ public final class ByteBufferSubject extends Subject<ByteBufferSubject, ByteBuff
 
     public void hasRemaining(int remaining) {
         if (actual().remaining() != remaining) {
-            failWithoutActual(
-                    fact("expected remaining buffer capacity", remaining),
-                    fact("but was", actual().remaining()));
+            failWithBadResults("has remaining", remaining, "has", actual().remaining());
         }
     }
 

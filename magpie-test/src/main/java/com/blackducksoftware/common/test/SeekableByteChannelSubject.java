@@ -16,15 +16,11 @@
 package com.blackducksoftware.common.test;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.truth.Fact.fact;
-import static com.google.common.truth.Fact.simpleFact;
 
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
-
-import javax.annotation.Nullable;
 
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
@@ -32,11 +28,18 @@ import com.google.common.truth.Truth;
 
 public final class SeekableByteChannelSubject extends AbstractChannelSubject<SeekableByteChannelSubject, SeekableByteChannel> {
 
+    private static final Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel> FACTORY = new Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel>() {
+        @Override
+        public SeekableByteChannelSubject createSubject(FailureMetadata metadata, SeekableByteChannel actual) {
+            return new SeekableByteChannelSubject(metadata, actual);
+        }
+    };
+
     public static Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel> seekableByteChannels() {
-        return SeekableByteChannelSubject::new;
+        return FACTORY;
     }
 
-    public static SeekableByteChannelSubject assertThat(@Nullable SeekableByteChannel target) {
+    public static SeekableByteChannelSubject assertThat(SeekableByteChannel target) {
         return Truth.assertAbout(seekableByteChannels()).that(target);
     }
 
@@ -51,9 +54,7 @@ public final class SeekableByteChannelSubject extends AbstractChannelSubject<See
         checkArgument(expectedSize >= 0, "expectedSize(%s) must be >= 0", expectedSize);
         long actualSize = actual().size();
         if (actualSize != expectedSize) {
-            failWithoutActual(
-                    fact("expected size", expectedSize),
-                    fact("but was", actualSize));
+            failWithBadResults("has a size of", expectedSize, "is", actualSize);
         }
     }
 
@@ -64,9 +65,7 @@ public final class SeekableByteChannelSubject extends AbstractChannelSubject<See
         checkArgument(expectedPosition >= 0, "expectedPosition(%s) must be >= 0", expectedPosition);
         long actualPosition = actual().position();
         if (actualPosition != expectedPosition) {
-            failWithoutActual(
-                    fact("expected position", expectedPosition),
-                    fact("but was", actualPosition));
+            failWithBadResults("is positioned at offset", expectedPosition, "is", actualPosition);
         }
     }
 
@@ -87,22 +86,22 @@ public final class SeekableByteChannelSubject extends AbstractChannelSubject<See
 
         try {
             actual().position();
-            failWithoutActual(simpleFact("Expected retrieving the position of a closed channel to fail"));
+            failWithRawMessage("Expected retrieving the position of a closed channel to fail");
         } catch (ClosedChannelException e) {}
 
         try {
             actual().position(0L);
-            failWithoutActual(simpleFact("Expected positioning of a closed channel to fail"));
+            failWithRawMessage("Expected positioning of a closed channel to fail");
         } catch (ClosedChannelException e) {}
 
         try {
             actual().size();
-            failWithoutActual(simpleFact("Expected retrieving the size of a closed channel to fail"));
+            failWithRawMessage("Expected retrieving the size of a closed channel to fail");
         } catch (ClosedChannelException e) {}
 
         try {
             actual().truncate(0L);
-            failWithoutActual(simpleFact("Expected retrieving the position of a closed channel to fail"));
+            failWithRawMessage("Expected retrieving the position of a closed channel to fail");
         } catch (ClosedChannelException | NonWritableChannelException e) {}
     }
 

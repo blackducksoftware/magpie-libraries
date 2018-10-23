@@ -16,7 +16,6 @@
 package com.blackducksoftware.common.test;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.truth.Fact.simpleFact;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -42,7 +41,7 @@ public class AbstractChannelSubject<S extends AbstractChannelSubject<S, C>, C ex
         actual().close();
 
         if (actual().isOpen()) {
-            failWithoutActual(simpleFact("Closing the channel did not impact the return value of isOpen"));
+            failWithRawMessage("Closing the channel did not impact the return value of isOpen");
         } else {
             try {
                 actual().close();
@@ -66,14 +65,14 @@ public class AbstractChannelSubject<S extends AbstractChannelSubject<S, C>, C ex
         if (actual() instanceof ReadableByteChannel) {
             try {
                 ((ReadableByteChannel) actual()).read(ByteBuffer.allocate(1));
-                failWithoutActual(simpleFact("Expected reading a closed channel to fail"));
+                failWithRawMessage("Expected reading a closed channel to fail");
             } catch (ClosedChannelException e) {}
         }
 
         if (actual() instanceof WritableByteChannel) {
             try {
                 ((WritableByteChannel) actual()).write(ByteBuffer.wrap(new byte[] { 1 }));
-                failWithoutActual(simpleFact("Expected writing a closed channel to fail"));
+                failWithRawMessage("Expected writing a closed channel to fail");
             } catch (ClosedChannelException e) {}
         }
     }
