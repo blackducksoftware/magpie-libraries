@@ -15,10 +15,14 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.base.ExtraThrowables.illegalArgument;
 import static com.blackducksoftware.common.value.Rules.TokenType.RFC7230;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 /**
  * A content range as described in RFC7233. Each content range consists of a unit and a range. For some units, such as
@@ -154,6 +158,21 @@ public abstract class ContentRange {
         Builder builder = new Builder();
         builder.parse(input);
         return builder.build();
+    }
+
+    public static Optional<ContentRange> tryFrom(@Nullable Object obj) {
+        if (obj instanceof ContentRange) {
+            return Optional.of((ContentRange) obj);
+        } else if (obj instanceof CharSequence) {
+            return Optional.of(parse((CharSequence) obj));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public static ContentRange from(Object obj) {
+        return tryFrom(Objects.requireNonNull(obj))
+                .orElseThrow(illegalArgument("unexpected input: %s", obj));
     }
 
     public static class Builder {

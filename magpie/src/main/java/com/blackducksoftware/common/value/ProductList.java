@@ -15,6 +15,7 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.base.ExtraThrowables.illegalArgument;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 
@@ -28,6 +29,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -95,6 +98,10 @@ public class ProductList implements Iterable<Product> {
         return new Builder(this);
     }
 
+    public static ProductList of(Product product) {
+        return new Builder().addProduct(product).build();
+    }
+
     /**
      * Synonym for {@code parse}.
      *
@@ -110,20 +117,21 @@ public class ProductList implements Iterable<Product> {
         return builder.build();
     }
 
-    public static ProductList of(Product product) {
-        return new Builder().addProduct(product).build();
+    public static Optional<ProductList> tryFrom(@Nullable Object obj) {
+        if (obj instanceof ProductList) {
+            return Optional.of((ProductList) obj);
+        } else if (obj instanceof Product) {
+            return Optional.of(of((Product) obj));
+        } else if (obj instanceof CharSequence) {
+            return Optional.of(parse((CharSequence) obj));
+        } else {
+            return Optional.empty();
+        }
     }
 
     public static ProductList from(Object obj) {
-        if (obj instanceof ProductList) {
-            return (ProductList) obj;
-        } else if (obj instanceof Product) {
-            return of((Product) obj);
-        } else if (obj instanceof CharSequence) {
-            return parse((CharSequence) obj);
-        } else {
-            throw new IllegalArgumentException("unexpected input: " + obj);
-        }
+        return tryFrom(Objects.requireNonNull(obj))
+                .orElseThrow(illegalArgument("unexpected input: %s", obj));
     }
 
     public static class Builder {

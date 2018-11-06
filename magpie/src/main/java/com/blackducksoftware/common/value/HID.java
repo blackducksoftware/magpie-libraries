@@ -15,6 +15,7 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.base.ExtraThrowables.illegalArgument;
 import static com.google.common.base.Ascii.toLowerCase;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -559,6 +560,23 @@ public final class HID {
         return new Builder(this);
     }
 
+    public static HID of(URI uri) {
+        return new Builder().parseUri(uri).build();
+    }
+
+    /**
+     * Takes a platform specific path and converts it to a HID.
+     * <p>
+     * It is important to not take arbitrary path strings and pass them to the platform specific path parser in order to
+     * invoke this method. For example, {@code HID.of(Path.getPath("C:\test"))} is <em>not</em> platform agnostic code.
+     */
+    public static HID of(Path path) {
+        // NOTE: Paths have an independent root that is not part of their path segments. Rather then attempt to
+        // normalize the root and reconcile that, it is easier to just convert the Path into a URI and convert
+        // that into a HID. To URI conversion will normalize the root handling across platforms.
+        return new Builder().parseUri(path.toUri()).build();
+    }
+
     /**
      * Synonym for {@code parse}.
      *
@@ -572,15 +590,18 @@ public final class HID {
         return new Builder().parse(input).build();
     }
 
-    public static HID of(URI uri) {
-        return new Builder().parseUri(uri).build();
-    }
-
-    public static HID of(Path path) {
-        // NOTE: Paths have an independent root that is not part of their path segments. Rather then attempt to
-        // normalize the root and reconcile that, it is easier to just convert the Path into a URI and convert
-        // that into a HID. To URI conversion will normalize the root handling across platforms.
-        return new Builder().parseUri(path.toUri()).build();
+    public static Optional<HID> tryFrom(@Nullable Object obj) {
+        if (obj instanceof HID) {
+            return Optional.of((HID) obj);
+        } else if (obj instanceof URI) {
+            return Optional.of(of((URI) obj));
+        } else if (obj instanceof Path) {
+            return Optional.of(of((Path) obj));
+        } else if (obj instanceof CharSequence) {
+            return Optional.of(parse((CharSequence) obj));
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -588,17 +609,8 @@ public final class HID {
      * or {@code Path} instance.
      */
     public static HID from(Object obj) {
-        if (obj instanceof HID) {
-            return (HID) obj;
-        } else if (obj instanceof URI) {
-            return of((URI) obj);
-        } else if (obj instanceof Path) {
-            return of((Path) obj);
-        } else if (obj instanceof CharSequence) {
-            return parse((CharSequence) obj);
-        } else {
-            throw new IllegalArgumentException("unexpected input: " + obj);
-        }
+        return tryFrom(Objects.requireNonNull(obj))
+                .orElseThrow(illegalArgument("unexpected input: %s", obj));
     }
 
     public static class Builder {

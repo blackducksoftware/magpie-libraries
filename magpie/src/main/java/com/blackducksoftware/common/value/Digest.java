@@ -15,9 +15,11 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.base.ExtraThrowables.illegalArgument;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -75,6 +77,10 @@ public class Digest {
         return new Builder(this);
     }
 
+    public static Digest of(CharSequence algorithm, CharSequence value) {
+        return new Builder().algorithm(algorithm).value(value).build();
+    }
+
     /**
      * Synonym for {@code parse}.
      *
@@ -90,18 +96,19 @@ public class Digest {
         return builder.build();
     }
 
-    public static Digest of(CharSequence algorithm, CharSequence value) {
-        return new Builder().algorithm(algorithm).value(value).build();
+    public static Optional<Digest> tryFrom(@Nullable Object obj) {
+        if (obj instanceof Digest) {
+            return Optional.of((Digest) obj);
+        } else if (obj instanceof CharSequence) {
+            return Optional.of(parse((CharSequence) obj));
+        } else {
+            return Optional.empty();
+        }
     }
 
     public static Digest from(Object obj) {
-        if (obj instanceof Digest) {
-            return (Digest) obj;
-        } else if (obj instanceof CharSequence) {
-            return parse((CharSequence) obj);
-        } else {
-            throw new IllegalArgumentException("unexpected input: " + obj);
-        }
+        return tryFrom(Objects.requireNonNull(obj))
+                .orElseThrow(illegalArgument("unexpected input: %s", obj));
     }
 
     public static class Builder {

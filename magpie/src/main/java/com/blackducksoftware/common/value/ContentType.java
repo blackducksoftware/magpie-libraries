@@ -15,6 +15,7 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.base.ExtraThrowables.illegalArgument;
 import static com.blackducksoftware.common.value.Rules.TokenType.RFC2045;
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -23,6 +24,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableListMultimap;
@@ -191,6 +195,21 @@ public class ContentType {
         Builder builder = new Builder();
         builder.parse(input);
         return builder.build();
+    }
+
+    public static Optional<ContentType> tryFrom(@Nullable Object obj) {
+        if (obj instanceof ContentType) {
+            return Optional.of((ContentType) obj);
+        } else if (obj instanceof CharSequence) {
+            return Optional.of(parse((CharSequence) obj));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public static ContentType from(Object obj) {
+        return tryFrom(Objects.requireNonNull(obj))
+                .orElseThrow(illegalArgument("unexpected input: %s", obj));
     }
 
     public static class Builder {
