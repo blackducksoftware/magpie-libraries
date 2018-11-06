@@ -94,6 +94,30 @@ public class ExtraThrowables {
     }
 
     /**
+     * Helper to allow for call chaining on a {@code void} method.
+     */
+    public static <T extends Throwable> T addSuppressed(T throwable, Throwable suppressed) {
+        throwable.addSuppressed(suppressed);
+        return throwable;
+    }
+
+    /**
+     * Helper to allow for typed call chaining.
+     */
+    public static <T extends Throwable> T initCause(T throwable, Throwable cause) {
+        throwable.initCause(cause);
+        return throwable;
+    }
+
+    /**
+     * Helper to allow for typed call chaining.
+     */
+    public static <T extends Throwable> T fillInStackTrace(T throwable) {
+        throwable.fillInStackTrace();
+        return throwable;
+    }
+
+    /**
      * Formats an error message.
      */
     private static String format(String template, Object... args) {
