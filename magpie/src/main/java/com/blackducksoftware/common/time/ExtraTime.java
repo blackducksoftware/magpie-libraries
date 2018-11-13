@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Extra time helpers.
- * 
+ *
  * @author jgustie
  */
 public class ExtraTime {
@@ -40,11 +40,6 @@ public class ExtraTime {
      * Implementation that supports formatting a duration.
      */
     private static final class FormattableDuration implements Formattable {
-
-        /**
-         * Default precision to use when formatting.
-         */
-        private static final int DEFAULT_PRECISION = 4;
 
         /**
          * The duration being formatted.
@@ -61,16 +56,9 @@ public class ExtraTime {
             TimeUnit unit = chooseUnit(nanos);
             double value = (double) nanos / NANOSECONDS.convert(1, unit);
             String abbreviation = abbreviate(unit);
+            String format = computeFormat(flags, width, precision, abbreviation);
 
-            StringBuilder format = new StringBuilder(8);
-            format.append("%");
-            if (width > 0) {
-                format.append(Math.max(0, width - (1 + abbreviation.length())));
-            }
-            format.append('.');
-            format.append(precision < 0 ? DEFAULT_PRECISION : precision);
-            format.append("g %s");
-            formatter.format(format.toString(), value, abbreviation);
+            formatter.format(format, value, abbreviation);
         }
 
         @Override
@@ -116,6 +104,21 @@ public class ExtraTime {
                 return "d";
             default:
                 throw new AssertionError("unknown unit: " + unit);
+            }
+        }
+
+        private static String computeFormat(int flags, int width, int precision, String abbreviation) {
+            if (width < 0 && precision < 0) {
+                return "%.4g %s";
+            } else {
+                StringBuilder formatBuilder = new StringBuilder(8).append("%");
+                if (width > 0) {
+                    formatBuilder.append(Math.max(0, width - (1 + abbreviation.length())));
+                }
+                return formatBuilder
+                        .append('.').append(precision < 0 ? 4 : precision)
+                        .append("g %s")
+                        .toString();
             }
         }
     }
