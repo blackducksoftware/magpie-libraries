@@ -15,16 +15,25 @@
  */
 package com.blackducksoftware.common.base;
 
+import static com.blackducksoftware.common.base.ExtraStrings.removePrefix;
+import static com.google.common.base.CaseFormat.LOWER_CAMEL;
+import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.MoreCollectors.toOptional;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.google.common.annotations.Beta;
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Enums;
 
 /**
@@ -36,17 +45,128 @@ import com.google.common.base.Enums;
 public final class ExtraEnums {
 
     /**
+     * Enumerated constant search interface.
+     */
+    public static class EnumSearcher<E extends Enum<E>> {
+
+        private final boolean start;
+
+        private final Class<E> enumType;
+
+        private final BiPredicate<String, String> filter;
+
+        private EnumSearcher(Class<E> enumType) {
+            this.start = true;
+            this.enumType = Objects.requireNonNull(enumType);
+            this.filter = Objects::equals;
+        }
+
+        private EnumSearcher(Class<E> enumType, BiPredicate<String, String> filter) {
+            this.start = false;
+            this.enumType = Objects.requireNonNull(enumType);
+            this.filter = Objects.requireNonNull(filter);
+        }
+
+        private EnumSearcher(EnumSearcher<E> searcher, Function<String, String> mapper) {
+            this(searcher.enumType, (a, b) -> searcher.filter.test(mapper.apply(a), mapper.apply(b)));
+        }
+
+        /**
+         * Find an enumerated constant by name. If multiple constants match (e.g. the search was performed ignoring
+         * case) an {@code IllegalArgumentException} is thrown.
+         */
+        public Optional<E> byName(String name) {
+            if (start) {
+                return Enums.getIfPresent(enumType, name).toJavaUtil();
+            } else {
+                return withName(name).collect(toOptional());
+            }
+        }
+
+        /**
+         * Find an enumerated constant using it's {@code toString()} value. An {@code IllegalArgumentException} is
+         * thrown if multiple values are matched.
+         */
+        public Optional<E> byToString(String value) {
+            return withToString(value).collect(toOptional());
+        }
+
+        /**
+         * Find all enumerated constants with the specified name. This stream will contain at most one element unless a
+         * modifier has been applied since names are unique.
+         */
+        public Stream<E> withName(String name) {
+            Objects.requireNonNull(name);
+            return Arrays.stream(enumType.getEnumConstants()).filter(e -> filter.test(e.name(), name));
+        }
+
+        /**
+         * Find all enumerated constants with the specified {@code toString()} value.
+         */
+        public Stream<E> withToString(String value) {
+            Objects.requireNonNull(value);
+            return Arrays.stream(enumType.getEnumConstants()).filter(e -> filter.test(e.toString(), value));
+        }
+
+        /**
+         * Returns a new searcher that ignores the case sensitivity of the current searcher.
+         */
+        public EnumSearcher<E> ignoringCase() {
+            return new EnumSearcher<>(this, String::toLowerCase);
+        }
+
+        /**
+         * Returns a new searcher that ignores the supplied characters.
+         */
+        public EnumSearcher<E> ignoring(CharSequence chars) {
+            return new EnumSearcher<>(this, CharMatcher.anyOf(chars)::removeFrom);
+        }
+
+        /**
+         * Returns a new searcher that ignores the matching characters.
+         */
+        public EnumSearcher<E> ignoring(Predicate<? super Character> chars) {
+            return new EnumSearcher<>(this, CharMatcher.forPredicate(chars::test)::removeFrom);
+        }
+
+        /**
+         * Returns a new searcher that accepts lower-camel case values instead of the more commonly used
+         * upper-underscore cased values (e.g. {@code upperUnderscoreUsingLowerCamel().byName("fooBar")} would find the
+         * constant {@code FOO_BAR}).
+         */
+        public EnumSearcher<E> usingLowerCamel() {
+            return new EnumSearcher<>(enumType, (a, b) -> filter.test(UPPER_UNDERSCORE.to(LOWER_CAMEL, a), b));
+        }
+
+        /**
+         * Returns a new searcher that ignores the specified prefix.
+         */
+        public EnumSearcher<E> startsWith(String prefix) {
+            return new EnumSearcher<>(this, s -> removePrefix(s, prefix));
+        }
+    }
+
+    /**
+     * Search for an enumerated constant on the specified type.
+     */
+    public static <E extends Enum<E>> EnumSearcher<E> search(Class<E> enumType) {
+        return new EnumSearcher<>(enumType);
+    }
+
+    /**
      * Attempts to find an enumerated value using {@link Enum#valueOf(Class, String)}.
      */
+    // TODO Deprecate in favor of `search(enumType).byName(name)`
     public static <E extends Enum<E>> Optional<E> tryByName(Class<E> enumClass, String name) {
-        return Optional.ofNullable(Enums.getIfPresent(enumClass, name).orNull());
+        return Enums.getIfPresent(enumClass, name).toJavaUtil();
     }
 
     /**
      * Attempts to find enumerated values by their {@code toString} representation.
      */
+    // TODO Deprecate in favor of `search(enumClass).withToString(toStringValue)`
     public static <E extends Enum<E>> Stream<E> tryByToString(Class<E> enumClass, String toStringValue) {
-        return ExtraStreams.stream(enumClass).filter(e -> Objects.equals(e.toString(), toStringValue));
+        return search(enumClass).withToString(toStringValue);
     }
 
     /**
