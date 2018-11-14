@@ -18,6 +18,7 @@ package com.blackducksoftware.common.value;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -70,12 +71,89 @@ public class LinkTest {
     }
 
     @Test
-    public void undocumentedWhitespace() {
-        // I don't see whitespace in the ABNF, but this is straight from section 5.5 of the specification...
+    public void optionalWhitespace() {
         Link link = Link.parse("<http://example.com/TheBook/chapter2>; rel=\"previous\"; title=\"previous chapter\"");
         assertThat(link.uriReference()).isEqualTo("http://example.com/TheBook/chapter2");
         assertThat(link.linkParam("rel")).hasValue("\"previous\"");
         assertThat(link.linkParam("title")).hasValue("\"previous chapter\"");
+    }
+
+    @Test
+    public void linkParamOrder() {
+        Link link = new Link.Builder().uriReference("/").linkParam("title", "\"FooBar\"").linkParam("anchor", "\"#gus\"").linkParam("hreflang", "en").build();
+        assertThat(link.toString()).isEqualTo("</>;anchor=\"#gus\";hreflang=en;title=\"FooBar\"");
+    }
+
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc8288#section-3.5">Link Header Field Examples</a>
+     */
+    @Test
+    public void example1() {
+        Link example = Link.parse("<http://example.com/TheBook/chapter2>; rel=\"previous\";"
+                + " title=\"previous chapter\"");
+        assertThat(example.uriReference()).isEqualTo("http://example.com/TheBook/chapter2");
+        assertThat(example.rel()).isEqualTo("\"previous\"");
+        assertThat(example.linkParam("title")).hasValue("\"previous chapter\"");
+    }
+
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc8288#section-3.5">Link Header Field Examples</a>
+     */
+    @Test
+    public void example2() {
+        Link example = Link.parse("</>; rel=\"http://example.net/foo\"");
+        assertThat(example.uriReference()).isEqualTo("/");
+        assertThat(example.rel()).isEqualTo("\"http://example.net/foo\"");
+    }
+
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc8288#section-3.5">Link Header Field Examples</a>
+     */
+    @Test
+    public void example3() {
+        Link example = Link.parse("</terms>; rel=\"copyright\"; anchor=\"#foo\"");
+        assertThat(example.uriReference()).isEqualTo("/terms");
+        assertThat(example.rel()).isEqualTo("\"copyright\"");
+        assertThat(example.linkParam("anchor")).hasValue("\"#foo\"");
+    }
+
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc8288#section-3.5">Link Header Field Examples</a>
+     */
+    @Test
+    @Ignore
+    public void example4() {
+        // TODO We don't have multiple link support...
+        Link example = Link.parse("</TheBook/chapter2>;"
+                + " rel=\"previous\"; title*=UTF-8'de'letztes%20Kapitel,"
+                + " </TheBook/chapter4>;"
+                + " rel=\"next\"; title*=UTF-8'de'n%c3%a4chstes%20Kapitel");
+        assertThat(example.uriReference()).isEqualTo("/TheBook/chapter2");
+    }
+
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc8288#section-3.5">Link Header Field Examples</a>
+     */
+    @Test
+    @Ignore
+    public void example5() {
+        // TODO We don't properly split parameters
+        Link example = Link.parse("<http://example.org/>;"
+                + " rel=\"start http://example.net/relation/other\"");
+        assertThat(example.uriReference()).isEqualTo("http://example.org/");
+        assertThat(example.linkParams("rel")).containsExactly("start", "http://example.net/relation/other");
+    }
+
+    /**
+     * @see <a href="https://tools.ietf.org/html/rfc8288#section-3.5">Link Header Field Examples</a>
+     */
+    @Test
+    @Ignore
+    public void example6() {
+        // TODO We don't have multiple link support...
+        Link example = Link.parse("<http://example.org/>; rel=\"start,"
+                + " <http://example.org/index>; rel=\"index");
+        assertThat(example.uriReference()).isEqualTo("http://example.org/");
     }
 
 }

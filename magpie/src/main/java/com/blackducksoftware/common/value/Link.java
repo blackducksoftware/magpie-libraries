@@ -15,16 +15,23 @@
  */
 package com.blackducksoftware.common.value;
 
+import static com.blackducksoftware.common.base.ExtraThrowables.illegalArgument;
 import static com.blackducksoftware.common.value.Rules.TokenType.RFC5988;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.escape.Escaper;
+import com.google.common.net.PercentEscaper;
 
 /**
  * A link as described in RFC5988. Each link consists of a URI reference and zero or more parameters.
@@ -36,20 +43,42 @@ public class Link {
 
     private final String uriReference;
 
-    // TODO ListMultimap?
-    private final ImmutableMap<String, String> linkParams;
+    private final ImmutableListMultimap<String, String> linkParams;
 
     private Link(Builder builder) {
         uriReference = Objects.requireNonNull(builder.uriReference);
-        linkParams = ImmutableMap.copyOf(Maps.filterValues(builder.linkParams, Objects::nonNull));
+        linkParams = ImmutableListMultimap.copyOf(Multimaps.filterValues(builder.linkParams, Objects::nonNull));
     }
 
+    /**
+     * Returns the URI reference of this link.
+     */
     public String uriReference() {
         return uriReference;
     }
 
+    /**
+     * Returns all of the values for the specified link parameter, never {@code null}.
+     */
+    public List<String> linkParams(String parmname) {
+        return linkParams.get(parmname);
+    }
+
+    /**
+     * Returns the first value of the specified link parameter if it exists, otherwise empty.
+     */
     public Optional<String> linkParam(String parmname) {
-        return Optional.ofNullable(linkParams.get(parmname));
+        return linkParams(parmname).stream().findFirst();
+    }
+
+    /**
+     * Returns the value of the "rel" link parameter.
+     *
+     * @throws NoSuchElementException
+     *             if "rel" is not defined
+     */
+    public String rel() {
+        return linkParam("rel").get();
     }
 
     @Override
@@ -70,7 +99,7 @@ public class Link {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder().append('<').append(uriReference).append('>');
-        for (Map.Entry<String, String> linkParam : linkParams.entrySet()) {
+        for (Map.Entry<String, String> linkParam : linkParams.entries()) {
             result.append(';').append(linkParam.getKey()).append('=').append(linkParam.getValue());
         }
         return result.toString();
@@ -95,15 +124,32 @@ public class Link {
         return builder.build();
     }
 
+    public static Optional<Link> tryFrom(Object obj) {
+        if (obj instanceof Link) {
+            return Optional.of((Link) obj);
+        } else if (obj instanceof CharSequence) {
+            return Optional.ofNullable(parse((CharSequence) obj));
+        } else {
+            throw new IllegalArgumentException("unexpected input: " + obj);
+        }
+    }
+
+    public static Link from(Object obj) {
+        return tryFrom(Objects.requireNonNull(obj))
+                .orElseThrow(illegalArgument("unexpected input: %s", obj));
+    }
+
     public static class Builder {
+
+        private static final Escaper TITLE_ESCAPER = new PercentEscaper("", false);
 
         private String uriReference;
 
-        private Map<String, String> linkParams;
+        private Multimap<String, String> linkParams;
 
         public Builder() {
             // Re-insertion does not effect ordering, so establish a default stable order
-            linkParams = new LinkedHashMap<>();
+            linkParams = LinkedListMultimap.create();
             linkParams.put("rel", null);
             linkParams.put("anchor", null);
             linkParams.put("rev", null);
@@ -116,7 +162,7 @@ public class Link {
 
         private Builder(Link link) {
             uriReference = link.uriReference;
-            linkParams = new LinkedHashMap<>(link.linkParams);
+            linkParams = LinkedListMultimap.create(link.linkParams);
         }
 
         public Builder uriReference(CharSequence uriReference) {
@@ -125,6 +171,8 @@ public class Link {
         }
 
         public Builder linkParam(CharSequence parmname, CharSequence value) {
+            // TODO Only rev (which is deprecated), hreflang and exts allow duplicate values
+            // There should be a private version of this that keeps the first one and public that keeps the last
             String actualValue;
             switch (parmname.toString()) {
             case "rel":
@@ -157,6 +205,51 @@ public class Link {
             }
             linkParams.put(parmname.toString(), actualValue);
             return this;
+        }
+
+        /**
+         * Should be used for URI formated relations only.
+         *
+         * @see #rel()
+         */
+        public Builder rel(String rel) {
+            return linkParam("rel", rel);
+        }
+
+        /**
+         * Selects from a list of available relations based on a capture of the IANA link relations registry.
+         *
+         * @see <a href="https://www.iana.org/assignments/link-relations/link-relations.xhtml">Link Relations</a>
+         * @see RegisteredLinkRelations
+         */
+        public RegisteredLinkRelations rel() {
+            return new RegisteredLinkRelations(this);
+        }
+
+        // TODO Handle quoting! What is the 8288 vs 5988 impact of quoted strings?
+
+        public Builder anchor(String anchor) {
+            return linkParam("anchor", anchor);
+        }
+
+        public Builder hreflang(String hreflang) {
+            return linkParam("hreflang", hreflang);
+        }
+
+        public Builder media(String media) {
+            return linkParam("media", media);
+        }
+
+        public Builder title(String title) {
+            return linkParam("title", title);
+        }
+
+        public Builder title(String title, Locale locale) {
+            return linkParam("title*", "UTF-8'" + locale.toLanguageTag() + "'" + TITLE_ESCAPER.escape(title));
+        }
+
+        public Builder type(String type) {
+            return linkParam("type", type);
         }
 
         public Link build() {
