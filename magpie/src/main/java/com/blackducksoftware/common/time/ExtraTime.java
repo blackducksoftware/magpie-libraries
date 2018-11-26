@@ -136,6 +136,13 @@ public class ExtraTime {
     }
 
     /**
+     * Returns a fractional number of seconds for a {@code Duration}.
+     */
+    public static double toSeconds(Duration duration) {
+        return duration.getSeconds() + (duration.getNano() / 1E9);
+    }
+
+    /**
      * Formatter for the supplied duration.
      */
     public static Formattable print(Duration duration) {
