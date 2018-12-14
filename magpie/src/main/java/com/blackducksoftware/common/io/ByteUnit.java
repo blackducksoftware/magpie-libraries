@@ -13,30 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.blackducksoftware.common.time;
-
-import static com.google.common.truth.Truth.assertThat;
-
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.Test;
+package com.blackducksoftware.common.io;
 
 /**
- * Tests for {@code ExtraTime}.
+ * A base interface for binary multipliers that provides a utility method for converting back to a number of bytes.
  *
  * @author jgustie
  */
-public class ExtraTimeTest {
+public interface ByteUnit {
 
-    private static final double NANOSECONDS_PER_SECOND = 1E9;
-
-    @Test
-    public void ofSeconds() {
-        long nanos = 654321;
-        nanos += TimeUnit.SECONDS.toNanos(10);
-        nanos += TimeUnit.MILLISECONDS.toNanos(987);
-        assertThat(ExtraTime.ofSeconds(nanos / NANOSECONDS_PER_SECOND)).isEqualTo(Duration.ofNanos(nanos));
-    }
+    /**
+     * Equivalent to {@link #convert(long, ByteUnit) BYTES.convert(count, this)}.
+     *
+     * @param count
+     *            the byte count
+     * @return the converted byte count, or {@code Long.MIN_VALUE} if conversion would negatively overflow, or
+     *         {@code Long.MAX_VALUE} if it would positively overflow.
+     */
+    long toBytes(long count);
 
 }
