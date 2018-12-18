@@ -16,6 +16,7 @@
 package com.blackducksoftware.common.base;
 
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
 /**
@@ -32,6 +33,15 @@ public class ExtraConsumers {
         return (a, b) -> {
             c.accept(a);
             c.accept(b);
+        };
+    }
+
+    /**
+     * Returns a consumer that is only invoked when the supplied predicate accepts the input.
+     */
+    public static <T, U> BiConsumer<T, U> onlyIf(BiPredicate<T, U> p, BiConsumer<T, U> c) {
+        return (t, u) -> {
+            if (p.test(t, u)) c.accept(t, u);
         };
     }
 
