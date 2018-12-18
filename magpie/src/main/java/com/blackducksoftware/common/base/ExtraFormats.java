@@ -22,6 +22,7 @@ import java.util.Formattable;
 import java.util.Formatter;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import com.blackducksoftware.common.io.BinaryByteUnit;
 import com.blackducksoftware.common.io.ByteUnit;
@@ -152,6 +153,30 @@ public class ExtraFormats {
     }
 
     /**
+     * Implementation that supports formatting an object with an alternate {@code toString} method.
+     */
+    public static final class FormattableObject implements Formattable {
+        private final Supplier<String> toString;
+
+        private FormattableObject(Supplier<String> toString) {
+            this.toString = Objects.requireNonNull(toString);
+        }
+
+        @Override
+        public void formatTo(Formatter formatter, int flags, int width, int precision) {
+            String value = toString.get();
+            String format = computeFormat(flags, width, precision);
+
+            formatter.format(format, value);
+        }
+
+        @Override
+        public String toString() {
+            return toString.get();
+        }
+    }
+
+    /**
      * Abbreviations for {@code TimeUnit}.
      */
     private static final String[] TIME_UNIT = { "ns", "\u03bcs", "ms", "s", "min", "h", "d" };
@@ -191,7 +216,14 @@ public class ExtraFormats {
     }
 
     /**
-     * Computes a format pattern consisting of a number an a placeholder for the
+     * Formatter for an object using an alternate, lazily evaluated, {@code toString} method.
+     */
+    public static FormattableObject print(Supplier<String> toString) {
+        return new FormattableObject(toString);
+    }
+
+    /**
+     * Computes a format pattern with a number placeholder and the supplied abbreviation.
      */
     private static String computeFormat(int flags, int width, int precision, String abbreviation) {
         if (width < 0 && precision < 0) {
@@ -206,6 +238,24 @@ public class ExtraFormats {
                     .append("g ")
                     .append(abbreviation)
                     .toString();
+        }
+    }
+
+    /**
+     * Computes a format pattern with a string placeholder.
+     */
+    private static String computeFormat(int flags, int width, int precision) {
+        if (width < 0 && precision < 0) {
+            return "%s";
+        } else {
+            StringBuilder formatBuilder = new StringBuilder(8).append('%');
+            if (width >= 0) {
+                formatBuilder.append(width);
+            }
+            if (precision >= 0) {
+                formatBuilder.append('.').append(precision);
+            }
+            return formatBuilder.append('s').toString();
         }
     }
 
