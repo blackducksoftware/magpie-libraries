@@ -19,6 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 import org.junit.Test;
@@ -36,6 +37,20 @@ public class ExtraConsumersTest {
         BiConsumer<String, String> bc = ExtraConsumers.withBoth(strings::add);
         bc.accept("a", "b");
         assertThat(strings).containsExactly("a", "b").inOrder();
+    }
+
+    @Test
+    public void onlyIf_notMatched() {
+        AtomicBoolean called = new AtomicBoolean();
+        ExtraConsumers.onlyIf((x, y) -> false, (x, y) -> called.set(true)).accept(null, null);
+        assertThat(called.get()).isFalse();
+    }
+
+    @Test
+    public void onlyIf_matched() {
+        AtomicBoolean called = new AtomicBoolean();
+        ExtraConsumers.onlyIf((x, y) -> true, (x, y) -> called.set(true)).accept(null, null);
+        assertThat(called.get()).isTrue();
     }
 
 }

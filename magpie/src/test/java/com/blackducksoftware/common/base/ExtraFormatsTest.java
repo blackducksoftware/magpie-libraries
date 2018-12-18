@@ -21,6 +21,9 @@ import java.time.Duration;
 
 import org.junit.Test;
 
+import com.blackducksoftware.common.io.BinaryByteUnit;
+import com.blackducksoftware.common.io.DecimalByteUnit;
+
 /**
  * Tests for {@code ExtraFormats}.
  *
@@ -40,6 +43,31 @@ public class ExtraFormatsTest {
         assertThat(String.format("%s", ExtraFormats.print(Duration.ofMillis(123)))).isEqualTo("123.0 ms");
         assertThat(String.format("%10s", ExtraFormats.print(Duration.ofMillis(123)))).isEqualTo("  123.0 ms");
         assertThat(String.format("%.5s", ExtraFormats.print(Duration.ofMillis(123)))).isEqualTo("123.00 ms");
+    }
+
+    @Test
+    public void print_byteCount_toString() {
+        assertThat(ExtraFormats.print(1024, BinaryByteUnit.BYTES).toString()).isEqualTo("1.000 KiB");
+        assertThat(ExtraFormats.print(1000, DecimalByteUnit.BYTES).toString()).isEqualTo("1.000 kB");
+    }
+
+    @Test
+    public void print_byteCount_format() {
+        assertThat(String.format("%s", ExtraFormats.print(1024, BinaryByteUnit.BYTES))).isEqualTo("1.000 KiB");
+        assertThat(String.format("%10s", ExtraFormats.print(1024, BinaryByteUnit.BYTES))).isEqualTo(" 1.000 KiB");
+        assertThat(String.format("%.5s", ExtraFormats.print(1024, BinaryByteUnit.BYTES))).isEqualTo("1.0000 KiB");
+    }
+
+    @Test
+    public void print_object_toString() {
+        assertThat(ExtraFormats.print(() -> "abc").toString()).isEqualTo("abc");
+    }
+
+    @Test
+    public void print_object_format() {
+        assertThat(String.format("%s", ExtraFormats.print(() -> "abc"))).isEqualTo("abc");
+        assertThat(String.format("%10s", ExtraFormats.print(() -> "abc"))).isEqualTo("       abc");
+        assertThat(String.format("%.5s", ExtraFormats.print(() -> "abc"))).isEqualTo("abc");
     }
 
 }

@@ -37,8 +37,6 @@ public class BinaryPrefixFormat extends Format {
 
     private static final long serialVersionUID = 1L;
 
-    // TODO How do we use these?
-
     public static final int NUMBER_FIELD = 0;
 
     public static final int PREFIX_FIELD = 1;
@@ -136,6 +134,7 @@ public class BinaryPrefixFormat extends Format {
         this.numberFormat = Objects.requireNonNull(numberFormat);
     }
 
+    @SuppressWarnings("JdkObsolete")
     public String format(long count, ByteUnit unit) {
         // TODO Use BigInteger to avoid topping out at Long.MAX_VALUE
         return format(unit.toBytes(count), new StringBuffer(), new FieldPosition(0)).toString();
@@ -148,13 +147,13 @@ public class BinaryPrefixFormat extends Format {
         Number number = (Number) obj;
         ByteUnit unit = chooseUnit(number.longValue());
         double value = number.doubleValue() / DefaultByteUnit.BYTES.convert(1, unit);
-        // TODO FieldPosition? What?
+        // TODO How do we support FieldPosition correctly?
         return numberFormat.format(value, toAppendTo, pos).append(' ').append(abbreviate(unit, style));
     }
 
     @Override
     public Object parseObject(String source, ParsePosition pos) {
-        // TODO Unsupported
+        // TODO Implement parsing
         return null;
     }
 
