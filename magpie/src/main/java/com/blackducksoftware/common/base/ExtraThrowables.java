@@ -16,6 +16,7 @@
 package com.blackducksoftware.common.base;
 
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -115,6 +116,24 @@ public class ExtraThrowables {
     public static <T extends Throwable> T fillInStackTrace(T throwable) {
         throwable.fillInStackTrace();
         return throwable;
+    }
+
+    /**
+     * Throws an exception produced by the failure supplier only if the condition is {@code false}.
+     */
+    public static void check(boolean condition, Supplier<? extends RuntimeException> failure) {
+        if (!condition) {
+            throw failure.get();
+        }
+    }
+
+    /**
+     * Throws an exception produced by the failure function only if the condition is {@code false}.
+     */
+    public static void check(boolean condition, Function<String, ? extends RuntimeException> failure, String errorMessageTemplate, Object... errorMessageArgs) {
+        if (!condition) {
+            throw failure.apply(format(errorMessageTemplate, errorMessageArgs));
+        }
     }
 
     /**
