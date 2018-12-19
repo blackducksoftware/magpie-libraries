@@ -23,7 +23,7 @@ package com.blackducksoftware.common.io;
 public interface ByteUnit {
 
     /**
-     * Equivalent to {@link #convert(long, ByteUnit) BYTES.convert(count, this)}.
+     * Equivalent to {@code BYTES.convert(count, this)}.
      *
      * @param count
      *            the byte count
