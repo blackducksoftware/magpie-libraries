@@ -230,8 +230,8 @@ public class ExtraFormats {
             return new StringBuilder(5 + abbreviation.length()).append("%.4g ").append(abbreviation).toString();
         } else {
             StringBuilder formatBuilder = new StringBuilder(8).append("%");
-            if (width > 0) {
-                formatBuilder.append(Math.max(0, width - (1 + abbreviation.length())));
+            if (width > abbreviation.length() + 1) {
+                formatBuilder.append(width - (1 + abbreviation.length()));
             }
             return formatBuilder
                     .append('.').append(precision < 0 ? 4 : precision)

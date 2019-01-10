@@ -59,6 +59,11 @@ public class ExtraFormatsTest {
     }
 
     @Test
+    public void print__byteCount_tooSmall() {
+        assertThat(String.format("%4s", ExtraFormats.print(1024, BinaryByteUnit.BYTES))).isEqualTo("1.000 KiB");
+    }
+
+    @Test
     public void print_object_toString() {
         assertThat(ExtraFormats.print(() -> "abc").toString()).isEqualTo("abc");
     }
