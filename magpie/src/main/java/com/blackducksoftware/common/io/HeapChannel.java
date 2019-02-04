@@ -27,7 +27,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.annotations.Beta;
-import com.google.common.primitives.Ints;
 
 /**
  * A channel that is backed by a byte array.
@@ -69,7 +68,7 @@ public class HeapChannel implements SeekableByteChannel {
         openOptions = EnumSet.of(StandardOpenOption.READ);
         this.buf = buf;
         this.off = off;
-        count = Math.min(Ints.saturatedCast((long) off + (long) len), buf.length);
+        count = Math.min(Math.addExact(off, len), buf.length);
     }
 
     @Override

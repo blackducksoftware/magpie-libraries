@@ -17,6 +17,7 @@ package com.blackducksoftware.common.base;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
@@ -119,6 +120,21 @@ public final class ExtraStrings {
             result.append(end, endOffset, end.length());
         }
         return result.toString();
+    }
+
+    /**
+     * Joins a sequence of arbitrary parts with the supplied delimiter.
+     */
+    public static String ensureDelimiter(Iterable<?> parts, CharSequence delimiter) {
+        StringJoiner joiner = new StringJoiner(delimiter);
+        parts.forEach(o -> {
+            if (o instanceof CharSequence) {
+                joiner.add((CharSequence) o);
+            } else {
+                joiner.add(o.toString());
+            }
+        });
+        return joiner.toString();
     }
 
     /**

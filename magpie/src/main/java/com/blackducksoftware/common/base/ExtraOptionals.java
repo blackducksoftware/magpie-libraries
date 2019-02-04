@@ -34,7 +34,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.blackducksoftware.common.annotations.Obsolete;
-import com.google.common.collect.Streams;
 
 /**
  * Extra optional helpers.
@@ -201,7 +200,7 @@ public final class ExtraOptionals {
      */
     public static <T, R> Stream<R> flatMapMany(Optional<T> self, Function<? super T, ? extends Stream<? extends R>> mapper) {
         // TODO Use the Java 9 version when available
-        return Streams.stream(self).flatMap(mapper);
+        return (self.isPresent() ? Stream.of(self.get()) : Stream.<T> empty()).flatMap(mapper);
     }
 
     private ExtraOptionals() {

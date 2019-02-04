@@ -15,8 +15,9 @@
  */
 package com.blackducksoftware.common.nio.file;
 
+import static com.blackducksoftware.common.base.ExtraStrings.ensureDelimiter;
 import static com.blackducksoftware.common.nio.file.FnMatch.fnmatch;
-import static com.google.common.base.StandardSystemProperty.USER_DIR;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
 
@@ -39,9 +40,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -100,7 +98,7 @@ public class ExcludePathMatcher implements PathMatcher {
             }
 
             // Pathname match
-            boolean pathnameMatch = CharMatcher.is('/').matchesAnyOf(pattern);
+            boolean pathnameMatch = pattern.indexOf('/') >= 0;
 
             // Anchored match is covered since we keep track of the directory
             if (pattern.charAt(0) == '/') {
@@ -114,7 +112,7 @@ public class ExcludePathMatcher implements PathMatcher {
         public int compareTo(PatternPathMatcher other) {
             // We want to leverage the stable sorting and only consider the negated state
             // since negated matchers need to be evaluated first
-            return ComparisonChain.start().compareTrueFirst(negate, other.negate).result();
+            return Boolean.compare(other.negate, negate);
         }
 
         @Override
@@ -125,7 +123,7 @@ public class ExcludePathMatcher implements PathMatcher {
             // Match the full path name or the name segments
             boolean matches = false;
             if (pathnameMatch) {
-                matches = fnmatch(pattern, Joiner.on('/').join(relativePath), PATHNAME);
+                matches = fnmatch(pattern, ensureDelimiter(relativePath, "/"), PATHNAME);
             } else {
                 for (int i = 0; i < relativePath.getNameCount() && !matches; ++i) {
                     matches = fnmatch(pattern, relativePath.getName(i).toString());
@@ -185,7 +183,7 @@ public class ExcludePathMatcher implements PathMatcher {
                 .flatMap(patternNormalizer)
                 .map(pattern -> PatternPathMatcher.create(pattern, top))
                 .sorted()
-                .collect(collectingAndThen(toList(), Collections::unmodifiableList));
+                .collect(toImmutableList());
     }
 
     @Override
@@ -286,8 +284,8 @@ public class ExcludePathMatcher implements PathMatcher {
             pattern = pattern.substring(0, pattern.length() - 2);
             trailingSpace++;
         }
-        if (trailingSpace > 0) {
-            pattern += Strings.repeat(" ", trailingSpace);
+        while (trailingSpace-- > 0) {
+            pattern += " ";
         }
 
         return Stream.of(pattern);
@@ -306,7 +304,7 @@ public class ExcludePathMatcher implements PathMatcher {
         private final List<String> excludePerDirectoryNames = new ArrayList<>();
 
         public Builder() {
-            top = Paths.get(USER_DIR.value());
+            top = Paths.get(System.getProperty("user.dir"));
             patternNormalizer = ExcludePathMatcher::defaultPatternNormalizer;
         }
 
