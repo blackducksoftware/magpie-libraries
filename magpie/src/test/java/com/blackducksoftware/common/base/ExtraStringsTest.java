@@ -370,6 +370,26 @@ public class ExtraStringsTest {
         assertThat(ExtraStrings.splitOnLast("foobar", 'x', ExtraStringsTest::joinWithHash)).isEqualTo("#foobar");
     }
 
+    @Test
+    public void splitNoDelim() {
+        assertThat(ExtraStrings.split("foobar", ',')).containsExactly("foobar").inOrder();
+    }
+
+    @Test
+    public void splitDelimPrefix() {
+        assertThat(ExtraStrings.split(",foobar", ',')).containsExactly("", "foobar").inOrder();
+    }
+
+    @Test
+    public void splitDelimSuffix() {
+        assertThat(ExtraStrings.split("foobar,", ',')).containsExactly("foobar", "").inOrder();
+    }
+
+    @Test
+    public void split() {
+        assertThat(ExtraStrings.split("foo,bar,gus", ',')).containsExactly("foo", "bar", "gus").inOrder();
+    }
+
     private static String joinWithHash(CharSequence a, CharSequence b) {
         Objects.requireNonNull(a);
         Objects.requireNonNull(b);

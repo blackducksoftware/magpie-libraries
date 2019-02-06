@@ -17,8 +17,13 @@ package com.blackducksoftware.common.base;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators.AbstractSpliterator;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
@@ -283,6 +288,42 @@ public final class ExtraStrings {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Split the input on every occurrence of the specified character. A {@literal null} input produces an empty result.
+     */
+    public static Stream<String> split(@Nullable CharSequence value, char delim) {
+        if (value == null) {
+            return Stream.empty();
+        }
+
+        class CharSplitterSpliterator extends AbstractSpliterator<String> {
+            private int pos;
+
+            public CharSplitterSpliterator() {
+                super(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.NONNULL);
+            }
+
+            @Override
+            public boolean tryAdvance(Consumer<? super String> action) {
+                int len = value.length();
+                if (pos > len) {
+                    return false;
+                }
+                for (int i = pos; i < len; ++i) {
+                    if (value.charAt(i) == delim) {
+                        action.accept(value.subSequence(pos, i).toString());
+                        pos = i + 1;
+                        return true;
+                    }
+                }
+                action.accept(value.subSequence(pos, len).toString());
+                pos = len + 1;
+                return true;
+            }
+        }
+        return StreamSupport.stream(new CharSplitterSpliterator(), false);
     }
 
     /**
