@@ -129,7 +129,10 @@ public final class ExtraOptionals {
      * <pre>
      * String str = obj instanceof String ? (String) obj : null;
      * </pre>
+     *
+     * @deprecated Use {@link ExtraObjects#cast(Class)} instead.
      */
+    @Deprecated
     public static <T> Function<Object, Optional<T>> ofType(Class<T> type) {
         Objects.requireNonNull(type);
         return obj -> type.isInstance(obj) ? Optional.of(type.cast(obj)) : Optional.empty();
