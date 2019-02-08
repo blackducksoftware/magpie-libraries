@@ -18,6 +18,8 @@ package com.blackducksoftware.common.base;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -234,6 +236,24 @@ public class ExtraStringsTest {
     @Test
     public void ensureDelimiterWithStartAndEndMultiCharDelimiter() {
         assertThat(ExtraStrings.ensureDelimiter("wxy", "xy", "xyz")).isEqualTo("wxyz");
+    }
+
+    @Test
+    public void ensureDelimiterIterable() {
+        assertThat(ExtraStrings.ensureDelimiter(Collections.emptyList(), ",")).isEqualTo("");
+        assertThat(ExtraStrings.ensureDelimiter(Arrays.asList("a"), ",")).isEqualTo("a");
+        assertThat(ExtraStrings.ensureDelimiter(Arrays.asList("a", "b"), ",")).isEqualTo("a,b");
+        assertThat(ExtraStrings.ensureDelimiter(Arrays.asList("a", "b", "c"), ",")).isEqualTo("a,b,c");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void ensureDelimiterNullIterable() {
+        ExtraStrings.ensureDelimiter(null, ",");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void ensureDelimiterIterableNullDelimiter() {
+        ExtraStrings.ensureDelimiter(Collections.emptyList(), null);
     }
 
     @Test
@@ -477,6 +497,11 @@ public class ExtraStringsTest {
     @Test
     public void split() {
         assertThat(ExtraStrings.split("foo,bar,gus", ',')).containsExactly("foo", "bar", "gus").inOrder();
+    }
+
+    @Test
+    public void splitNull() {
+        assertThat(ExtraStrings.split(null, ',')).isEmpty();
     }
 
     private static String joinWithHash(CharSequence a, CharSequence b) {
