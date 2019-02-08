@@ -237,6 +237,95 @@ public class ExtraStringsTest {
     }
 
     @Test
+    public void padBothOdd() {
+        assertThat(ExtraStrings.padBoth("x", 0, ' ')).isEqualTo("x");
+        assertThat(ExtraStrings.padBoth("x", 1, ' ')).isEqualTo("x");
+        assertThat(ExtraStrings.padBoth("x", 2, ' ')).isEqualTo("x ");
+        assertThat(ExtraStrings.padBoth("x", 3, ' ')).isEqualTo(" x ");
+        assertThat(ExtraStrings.padBoth("x", 4, ' ')).isEqualTo(" x  ");
+        assertThat(ExtraStrings.padBoth("x", 5, ' ')).isEqualTo("  x  ");
+    }
+
+    @Test
+    public void padBothEven() {
+        assertThat(ExtraStrings.padBoth("xx", 1, ' ')).isEqualTo("xx");
+        assertThat(ExtraStrings.padBoth("xx", 2, ' ')).isEqualTo("xx");
+        assertThat(ExtraStrings.padBoth("xx", 3, ' ')).isEqualTo("xx ");
+        assertThat(ExtraStrings.padBoth("xx", 4, ' ')).isEqualTo(" xx ");
+        assertThat(ExtraStrings.padBoth("xx", 5, ' ')).isEqualTo(" xx  ");
+    }
+
+    @Test
+    public void padBothEmpty() {
+        assertThat(ExtraStrings.padBoth("", 1, ' ')).isEqualTo(" ");
+        assertThat(ExtraStrings.padBoth(null, 1, ' ')).isEqualTo(" ");
+    }
+
+    @Test
+    public void truncateEnd() {
+        assertThat(ExtraStrings.truncateEnd("xyz", 0)).isEqualTo("");
+        assertThat(ExtraStrings.truncateEnd("xyz", 1)).isEqualTo("x");
+        assertThat(ExtraStrings.truncateEnd("xyz", 2)).isEqualTo("xy");
+        assertThat(ExtraStrings.truncateEnd("xyz", 3)).isEqualTo("xyz");
+        assertThat(ExtraStrings.truncateEnd("xyz", 4)).isEqualTo("xyz");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void truncateEndNull() {
+        ExtraStrings.truncateEnd(null, 0);
+    }
+
+    @Test
+    public void truncateStart() {
+        assertThat(ExtraStrings.truncateStart("xyz", 0)).isEqualTo("");
+        assertThat(ExtraStrings.truncateStart("xyz", 1)).isEqualTo("z");
+        assertThat(ExtraStrings.truncateStart("xyz", 2)).isEqualTo("yz");
+        assertThat(ExtraStrings.truncateStart("xyz", 3)).isEqualTo("xyz");
+        assertThat(ExtraStrings.truncateStart("xyz", 4)).isEqualTo("xyz");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void truncateStartNull() {
+        ExtraStrings.truncateStart(null, 0);
+    }
+
+    @Test
+    public void truncateMiddleOdd() {
+        assertThat(ExtraStrings.truncateMiddle("abcdefg", 2)).isEqualTo("..");
+        assertThat(ExtraStrings.truncateMiddle("abcdefg", 3)).isEqualTo("..g");
+        assertThat(ExtraStrings.truncateMiddle("abcdefg", 4)).isEqualTo("a..g");
+        assertThat(ExtraStrings.truncateMiddle("abcdefg", 5)).isEqualTo("a..fg");
+        assertThat(ExtraStrings.truncateMiddle("abcdefg", 6)).isEqualTo("ab..fg");
+        assertThat(ExtraStrings.truncateMiddle("abcdefg", 7)).isEqualTo("abcdefg");
+    }
+
+    @Test
+    public void truncateMiddleEven() {
+        assertThat(ExtraStrings.truncateMiddle("abcdefgh", 2)).isEqualTo("..");
+        assertThat(ExtraStrings.truncateMiddle("abcdefgh", 3)).isEqualTo("..h");
+        assertThat(ExtraStrings.truncateMiddle("abcdefgh", 4)).isEqualTo("a..h");
+        assertThat(ExtraStrings.truncateMiddle("abcdefgh", 5)).isEqualTo("a..gh");
+        assertThat(ExtraStrings.truncateMiddle("abcdefgh", 6)).isEqualTo("ab..gh");
+        assertThat(ExtraStrings.truncateMiddle("abcdefgh", 7)).isEqualTo("ab..fgh");
+        assertThat(ExtraStrings.truncateMiddle("abcdefgh", 8)).isEqualTo("abcdefgh");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void truncateMiddle0() {
+        ExtraStrings.truncateMiddle("xyz", 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void truncateMiddle1() {
+        ExtraStrings.truncateMiddle("xyz", 1);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void truncateMiddleNull() {
+        ExtraStrings.truncateMiddle(null, 2);
+    }
+
+    @Test
     public void removePrefixNull() {
         assertThat(ExtraStrings.removePrefix(null, "abc")).isNull();
         assertThat(ExtraStrings.removePrefix("abc", null)).isEqualTo("abc");

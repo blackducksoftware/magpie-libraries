@@ -15,6 +15,7 @@
  */
 package com.blackducksoftware.common.base;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -140,6 +141,62 @@ public final class ExtraStrings {
             }
         });
         return joiner.toString();
+    }
+
+    /**
+     * Applies padding to both sides of a value.
+     */
+    public static String padBoth(@Nullable CharSequence value, int minLength, char padChar) {
+        if (value == null) {
+            char[] result = new char[minLength];
+            Arrays.fill(result, padChar);
+            return new String(result);
+        } else if (value.length() >= minLength) {
+            return value.toString();
+        }
+        StringBuilder result = new StringBuilder(minLength);
+        for (int i = (int) Math.floor((minLength - value.length()) / 2.0); i > 0; --i) {
+            result.append(padChar);
+        }
+        result.append(value);
+        for (int i = result.length(); i < minLength; ++i) {
+            result.append(padChar);
+        }
+        return result.toString();
+    }
+
+    /**
+     * Truncates a value to a maximum size.
+     */
+    public static String truncateEnd(CharSequence value, int maxLength) {
+        return value.length() > maxLength ? value.subSequence(0, maxLength).toString() : value.toString();
+    }
+
+    /**
+     * Truncates a value to a maximum size.
+     */
+    public static String truncateStart(CharSequence value, int maxLength) {
+        return value.length() > maxLength ? value.subSequence(value.length() - maxLength, value.length()).toString() : value.toString();
+    }
+
+    /**
+     * Truncates a value to a maximum size. Unlike other truncate methods, the delimiter ".." is used to indicate
+     * truncation occurred in the middle of the value. The specified {@code maxLength} must be at least 2 to accommodate
+     * the delimiter (i.e. if the maximum length is 2 the resulting value will always be "..").
+     */
+    public static String truncateMiddle(CharSequence value, int maxLength) {
+        if (maxLength < 2) {
+            throw new IllegalArgumentException("maxLength must be a least 2 (was " + maxLength + ")");
+        } else if (value.length() <= maxLength) {
+            return value.toString();
+        }
+
+        StringBuilder result = new StringBuilder(maxLength);
+        double split = (maxLength - 2) / 2.0;
+        result.append(value.subSequence(0, (int) Math.floor(split)));
+        result.append('.').append('.');
+        result.append(value.subSequence(value.length() - (int) Math.ceil(split), value.length()));
+        return result.toString();
     }
 
     /**
@@ -335,7 +392,7 @@ public final class ExtraStrings {
      * startsWith(value, suffix, value.length() - suffix.length())
      * </pre>
      */
-    private static boolean startsWith(CharSequence value, CharSequence prefix, int offset) {
+    static boolean startsWith(CharSequence value, CharSequence prefix, int offset) {
         int o = prefix.length();
         int pi = 0;
         int vi = offset;
