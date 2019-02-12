@@ -18,10 +18,12 @@ package com.blackducksoftware.common.base;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -60,6 +62,9 @@ public class ExtraOptionalsTest {
 
     @Mock
     private BinaryOperator<String> combiner;
+
+    @Mock
+    private BiConsumer<String, String> consumer;
 
     @Before
     public void setup() {
@@ -173,46 +178,87 @@ public class ExtraOptionalsTest {
     }
 
     @Test
-    public void and_nullA() {
+    public void ifPresent_nullA() {
         thrown.expect(NullPointerException.class);
-        ExtraOptionals.and(null, Optional.empty(), combiner);
+        ExtraOptionals.ifPresent(null, Optional.empty(), consumer);
     }
 
     @Test
-    public void and_nullB() {
+    public void ifPresent_nullB() {
         thrown.expect(NullPointerException.class);
-        ExtraOptionals.and(Optional.empty(), null, combiner);
+        ExtraOptionals.ifPresent(Optional.empty(), null, consumer);
     }
 
     @Test
-    public void and_nullCombiner() {
+    public void ifPresent_nullConsumer() {
         thrown.expect(NullPointerException.class);
-        ExtraOptionals.and(Optional.empty(), Optional.empty(), null);
+        ExtraOptionals.ifPresent(Optional.empty(), Optional.empty(), null);
     }
 
     @Test
-    public void and_emptyA() {
-        assertThat(ExtraOptionals.and(Optional.empty(), Optional.of("test"), combiner)).isEmpty();
+    public void ifPresent_emptyA() {
+        ExtraOptionals.ifPresent(Optional.empty(), Optional.of("test"), consumer);
+        verify(consumer, never()).accept(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    public void ifPresent_emptyB() {
+        ExtraOptionals.ifPresent(Optional.of("test"), Optional.empty(), consumer);
+        verify(consumer, never()).accept(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    public void ifPresent_emptyA_emptyB() {
+        ExtraOptionals.ifPresent(Optional.empty(), Optional.empty(), consumer);
+        verify(consumer, never()).accept(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
+    public void ifPresent() {
+        ExtraOptionals.ifPresent(Optional.of("a"), Optional.of("b"), consumer);
+        verify(consumer, only()).accept("a", "b");
+    }
+
+    @Test
+    public void map_nullA() {
+        thrown.expect(NullPointerException.class);
+        ExtraOptionals.map(null, Optional.empty(), combiner);
+    }
+
+    @Test
+    public void map_nullB() {
+        thrown.expect(NullPointerException.class);
+        ExtraOptionals.map(Optional.empty(), null, combiner);
+    }
+
+    @Test
+    public void map_nullMapper() {
+        thrown.expect(NullPointerException.class);
+        ExtraOptionals.map(Optional.empty(), Optional.empty(), null);
+    }
+
+    @Test
+    public void map_emptyA() {
+        assertThat(ExtraOptionals.map(Optional.empty(), Optional.of("test"), combiner)).isEmpty();
         verify(combiner, never()).apply(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
-    public void and_emptyB() {
-        assertThat(ExtraOptionals.and(Optional.of("test"), Optional.empty(), combiner)).isEmpty();
+    public void map_emptyB() {
+        assertThat(ExtraOptionals.map(Optional.of("test"), Optional.empty(), combiner)).isEmpty();
         verify(combiner, never()).apply(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
-    public void and_emptyA_emptyB() {
-        assertThat(ExtraOptionals.and(Optional.empty(), Optional.empty(), combiner)).isEmpty();
+    public void map_emptyA_emptyB() {
+        assertThat(ExtraOptionals.map(Optional.empty(), Optional.empty(), combiner)).isEmpty();
         verify(combiner, never()).apply(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
-    public void and() {
+    public void map() {
         when(combiner.apply("a", "b")).thenReturn("c");
-        // Using the method reference to the mock ensures default implementations work
-        assertThat(ExtraOptionals.and(Optional.of("a"), Optional.of("b"), combiner::apply)).hasValue("c");
+        assertThat(ExtraOptionals.map(Optional.of("a"), Optional.of("b"), combiner)).hasValue("c");
     }
 
     @Test

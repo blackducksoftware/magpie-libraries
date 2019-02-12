@@ -173,11 +173,11 @@ public final class ExtraOptionals {
      * If both values are present, combines them using the supplied function, if the result is non-null, return an
      * {@code Optional} describing the result. Otherwise return an empty {@code Optional}.
      */
-    public static <A, B, C> Optional<C> and(Optional<A> a, Optional<B> b, BiFunction<? super A, ? super B, C> combiner) {
-        Objects.requireNonNull(combiner);
+    public static <A, B, C> Optional<C> map(Optional<A> a, Optional<B> b, BiFunction<? super A, ? super B, ? extends C> mapper) {
+        Objects.requireNonNull(mapper);
         Objects.requireNonNull(b);
         if (a.isPresent() && b.isPresent()) {
-            return combiner.andThen(Optional::ofNullable).apply(a.get(), b.get());
+            return Optional.ofNullable(mapper.apply(a.get(), b.get()));
         } else {
             return Optional.empty();
         }
