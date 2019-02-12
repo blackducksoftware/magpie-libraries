@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -155,6 +156,17 @@ public final class ExtraOptionals {
     public static <T> Predicate<Optional<T>> isEmpty() {
         // TODO Make this a constant?
         return o -> !o.isPresent();
+    }
+
+    /**
+     * If both values are present, invokes the supplied consumer.
+     */
+    public static <A, B> void ifPresent(Optional<A> a, Optional<B> b, BiConsumer<? super A, ? super B> consumer) {
+        Objects.requireNonNull(consumer);
+        Objects.requireNonNull(b);
+        if (a.isPresent() && b.isPresent()) {
+            consumer.accept(a.get(), b.get());
+        }
     }
 
     /**
