@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ToIntBiFunction;
@@ -158,11 +157,11 @@ public class Formatter<T> {
      */
     private static class ColorPlaceholder<T> implements Placeholder<T> {
 
-        private static final Set<String> OPTIONS = ImmutableSet.of("red", "green", "blue", "reset");
+        private static final ImmutableSet<String> OPTIONS = ImmutableSet.of("red", "green", "blue", "reset");
 
-        private static final List<String> COLORS = ImmutableList.of("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white");
+        private static final ImmutableList<String> COLORS = ImmutableList.of("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white");
 
-        private static final List<String> ATTRIBUTES = ImmutableList.of("reset", "bold", "dim", "italic", "ul", "blink", "", "", "", "strike");
+        private static final ImmutableList<String> ATTRIBUTES = ImmutableList.of("reset", "bold", "dim", "italic", "ul", "blink", "", "", "", "strike");
 
         private Boolean enabled;
 

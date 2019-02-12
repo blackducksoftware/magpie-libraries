@@ -154,20 +154,6 @@ public class ExtraOptionalsTest {
     // TODO mapToObj
 
     @Test
-    public void ofType_null() {
-        thrown.expect(NullPointerException.class);
-
-        ExtraOptionals.ofType(null);
-    }
-
-    @Test
-    public void ofType() {
-        assertThat(ExtraOptionals.ofType(String.class).apply("test")).hasValue("test");
-        assertThat(ExtraOptionals.ofType(String.class).apply(Integer.valueOf(0))).isEmpty();
-        assertThat(ExtraOptionals.ofType(String.class).apply(null)).isEmpty();
-    }
-
-    @Test
     public void isOptionalEquals_null() {
         assertThat(ExtraOptionals.isOptionalEqual(null).test(Optional.ofNullable(null))).isTrue();
         assertThat(ExtraOptionals.isOptionalEqual(null).test(Optional.ofNullable("test"))).isFalse();

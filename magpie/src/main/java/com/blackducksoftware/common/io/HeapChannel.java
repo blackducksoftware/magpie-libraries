@@ -68,7 +68,7 @@ public class HeapChannel implements SeekableByteChannel {
         openOptions = EnumSet.of(StandardOpenOption.READ);
         this.buf = buf;
         this.off = off;
-        count = Math.min(Math.addExact(off, len), buf.length);
+        count = (int) Math.min((long) off + len, buf.length);
     }
 
     @Override
