@@ -20,4 +20,3 @@ env:
 
 install: ./gradlew -I gradle/travis.gradle assemble
 script: ./gradlew -I gradle/travis.gradle check
-after_success: ./gradlew -I gradle/travis.gradle publish
