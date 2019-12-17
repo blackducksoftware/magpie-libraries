@@ -1,3 +1,5 @@
+dist: trusty
+
 language: java
 
 jdk:
@@ -13,11 +15,5 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
-env:
-  global:
-    - secure: "rvJhFmViVMdv4NqVSxV8JqpsYJqCxg7HIJ8/tNjwOEvYnaYNk1tHStTAdICKqkmbVFpZNVt1kQdw0CCsbY2IWY+manBEd+kjuMFi3p7Xc1BI2sKmzYGB7rtgfwcBtcThglqIQWEvZkSFIkvjVdAPe/QFc2lHvCCZ9TW5M4GbGoUTet45vK4SKG4A/9eA+0fXJKnN2il73tOkUCVT6dtc4qGlm2x9o4xm4Rxkb86iHav3/IBWXModXoOdWcBe51bpi8Srjy7+pTC2QLGDMqlIzzXn4TiyPaikMZyiZSkgNL02sJxjidhOVumNyAG4hhFFyAkGfzXU8aZntkJt9nx33q1jo+hF6KUL7+S5mPnLkWZnjpEHuDrqZLlyU1rHc82wm9vw7Rjj86MG1lFNS4L/PZpIyeMLVd/5pK1Z17e6ZkFUvbeYEq11glIBAHI/2w2resx+It0t7pj3gDn6KmHEbqQUaAdW80RZ1z9c3YGOm1lGt9m6lxjyRwi8kw2nKo7cF9CUAM/nS9jcvw98Erww/bO0uU+MaNForOm3X2zaHKA3kVG79N+TuDAn3/JyUhtpb2AwJDDEcld8TyInXNdKBIhHqRmwkkn+IXqi4auJePjA9bwUjiHnjafgAeJRWvUJzxN0sO532uk+elG8pLhuSx8YL079KHEyigb/+dSzCoY="
-    - secure: "FAf24UCWmkieeTAaa1bW49ynTj36vqspFXSZn/Uoi8qV4VbC6gd3CVUvQRcRSWPDP7zukjIekFqppeA0hLWJ+QzJRpZEgSAKxPIFIEDBBIkxzMJrL9lzwdhAbzdOl91BTb69hA5KfBGuUIr1JiaW3jMZ1cXWTPtldJb9AQ//kVqW0g8xqzco6oiVhy2pdEtGG3kkifl6TjxpwfJlGWobz2nDLKfKp2lMNpohaa9/dhbTKHXG4Z7jfhy1LYE1SZYewPFOY925nIE/tlxh5EUEtaitdcw2X0oh+kphi9bX/J4sk5IuOBqEBbqjKIo9U7SRolILX7QOPTjrsCdMeyHsoq3gKsW0WZQfdRUw5FfoqEC8bSsHJ8qmYvyufglUVv0aEmnTiJLEUEOC8ae8zqO4AKUWkgHZ1dCQT/Hy495aPHYMHw10b2oiuhvNCyEBdFZ+KQthPkSupcIhd44CrcgzjFZRCRq6BIhiNrOTAB9opyXW6XCU0/FKyDNsWvnKpDfbcqUNweo4T4Ns7XWx6jbeyY2ehYBgjhbla540GnXZmQXrueF9Pc+3vTVCtQZHtDs/WJA4KCkJp1vObzQMJwqlHMTek0de6dkBMhgFMpkHezB2VRSMSD1T+tlBXpcXmwP87s7W6WhYQ8vYsuCAeA+sHZMsUaKZDL/F93/qak2RU4s="
-
-install: ./gradlew -I gradle/travis.gradle assemble
-script: ./gradlew -I gradle/travis.gradle check
-after_success: ./gradlew -I gradle/travis.gradle publish
+install: ./gradlew assemble
+script: ./gradlew check
