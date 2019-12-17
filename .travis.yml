@@ -15,5 +15,5 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
-install: ./gradlew -I gradle/travis.gradle assemble
-script: ./gradlew -I gradle/travis.gradle check
+install: ./gradlew assemble
+script: ./gradlew check
