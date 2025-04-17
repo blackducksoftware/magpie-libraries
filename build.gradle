@@ -4,7 +4,7 @@ buildscript {
 		classpath 'com.netflix.nebula:nebula-dependency-recommender:5.1.0'
 		classpath 'com.netflix.nebula:nebula-publishing-plugin:5.1.5'
 		classpath 'net.ltgt.gradle:gradle-errorprone-plugin:2.0.2'
-		classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0"
+		classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.29.2"
 	}
 }
 
