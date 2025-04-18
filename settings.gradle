@@ -1,2 +1,2 @@
 rootProject.name = 'magpie-libraries'
-include 'magpie', 'magpie-test'
+include 'magpie'

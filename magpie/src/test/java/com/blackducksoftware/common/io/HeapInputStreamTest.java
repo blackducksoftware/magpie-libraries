@@ -15,7 +15,7 @@
  */
 package com.blackducksoftware.common.io;
 
-import static com.blackducksoftware.common.test.ByteBufferSubject.assertThat;
+import static com.blackducksoftware.test.common.ByteBufferSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 
 import java.io.IOException;

@@ -15,15 +15,15 @@
  */
 package com.blackducksoftware.common.io;
 
-import static com.blackducksoftware.common.test.ByteBufferSubject.assertThat;
-import static com.blackducksoftware.common.test.SeekableByteChannelSubject.assertThat;
-import static com.google.common.truth.Truth.assertThat;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NonWritableChannelException;
 
 import org.junit.Test;
+
+import com.blackducksoftware.test.common.ByteBufferSubject;
+import com.blackducksoftware.test.common.SeekableByteChannelSubject;
+import com.google.common.truth.Truth;
 
 /**
  * Tests for the {@link HeapChannel}.
@@ -37,8 +37,8 @@ public class HeapChannelTest {
      */
     @Test
     public void closing() throws IOException {
-        assertThat(new HeapChannel(0)).hasIdempotentClose();
-        assertThat(new HeapChannel(0)).failsWhenClosed();
+        SeekableByteChannelSubject.assertThat(new HeapChannel(0)).hasIdempotentClose();
+        SeekableByteChannelSubject.assertThat(new HeapChannel(0)).failsWhenClosed();
     }
 
     /**
@@ -48,13 +48,13 @@ public class HeapChannelTest {
     public void newHeapChannel_length() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(data, 0, 2)) {
-            assertThat(c).hasSize(2L);
-            assertThat(c).isPositionedAt(0L);
+            SeekableByteChannelSubject.assertThat(c).hasSize(2L);
+            SeekableByteChannelSubject.assertThat(c).isPositionedAt(0L);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length + 1);
-            assertThat(c.read(buffer)).isEqualTo(2);
+            Truth.assertThat(c.read(buffer)).isEqualTo(2);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data[0], data[1]);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data[0], data[1]);
         }
     }
 
@@ -65,13 +65,13 @@ public class HeapChannelTest {
     public void newHeapChannel_offsetLength() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(data, 1, 2)) {
-            assertThat(c.size()).isEqualTo(2);
-            assertThat(c.position()).isEqualTo(0);
+            Truth.assertThat(c.size()).isEqualTo(2);
+            Truth.assertThat(c.position()).isEqualTo(0);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length);
-            assertThat(c.read(buffer)).isEqualTo(2);
+            Truth.assertThat(c.read(buffer)).isEqualTo(2);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data[1], data[2]);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data[1], data[2]);
         }
     }
 
@@ -82,13 +82,13 @@ public class HeapChannelTest {
     public void newHeapChannel_offsetExcessiveLength() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(data, 1, data.length + 1)) {
-            assertThat(c.size()).isEqualTo(3);
-            assertThat(c.position()).isEqualTo(0);
+            Truth.assertThat(c.size()).isEqualTo(3);
+            Truth.assertThat(c.position()).isEqualTo(0);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length);
-            assertThat(c.read(buffer)).isEqualTo(3);
+            Truth.assertThat(c.read(buffer)).isEqualTo(3);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data[1], data[2], data[3]);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data[1], data[2], data[3]);
         }
     }
 
@@ -99,13 +99,13 @@ public class HeapChannelTest {
     public void newHeapChannel_offsetMaxLength() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(data, 1, Integer.MAX_VALUE)) {
-            assertThat(c.size()).isEqualTo(3);
-            assertThat(c.position()).isEqualTo(0);
+            Truth.assertThat(c.size()).isEqualTo(3);
+            Truth.assertThat(c.position()).isEqualTo(0);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length);
-            assertThat(c.read(buffer)).isEqualTo(3);
+            Truth.assertThat(c.read(buffer)).isEqualTo(3);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data[1], data[2], data[3]);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data[1], data[2], data[3]);
         }
     }
 
@@ -116,13 +116,13 @@ public class HeapChannelTest {
     public void newHeapChannel_byteArray() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(data)) {
-            assertThat(c).hasSize(data.length);
-            assertThat(c).isPositionedAt(0L);
+            SeekableByteChannelSubject.assertThat(c).hasSize(data.length);
+            SeekableByteChannelSubject.assertThat(c).isPositionedAt(0L);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length + 1);
-            assertThat(c.read(buffer)).isEqualTo(data.length);
+            Truth.assertThat(c.read(buffer)).isEqualTo(data.length);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data);
         }
     }
 
@@ -153,7 +153,7 @@ public class HeapChannelTest {
     public void positionIntegerMax() throws IOException {
         try (HeapChannel c = new HeapChannel(0)) {
             c.position(Long.MAX_VALUE);
-            assertThat(c).isPositionedAt(Integer.MAX_VALUE);
+            SeekableByteChannelSubject.assertThat(c).isPositionedAt(Integer.MAX_VALUE);
         }
     }
 
@@ -164,7 +164,7 @@ public class HeapChannelTest {
     public void positionPastSize() throws IOException {
         try (HeapChannel c = new HeapChannel(0)) {
             c.position(1001L);
-            assertThat(c).isPositionedAt(1001L);
+            SeekableByteChannelSubject.assertThat(c).isPositionedAt(1001L);
         }
     }
 
@@ -188,8 +188,8 @@ public class HeapChannelTest {
             c.position(4);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length);
-            assertThat(c.read(buffer)).isEqualTo(-1);
-            assertThat(buffer).hasRemaining(data.length);
+            Truth.assertThat(c.read(buffer)).isEqualTo(-1);
+            ByteBufferSubject.assertThat(buffer).hasRemaining(data.length);
         }
     }
 
@@ -203,9 +203,9 @@ public class HeapChannelTest {
             c.position(1);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length);
-            assertThat(c.read(buffer)).isEqualTo(3);
+            Truth.assertThat(c.read(buffer)).isEqualTo(3);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data[1], data[2], data[3]);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data[1], data[2], data[3]);
         }
     }
 
@@ -226,14 +226,14 @@ public class HeapChannelTest {
     public void writeReadBack() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(data.length)) {
-            assertThat(c.write(ByteBuffer.wrap(data))).isEqualTo(data.length);
-            assertThat(c.read(ByteBuffer.allocate(1))).isEqualTo(-1);
+            Truth.assertThat(c.write(ByteBuffer.wrap(data))).isEqualTo(data.length);
+            Truth.assertThat(c.read(ByteBuffer.allocate(1))).isEqualTo(-1);
             c.position(0L);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length + 1);
-            assertThat(c.read(buffer)).isEqualTo(data.length);
+            Truth.assertThat(c.read(buffer)).isEqualTo(data.length);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data);
         }
     }
 
@@ -244,14 +244,14 @@ public class HeapChannelTest {
     public void writeSplitReadBack() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(data.length)) {
-            assertThat(c.write(ByteBuffer.wrap(data, 0, 2))).isEqualTo(2);
-            assertThat(c.write(ByteBuffer.wrap(data, 2, 2))).isEqualTo(2);
+            Truth.assertThat(c.write(ByteBuffer.wrap(data, 0, 2))).isEqualTo(2);
+            Truth.assertThat(c.write(ByteBuffer.wrap(data, 2, 2))).isEqualTo(2);
             c.position(0L);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length + 1);
-            assertThat(c.read(buffer)).isEqualTo(data.length);
+            Truth.assertThat(c.read(buffer)).isEqualTo(data.length);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data);
         }
     }
 
@@ -262,17 +262,17 @@ public class HeapChannelTest {
     public void writeReadSplitBack() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(data.length)) {
-            assertThat(c.write(ByteBuffer.wrap(data))).isEqualTo(data.length);
-            assertThat(c.read(ByteBuffer.allocate(1))).isEqualTo(-1);
+            Truth.assertThat(c.write(ByteBuffer.wrap(data))).isEqualTo(data.length);
+            Truth.assertThat(c.read(ByteBuffer.allocate(1))).isEqualTo(-1);
             c.position(0L);
 
             ByteBuffer buffer = ByteBuffer.allocate(2);
-            assertThat(c.read(buffer)).isEqualTo(2);
+            Truth.assertThat(c.read(buffer)).isEqualTo(2);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data[0], data[1]);
-            assertThat(c.read(buffer)).isEqualTo(2);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data[0], data[1]);
+            Truth.assertThat(c.read(buffer)).isEqualTo(2);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data[2], data[3]);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data[2], data[3]);
         }
     }
 
@@ -283,16 +283,16 @@ public class HeapChannelTest {
     public void writeGrow() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(2)) {
-            assertThat(c.size()).isEqualTo(0);
-            assertThat(c.write(ByteBuffer.wrap(data))).isEqualTo(data.length);
-            assertThat(c.size()).isEqualTo(4);
-            assertThat(c.read(ByteBuffer.allocate(1))).isEqualTo(-1);
+            Truth.assertThat(c.size()).isEqualTo(0);
+            Truth.assertThat(c.write(ByteBuffer.wrap(data))).isEqualTo(data.length);
+            Truth.assertThat(c.size()).isEqualTo(4);
+            Truth.assertThat(c.read(ByteBuffer.allocate(1))).isEqualTo(-1);
             c.position(0L);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length + 1);
-            assertThat(c.read(buffer)).isEqualTo(data.length);
+            Truth.assertThat(c.read(buffer)).isEqualTo(data.length);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data);
         }
     }
 
@@ -303,14 +303,14 @@ public class HeapChannelTest {
     public void writeSplitGrow() throws IOException {
         byte[] data = new byte[] { 0x01, 0x02, 0x03, 0x04 };
         try (HeapChannel c = new HeapChannel(2)) {
-            assertThat(c.write(ByteBuffer.wrap(data, 0, 1))).isEqualTo(1);
-            assertThat(c.write(ByteBuffer.wrap(data, 1, 3))).isEqualTo(3);
+            Truth.assertThat(c.write(ByteBuffer.wrap(data, 0, 1))).isEqualTo(1);
+            Truth.assertThat(c.write(ByteBuffer.wrap(data, 1, 3))).isEqualTo(3);
             c.position(0L);
 
             ByteBuffer buffer = ByteBuffer.allocate(data.length + 1);
-            assertThat(c.read(buffer)).isEqualTo(data.length);
+            Truth.assertThat(c.read(buffer)).isEqualTo(data.length);
             buffer.flip();
-            assertThat(buffer).hasNextBytes(data);
+            ByteBufferSubject.assertThat(buffer).hasNextBytes(data);
         }
     }
 
