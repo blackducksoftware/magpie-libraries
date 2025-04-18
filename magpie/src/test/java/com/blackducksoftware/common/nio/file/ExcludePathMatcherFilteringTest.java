@@ -31,7 +31,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.blackducksoftware.common.test.FileSystemBuilder;
+import com.blackducksoftware.test.common.FileSystemBuilder;
 import com.google.common.base.Functions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;

@@ -15,8 +15,8 @@
  */
 package com.blackducksoftware.common.io;
 
-import static com.blackducksoftware.common.test.ByteBufferSubject.assertThat;
-import static com.blackducksoftware.common.test.SeekableByteChannelSubject.assertThat;
+import static com.blackducksoftware.test.common.ByteBufferSubject.assertThat;
+import static com.blackducksoftware.test.common.SeekableByteChannelSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
