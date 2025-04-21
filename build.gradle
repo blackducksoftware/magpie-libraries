@@ -1,8 +1,6 @@
 buildscript {
 	repositories { maven { url 'https://plugins.gradle.org/m2/' } }
 	dependencies { 
-		classpath 'com.netflix.nebula:nebula-dependency-recommender:5.1.0'
-		classpath 'com.netflix.nebula:nebula-publishing-plugin:5.1.5'
 		classpath 'net.ltgt.gradle:gradle-errorprone-plugin:2.0.2'
 		classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.29.2"
 	}
@@ -10,17 +8,11 @@ buildscript {
 
 allprojects {
 	apply plugin: 'eclipse'
-	apply plugin: 'nebula.dependency-recommender'
 	apply plugin: 'maven-publish'
 	apply plugin: 'com.jfrog.artifactory'
 
 	repositories {
 		jcenter()
-	}
-
-	dependencyRecommendations {
-		strategy OverrideTransitives
-		propertiesFile file: file("$rootDir/dependencies.properties")
 	}
 }
 
@@ -32,7 +24,6 @@ ext{
 
 subprojects {
 	apply plugin: 'java'
-	apply plugin: 'nebula.source-jar'
 	apply plugin: 'net.ltgt.errorprone'
 
 	sourceCompatibility = 1.8
@@ -53,11 +44,23 @@ subprojects {
 		}
 	}
 	
+	task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+    
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+    	classifier = 'javadoc'
+    	from javadoc
+	}
+	
+	assemble.dependsOn sourcesJar
+	
 	publishing{
 		publications{
 			maven(MavenPublication){
 				from components.java
-				artifact sourceJar
+				artifact sourcesJar
 			}
 		}
 	}
