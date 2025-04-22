@@ -65,7 +65,7 @@ public class ExtraFileVisitors {
             this(preVisitDirectory, visitFile, FunctionalFileVisitor::rethrow, FunctionalFileVisitor::rethrow);
         }
 
-        private static <P> FileVisitResult rethrow(P path, @Nullable IOException exc) {
+        private static <P> FileVisitResult rethrow(@SuppressWarnings("unused") P path, @Nullable IOException exc) {
             if (exc != null) {
                 throw new UncheckedIOException(exc);
             } else {

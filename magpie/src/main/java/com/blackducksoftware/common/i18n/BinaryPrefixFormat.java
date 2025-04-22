@@ -15,8 +15,6 @@
  */
 package com.blackducksoftware.common.i18n;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.Format;
@@ -27,6 +25,7 @@ import java.util.Objects;
 import com.blackducksoftware.common.io.BinaryByteUnit;
 import com.blackducksoftware.common.io.ByteUnit;
 import com.blackducksoftware.common.io.DecimalByteUnit;
+import com.google.common.base.Preconditions;
 
 /**
  * A text format for units of data.
@@ -69,11 +68,11 @@ public class BinaryPrefixFormat extends Format {
             @Override
             public long convert(long sourceCount, ByteUnit sourceUnit) {
                 if (sourceUnit instanceof DefaultByteUnit) {
-                    return ((DefaultByteUnit) sourceUnit).toBytes(sourceCount);
+                    return sourceUnit.toBytes(sourceCount);
                 } else if (sourceUnit instanceof BinaryByteUnit) {
-                    return ((BinaryByteUnit) sourceUnit).toBytes(sourceCount);
+                    return sourceUnit.toBytes(sourceCount);
                 } else if (sourceUnit instanceof DecimalByteUnit) {
-                    return ((DecimalByteUnit) sourceUnit).toBytes(sourceCount);
+                    return sourceUnit.toBytes(sourceCount);
                 } else {
                     throw new IllegalArgumentException("unknown byte unit: " + sourceUnit);
                 }
@@ -142,7 +141,7 @@ public class BinaryPrefixFormat extends Format {
 
     @Override
     public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
-        checkArgument(obj instanceof Number, "Cannot format the give object as a byte count");
+        Preconditions.checkArgument(obj instanceof Number, "Cannot format the give object as a byte count");
         // TODO A BigNumber can overflow here, need alternate logic
         Number number = (Number) obj;
         ByteUnit unit = chooseUnit(number.longValue());
@@ -157,6 +156,10 @@ public class BinaryPrefixFormat extends Format {
         return null;
     }
 
+    /**
+     * @param count
+     *            Count to determine an ideal unit for
+     */
     protected ByteUnit chooseUnit(long count) {
         return DefaultByteUnit.BYTES;
     }

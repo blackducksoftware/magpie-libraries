@@ -41,7 +41,7 @@ public abstract class ContentRange {
         private final long completeLength;
 
         private ByteContentRange(Builder builder) {
-            super(builder);
+            super();
             checkByteRange(builder.firstByte, builder.lastByte, builder.contentLength);
             firstBytePos = builder.firstByte;
             lastBytePos = builder.lastByte;
@@ -98,7 +98,7 @@ public abstract class ContentRange {
         private final String range;
 
         private OtherContentRange(Builder builder) {
-            super(builder);
+            super();
             unit = Objects.requireNonNull(builder.unit);
             range = Objects.requireNonNull(builder.otherRange);
         }
@@ -114,7 +114,7 @@ public abstract class ContentRange {
         }
     }
 
-    private ContentRange(Builder builder) {
+    private ContentRange() {
     }
 
     public abstract String unit();

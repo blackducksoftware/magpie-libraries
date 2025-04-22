@@ -61,6 +61,11 @@ public class Formatter<T> {
         /**
          * Given the entire format string and the offset of this placeholder, returns the number of additional
          * characters this placeholder wishes to consume.
+         *
+         * @param format
+         *            Format
+         * @param offset
+         *            Offset
          */
         default int optionLength(CharSequence format, int offset) {
             return 0;
