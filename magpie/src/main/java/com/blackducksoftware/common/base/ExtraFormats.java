@@ -15,8 +15,6 @@
  */
 package com.blackducksoftware.common.base;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-
 import java.time.Duration;
 import java.util.Formattable;
 import java.util.Formatter;
@@ -56,7 +54,7 @@ public class ExtraFormats {
         public void formatTo(Formatter formatter, int flags, int width, int precision) {
             ByteUnit unit = chooseByteUnit(byteCount);
             double value = (double) byteCount / unit.toBytes(1);
-            String format = computeFormat(flags, width, precision, abbreviate(unit));
+            String format = computeFormat(width, precision, abbreviate(unit));
 
             formatter.format(format, value);
         }
@@ -70,10 +68,18 @@ public class ExtraFormats {
 
         // Default implementations only support a hardcoded raw byte count
 
+        /**
+         * @param byteCount
+         *            Count of bytes to determine a succinct unit for
+         */
         protected ByteUnit chooseByteUnit(long byteCount) {
             return c -> c;
         }
 
+        /**
+         * @param unit
+         *            Unit to abbreviate to a string representation
+         */
         protected String abbreviate(ByteUnit unit) {
             return "B";
         }
@@ -138,8 +144,8 @@ public class ExtraFormats {
         public void formatTo(Formatter formatter, int flags, int width, int precision) {
             long nanos = duration.toNanos();
             TimeUnit unit = chooseTimeUnit(nanos);
-            double value = (double) nanos / NANOSECONDS.convert(1, unit);
-            String format = computeFormat(flags, width, precision, TIME_UNIT[unit.ordinal()]);
+            double value = (double) nanos / TimeUnit.NANOSECONDS.convert(1, unit);
+            String format = computeFormat(width, precision, TIME_UNIT[unit.ordinal()]);
 
             formatter.format(format, value);
         }
@@ -165,7 +171,7 @@ public class ExtraFormats {
         @Override
         public void formatTo(Formatter formatter, int flags, int width, int precision) {
             String value = toString.get();
-            String format = computeFormat(flags, width, precision);
+            String format = computeFormat(width, precision);
 
             formatter.format(format, value);
         }
@@ -225,7 +231,7 @@ public class ExtraFormats {
     /**
      * Computes a format pattern with a number placeholder and the supplied abbreviation.
      */
-    private static String computeFormat(int flags, int width, int precision, String abbreviation) {
+    private static String computeFormat(int width, int precision, String abbreviation) {
         if (width < 0 && precision < 0) {
             return new StringBuilder(5 + abbreviation.length()).append("%.4g ").append(abbreviation).toString();
         } else {
@@ -234,7 +240,8 @@ public class ExtraFormats {
                 formatBuilder.append(width - (1 + abbreviation.length()));
             }
             return formatBuilder
-                    .append('.').append(precision < 0 ? 4 : precision)
+                    .append('.')
+                    .append(precision < 0 ? 4 : precision)
                     .append("g ")
                     .append(abbreviation)
                     .toString();
@@ -244,7 +251,7 @@ public class ExtraFormats {
     /**
      * Computes a format pattern with a string placeholder.
      */
-    private static String computeFormat(int flags, int width, int precision) {
+    private static String computeFormat(int width, int precision) {
         if (width < 0 && precision < 0) {
             return "%s";
         } else {

@@ -568,9 +568,8 @@ public final class KeyPairStore {
                 // Traditional SSLeay (encrypted PKCS #1)
                 byte[] decryptedKey;
                 try {
-                    String procType = properties.get("proc-type");
                     String dekInfo = properties.get("dek-info");
-                    decryptedKey = generateOpenSSLCipher(procType, dekInfo, password).doFinal(encodedKey);
+                    decryptedKey = generateOpenSSLCipher(dekInfo, password).doFinal(encodedKey);
                 } catch (BadPaddingException e) {
                     // TODO Is this an appropriate indication that the key was incorrect?
                     throw (UnrecoverableKeyException) new UnrecoverableKeyException("bad password").initCause(e);
@@ -751,7 +750,7 @@ public final class KeyPairStore {
      * <p>
      * This is largely gleaned from <a href="http://juliusdavies.ca/commons-ssl/">Not-Yet-Commons-SSL</a>.
      */
-    private static Cipher generateOpenSSLCipher(String procType, String dekInfo, char[] password)
+    private static Cipher generateOpenSSLCipher(String dekInfo, char[] password)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
         // Split the SSLeay properties up
         List<String> dekInfos = Splitter.on(',').trimResults().limit(2).splitToList(Strings.nullToEmpty(dekInfo));

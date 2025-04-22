@@ -159,17 +159,20 @@ public class ExtraIOTest {
 
     @Test(expected = NullPointerException.class)
     public void onIdleNullIn() {
-        ExtraIO.onIdle(null, 1, TimeUnit.MILLISECONDS, () -> {});
+        ExtraIO.onIdle(null, 1, TimeUnit.MILLISECONDS, () -> {
+        });
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void onIdleNegativeTimeout() {
-        ExtraIO.onIdle(HeapInputStream.empty(), -1, TimeUnit.MILLISECONDS, () -> {});
+        ExtraIO.onIdle(HeapInputStream.empty(), -1, TimeUnit.MILLISECONDS, () -> {
+        });
     }
 
     @Test(expected = NullPointerException.class)
     public void onIdleNullUnit() {
-        ExtraIO.onIdle(HeapInputStream.empty(), 1, null, () -> {});
+        ExtraIO.onIdle(HeapInputStream.empty(), 1, null, () -> {
+        });
     }
 
     @Test(expected = NullPointerException.class)
@@ -186,6 +189,7 @@ public class ExtraIOTest {
         assertThat(called.get()).isTrue();
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void onIdleClose() throws IOException, InterruptedException {
         AtomicBoolean called = new AtomicBoolean();

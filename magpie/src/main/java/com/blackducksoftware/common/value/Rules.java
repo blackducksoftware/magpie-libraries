@@ -404,7 +404,7 @@ final class Rules {
      */
     static final class REChtml401 {
 
-        public static final boolean isMediaDesc(CharSequence input) {
+        public static final boolean isMediaDesc(@SuppressWarnings("unused") CharSequence input) {
             // Technically this is just a CDATA field; which we know because it's passed as a sequence of characters...
             // That said, it _should_ be a "single or comma-separated list of media descriptors" (ALPHA/DIGIT/"-").
             return true;
