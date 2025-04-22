@@ -1,18 +1,9 @@
-buildscript {
-	repositories { maven { url 'https://plugins.gradle.org/m2/' } }
-	dependencies { 
-		classpath 'net.ltgt.gradle:gradle-errorprone-plugin:2.0.2'
-		classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.29.2"
-	}
-}
-
 allprojects {
 	apply plugin: 'eclipse'
 	apply plugin: 'maven-publish'
-	apply plugin: 'com.jfrog.artifactory'
 
 	repositories {
-		jcenter()
+		mavenCentral()
 	}
 }
 
@@ -23,8 +14,7 @@ ext{
 }
 
 subprojects {
-	apply plugin: 'java'
-	apply plugin: 'net.ltgt.errorprone'
+	apply plugin: 'java-library'
 
 	sourceCompatibility = 1.8
 
