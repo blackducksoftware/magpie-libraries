@@ -1,0 +1,11 @@
+<!DOCTYPE import-control PUBLIC
+     "-//Checkstyle//DTD ImportControl Configuration 1.4//EN"
+     "https://checkstyle.org/dtds/import_control_1_4.dtd">
+
+<import-control pkg="..*" regex = "true" strategyOnMismatch="allowed" >
+
+	<!-- Use direct imports instead of imported shaded classes -->
+   <disallow pkg="org.apache.curator.shaded"/>
+   <disallow pkg="com.github.jsonldjava.shaded"/>
+   
+</import-control>

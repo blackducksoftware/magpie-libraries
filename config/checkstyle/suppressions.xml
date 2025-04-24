@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<!--
+  ~ Copyright (C) 2020 Black Duck Software, Inc.
+  ~ http://www.blackduck.com/
+  ~ All rights reserved.
+  ~
+  ~ This software is the confidential and proprietary information of
+  ~ Black Duck ("Confidential Information"). You shall not
+  ~ disclose such Confidential Information and shall use it only in
+  ~ accordance with the terms of the license agreement you entered into
+  ~ with Black Duck.
+  -->
+
+<!DOCTYPE suppressions PUBLIC
+        "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+        "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+    <!-- We can't do anything to address issues in generated files, so don't check them at all -->
+    <suppress checks="[a-zA-Z0-9]*" files="[\\/]generated[\\/]"/>
+
+    <!-- The test for UuidUtils uses UUID.fromString (the function it replaces) to validate its operations -->
+    <suppress id="NoJavaUUIDFromString" files="[\\/]UuidUtilsTest.java"/>
+
+    <!--  RiskPriorityDistribution.java has methods with names dictated by JSON that violate this rule but cannot be fixed-->
+    <suppress checks="AbbreviationAsWordInName" files="RiskPriorityDistribution.java"/>
+
+    <!-- periodic schedules can only be declared in JobIntegrationJobConfig -->
+    <suppress id="NoPeriodicJobRegistrationOutsideJobConfig" files="[\\/]JobIntegrationJobConfig.java"/>
+    <suppress id="NoPeriodicScheduleRegistrationOutsideJobConfig" files="[\\/]JobIntegrationJobConfig.java"/>
+    <!-- ...unless it's in a test -->
+    <suppress id="NoPeriodicJobRegistrationOutsideJobConfig" files="[\\/][integ]*test[\\/]"/>
+    <suppress id="NoPeriodicScheduleRegistrationOutsideJobConfig" files="[\\/][integ]*test[\\/]"/>
+
+</suppressions>

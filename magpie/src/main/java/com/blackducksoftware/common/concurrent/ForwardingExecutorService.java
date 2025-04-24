@@ -37,7 +37,7 @@ public abstract class ForwardingExecutorService implements ExecutorService {
     /**
      * A simple wrapper of a single executor service.
      */
-    public static abstract class SimpleForwardingExecutorService extends ForwardingExecutorService {
+    public abstract static class SimpleForwardingExecutorService extends ForwardingExecutorService {
 
         private final ExecutorService delegate;
 

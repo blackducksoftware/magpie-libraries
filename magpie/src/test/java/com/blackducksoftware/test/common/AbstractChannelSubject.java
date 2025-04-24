@@ -66,14 +66,18 @@ public class AbstractChannelSubject<S extends AbstractChannelSubject<S, C>, C ex
             try {
                 ((ReadableByteChannel) actual()).read(ByteBuffer.allocate(1));
                 failWithRawMessage("Expected reading a closed channel to fail");
-            } catch (ClosedChannelException e) {}
+            } catch (ClosedChannelException e) {
+                // Expected to throw, no action needed
+            }
         }
 
         if (actual() instanceof WritableByteChannel) {
             try {
                 ((WritableByteChannel) actual()).write(ByteBuffer.wrap(new byte[] { 1 }));
                 failWithRawMessage("Expected writing a closed channel to fail");
-            } catch (ClosedChannelException e) {}
+            } catch (ClosedChannelException e) {
+                // Expected to throw, no action needed
+            }
         }
     }
 

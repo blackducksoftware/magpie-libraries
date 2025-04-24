@@ -50,7 +50,7 @@ public enum BinaryByteUnit implements ByteUnit {
      */
     KIBIBYTES {
     // @formatter:off
-        @Override public long toBytes(long c)     { return x(c, C1/C0, MAX_VALUE/(C1/C0)); }
+        @Override public long toBytes(long c)     { return safeMultiply(c, C1/C0, MAX_VALUE/(C1/C0)); }
         @Override public long toKibibytes(long c) { return c; }
         @Override public long toMebibytes(long c) { return c/(C2/C1); }
         @Override public long toGibibytes(long c) { return c/(C3/C1); }
@@ -66,8 +66,8 @@ public enum BinaryByteUnit implements ByteUnit {
      */
     MEBIBYTES {
     // @formatter:off
-        @Override public long toBytes(long c)     { return x(c, C2/C0, MAX_VALUE/(C2/C0)); }
-        @Override public long toKibibytes(long c) { return x(c, C2/C1, MAX_VALUE/(C2/C1)); }
+        @Override public long toBytes(long c)     { return safeMultiply(c, C2/C0, MAX_VALUE/(C2/C0)); }
+        @Override public long toKibibytes(long c) { return safeMultiply(c, C2/C1, MAX_VALUE/(C2/C1)); }
         @Override public long toMebibytes(long c) { return c; }
         @Override public long toGibibytes(long c) { return c/(C3/C2); }
         @Override public long toTebibytes(long c) { return c/(C4/C2); }
@@ -84,9 +84,9 @@ public enum BinaryByteUnit implements ByteUnit {
      */
     GIBIBYTES {
     // @formatter:off
-        @Override public long toBytes(long c)     { return x(c, C3/C0, MAX_VALUE/(C3/C0)); }
-        @Override public long toKibibytes(long c) { return x(c, C3/C1, MAX_VALUE/(C3/C1)); }
-        @Override public long toMebibytes(long c) { return x(c, C3/C2, MAX_VALUE/(C3/C2)); }
+        @Override public long toBytes(long c)     { return safeMultiply(c, C3/C0, MAX_VALUE/(C3/C0)); }
+        @Override public long toKibibytes(long c) { return safeMultiply(c, C3/C1, MAX_VALUE/(C3/C1)); }
+        @Override public long toMebibytes(long c) { return safeMultiply(c, C3/C2, MAX_VALUE/(C3/C2)); }
         @Override public long toGibibytes(long c) { return c; }
         @Override public long toTebibytes(long c) { return c/(C4/C3); }
         @Override public long toPebibytes(long c) { return c/(C5/C3); }
@@ -100,10 +100,10 @@ public enum BinaryByteUnit implements ByteUnit {
      */
     TEBIBYTES {
     // @formatter:off
-        @Override public long toBytes(long c)     { return x(c, C4/C0, MAX_VALUE/(C4/C0)); }
-        @Override public long toKibibytes(long c) { return x(c, C4/C1, MAX_VALUE/(C4/C1)); }
-        @Override public long toMebibytes(long c) { return x(c, C4/C2, MAX_VALUE/(C4/C2)); }
-        @Override public long toGibibytes(long c) { return x(c, C4/C3, MAX_VALUE/(C4/C3)); }
+        @Override public long toBytes(long c)     { return safeMultiply(c, C4/C0, MAX_VALUE/(C4/C0)); }
+        @Override public long toKibibytes(long c) { return safeMultiply(c, C4/C1, MAX_VALUE/(C4/C1)); }
+        @Override public long toMebibytes(long c) { return safeMultiply(c, C4/C2, MAX_VALUE/(C4/C2)); }
+        @Override public long toGibibytes(long c) { return safeMultiply(c, C4/C3, MAX_VALUE/(C4/C3)); }
         @Override public long toTebibytes(long c) { return c; }
         @Override public long toPebibytes(long c) { return c/(C5/C4); }
         @Override public long toExbibytes(long c) { return c/(C6/C4); }
@@ -116,11 +116,11 @@ public enum BinaryByteUnit implements ByteUnit {
      */
     PEBIBYTES {
     // @formatter:off
-        @Override public long toBytes(long c)     { return x(c, C5/C0, MAX_VALUE/(C5/C0)); }
-        @Override public long toKibibytes(long c) { return x(c, C5/C1, MAX_VALUE/(C5/C1)); }
-        @Override public long toMebibytes(long c) { return x(c, C5/C2, MAX_VALUE/(C5/C2)); }
-        @Override public long toGibibytes(long c) { return x(c, C5/C3, MAX_VALUE/(C5/C3)); }
-        @Override public long toTebibytes(long c) { return x(c, C5/C4, MAX_VALUE/(C5/C4)); }
+        @Override public long toBytes(long c)     { return safeMultiply(c, C5/C0, MAX_VALUE/(C5/C0)); }
+        @Override public long toKibibytes(long c) { return safeMultiply(c, C5/C1, MAX_VALUE/(C5/C1)); }
+        @Override public long toMebibytes(long c) { return safeMultiply(c, C5/C2, MAX_VALUE/(C5/C2)); }
+        @Override public long toGibibytes(long c) { return safeMultiply(c, C5/C3, MAX_VALUE/(C5/C3)); }
+        @Override public long toTebibytes(long c) { return safeMultiply(c, C5/C4, MAX_VALUE/(C5/C4)); }
         @Override public long toPebibytes(long c) { return c; }
         @Override public long toExbibytes(long c) { return c/(C6/C5); }
         @Override public long convert(long c, BinaryByteUnit u) { return u.toPebibytes(c); }
@@ -132,12 +132,12 @@ public enum BinaryByteUnit implements ByteUnit {
      */
     EXBIBYTES {
     // @formatter:off
-        @Override public long toBytes(long c)     { return x(c, C6/C0, MAX_VALUE/(C6/C0)); }
-        @Override public long toKibibytes(long c) { return x(c, C6/C1, MAX_VALUE/(C6/C1)); }
-        @Override public long toMebibytes(long c) { return x(c, C6/C2, MAX_VALUE/(C6/C2)); }
-        @Override public long toGibibytes(long c) { return x(c, C6/C3, MAX_VALUE/(C6/C3)); }
-        @Override public long toTebibytes(long c) { return x(c, C6/C4, MAX_VALUE/(C6/C4)); }
-        @Override public long toPebibytes(long c) { return x(c, C6/C5, MAX_VALUE/(C6/C5)); }
+        @Override public long toBytes(long c)     { return safeMultiply(c, C6/C0, MAX_VALUE/(C6/C0)); }
+        @Override public long toKibibytes(long c) { return safeMultiply(c, C6/C1, MAX_VALUE/(C6/C1)); }
+        @Override public long toMebibytes(long c) { return safeMultiply(c, C6/C2, MAX_VALUE/(C6/C2)); }
+        @Override public long toGibibytes(long c) { return safeMultiply(c, C6/C3, MAX_VALUE/(C6/C3)); }
+        @Override public long toTebibytes(long c) { return safeMultiply(c, C6/C4, MAX_VALUE/(C6/C4)); }
+        @Override public long toPebibytes(long c) { return safeMultiply(c, C6/C5, MAX_VALUE/(C6/C5)); }
         @Override public long toExbibytes(long c) { return c; }
         @Override public long convert(long c, BinaryByteUnit u) { return u.toExbibytes(c); }
     // @formatter:on
@@ -160,7 +160,7 @@ public enum BinaryByteUnit implements ByteUnit {
     // @formatter:on
 
     // Safe multiply
-    private static long x(long d, long m, long over) {
+    private static long safeMultiply(long d, long m, long over) {
         if (d > over) {
             return MAX_VALUE;
         } else if (d < -over) {

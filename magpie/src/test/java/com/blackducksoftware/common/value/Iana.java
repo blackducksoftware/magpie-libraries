@@ -56,7 +56,7 @@ class Iana {
     /**
      * Namespace to use for parsing specifications.
      */
-    private final static String NS = "http://www.iana.org/assignments";
+    private static final String NS = "http://www.iana.org/assignments";
 
     /**
      * Generic reference; use {@link Registry#toUriString(XRef)} to convert to a URI.

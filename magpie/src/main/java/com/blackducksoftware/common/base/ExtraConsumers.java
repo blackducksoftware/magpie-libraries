@@ -41,7 +41,9 @@ public class ExtraConsumers {
      */
     public static <T, U> BiConsumer<T, U> onlyIf(BiPredicate<T, U> p, BiConsumer<T, U> c) {
         return (t, u) -> {
-            if (p.test(t, u)) c.accept(t, u);
+            if (p.test(t, u)) {
+                c.accept(t, u);
+            }
         };
     }
 

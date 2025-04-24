@@ -69,25 +69,25 @@ public class X509Certificates {
 
         ;
 
-        private final Integer i;
+        private final Integer index;
 
         private final boolean string;
 
         private GeneralName(int i, boolean string) {
-            this.i = Integer.valueOf(i);
+            this.index = Integer.valueOf(i);
             this.string = string;
         }
 
         public Stream<String> toString(List<?> generalName) {
             checkState(string, "cannot call toString(List<?>) on %s", name());
             verifyGeneralName(generalName);
-            return generalName.get(0).equals(i) ? Stream.of((String) generalName.get(1)) : Stream.empty();
+            return generalName.get(0).equals(index) ? Stream.of((String) generalName.get(1)) : Stream.empty();
         }
 
         public Stream<byte[]> toByteArray(List<?> generalName) {
             checkState(!string, "cannot call toByteArray(List<?>) on %s", name());
             verifyGeneralName(generalName);
-            return generalName.get(0).equals(i) ? Stream.of((byte[]) generalName.get(1)) : Stream.empty();
+            return generalName.get(0).equals(index) ? Stream.of((byte[]) generalName.get(1)) : Stream.empty();
         }
 
         private static void verifyGeneralName(List<?> generalName) {

@@ -113,7 +113,7 @@ public class ExtraFileVisitors {
     /**
      * A file visitor that simply delegates all method calls to another file visitor to simplify decoration.
      */
-    public static abstract class ForwardingFileVisitor<T> implements FileVisitor<T> {
+    public abstract static class ForwardingFileVisitor<T> implements FileVisitor<T> {
 
         private final FileVisitor<T> delegate;
 
