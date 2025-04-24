@@ -28,12 +28,13 @@ import com.google.common.truth.Truth;
 
 public final class SeekableByteChannelSubject extends AbstractChannelSubject<SeekableByteChannelSubject, SeekableByteChannel> {
 
-    private static final Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel> FACTORY = new Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel>() {
-        @Override
-        public SeekableByteChannelSubject createSubject(FailureMetadata metadata, SeekableByteChannel actual) {
-            return new SeekableByteChannelSubject(metadata, actual);
-        }
-    };
+    private static final Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel> FACTORY =
+            new Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel>() {
+                @Override
+                public SeekableByteChannelSubject createSubject(FailureMetadata metadata, SeekableByteChannel actual) {
+                    return new SeekableByteChannelSubject(metadata, actual);
+                }
+            };
 
     public static Subject.Factory<SeekableByteChannelSubject, SeekableByteChannel> seekableByteChannels() {
         return FACTORY;
@@ -87,22 +88,30 @@ public final class SeekableByteChannelSubject extends AbstractChannelSubject<See
         try {
             actual().position();
             failWithRawMessage("Expected retrieving the position of a closed channel to fail");
-        } catch (ClosedChannelException e) {}
+        } catch (ClosedChannelException e) {
+            // Expected to throw, no action needed
+        }
 
         try {
             actual().position(0L);
             failWithRawMessage("Expected positioning of a closed channel to fail");
-        } catch (ClosedChannelException e) {}
+        } catch (ClosedChannelException e) {
+            // Expected to throw, no action needed
+        }
 
         try {
             actual().size();
             failWithRawMessage("Expected retrieving the size of a closed channel to fail");
-        } catch (ClosedChannelException e) {}
+        } catch (ClosedChannelException e) {
+            // Expected to throw, no action needed
+        }
 
         try {
             actual().truncate(0L);
             failWithRawMessage("Expected retrieving the position of a closed channel to fail");
-        } catch (ClosedChannelException | NonWritableChannelException e) {}
+        } catch (ClosedChannelException | NonWritableChannelException e) {
+            // Expected to throw, no action needed
+        }
     }
 
 }

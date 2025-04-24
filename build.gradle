@@ -15,6 +15,7 @@ ext{
 
 subprojects {
 	apply plugin: 'java-library'
+	apply plugin: 'checkstyle'
 
 	sourceCompatibility = 1.8
 
@@ -26,6 +27,22 @@ subprojects {
 		preserveFileTimestamps = false
 		reproducibleFileOrder = true
 	}
+	
+	checkstyle {
+        configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+        toolVersion = '9.3'
+
+        if(System.properties['allowFailingCheckstyle'] != null){
+            configProperties = [ 'checkstyle.config.dir' : rootProject.file('config/checkstyle'), 'severity' : 'warning' ]
+        }else {
+            configProperties = [ 'checkstyle.config.dir' : rootProject.file('config/checkstyle'), 'severity' : 'error' ]
+        }
+
+        sourceSets = [
+            project.sourceSets.main,
+            project.sourceSets.test
+        ]
+    }
 
 	jar {
 		manifest {

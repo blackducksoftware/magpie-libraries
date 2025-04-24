@@ -33,7 +33,7 @@ public abstract class ForwardingScheduledExecutorService extends ForwardingExecu
     /**
      * A simple wrapper of a single scheduled executor service.
      */
-    public static abstract class SimpleScheduledForwardingExecutorService extends ForwardingScheduledExecutorService {
+    public abstract static class SimpleScheduledForwardingExecutorService extends ForwardingScheduledExecutorService {
 
         private final ScheduledExecutorService delegate;
 

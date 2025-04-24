@@ -214,8 +214,13 @@ public final class ExtraOptionals {
      * empty {@code Stream}.
      */
     public static <T, R> Stream<R> flatMapMany(Optional<T> self, Function<? super T, ? extends Stream<? extends R>> mapper) {
+        Objects.requireNonNull(mapper);
+
         // TODO Use the Java 9 version when available
-        return (self.isPresent() ? Stream.of(self.get()) : Stream.<T> empty()).flatMap(mapper);
+        return self
+                .map(Stream::of)
+                .map(s -> s.flatMap(mapper))
+                .orElse(Stream.empty());
     }
 
     private ExtraOptionals() {
