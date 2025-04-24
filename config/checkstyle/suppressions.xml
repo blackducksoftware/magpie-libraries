@@ -32,5 +32,16 @@
     <!-- ...unless it's in a test -->
     <suppress id="NoPeriodicJobRegistrationOutsideJobConfig" files="[\\/][integ]*test[\\/]"/>
     <suppress id="NoPeriodicScheduleRegistrationOutsideJobConfig" files="[\\/][integ]*test[\\/]"/>
+    
+    <!--  These are a lot less readable with the curly brace rules -->
+    <suppress checks="LeftCurly" files="BinaryByteUnit.java"/>
+    <suppress checks="RightCurly" files="BinaryByteUnit.java"/>
+    <suppress checks="RightCurlyAlone" files="BinaryByteUnit.java"/>
+    <suppress checks="LeftCurly" files="DecimalByteUnit.java"/>
+    <suppress checks="RightCurly" files="DecimalByteUnit.java"/>
+    <suppress checks="RightCurlyAlone" files="DecimalByteUnit.java"/>
+    
+    <suppress checks="WhitespaceAround" files="BinaryByteUnit.java"/>
+    <suppress checks="WhitespaceAround" files="DecimalByteUnit.java"/>
 
 </suppressions>
