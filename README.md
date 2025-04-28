@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/blackducksoftware/magpie-libraries.svg?branch=master)](https://travis-ci.org/blackducksoftware/magpie-libraries)
 [![Download](https://api.bintray.com/packages/bds/oss/magpie-libraries/images/download.svg)](https://bintray.com/bds/oss/magpie-libraries/_latestVersion)
 
-Really useful stuff.
+Provides various utilities for simplifying tasks within Java across things like concurrent execution, io, security, and date/time handling
 
 ## Requirements
 
@@ -28,6 +28,10 @@ Maven
 ## Documentation
 
 TODO
+
+## Contribution Process
+
+Current BlackDuck stewards: romeara and TBD
 
 ## Build
 
